@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoSD — Saisie terrain</title>
+<link rel="stylesheet" href="geosd-common.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  .send-panel{
+    position:fixed; left:12px; right:12px; bottom:12px; z-index:1100;
+    background:var(--panel); border:1px solid var(--line); border-radius:8px;
+    box-shadow:0 4px 18px rgba(22,50,58,.25); padding:14px 16px; display:none;
+  }
+  .send-panel.show{ display:block; }
+  .send-panel .ok-line{ display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:var(--accent); margin:0 0 10px; }
+  .send-panel .actions{ display:flex; gap:8px; flex-wrap:wrap; }
+  .send-panel .actions button{ flex:1; min-width:120px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="mark">TERRAIN</span>
+    <h1>GeoSD</h1>
+  </div>
+  <div class="toolbar">
+    <span id="status">0 point saisi</span>
+    <button id="btn-toggle-filters">Filtres</button>
+    <button id="btn-load-reference">Charger points existants</button>
+    <input type="file" id="input-load-reference" accept=".geojson,.json" style="display:none;">
+    <button id="btn-export-all" class="primary" disabled>Exporter tout (0)</button>
+  </div>
+</header>
+
+<div id="banner" class="banner show">
+  Chaque point saisi reste sur cette tablette (sauvegarde automatique anti-crash). Utilisez
+  <strong>« Envoyer par mail »</strong> ou <strong>« Partager »</strong> après chaque point pour le
+  transmettre au bureau, ou <strong>« Exporter tout »</strong> en fin de tournée.
+</div>
+<div id="load-error" class="banner" style="background:#f6d6d0;border-color:#c0392b;color:#7b241c;">
+  Impossible de charger la bibliothèque cartographique. Vérifiez votre connexion, puis rechargez.
+</div>
+
+<div id="map-wrap">
+  <div id="map"></div>
+
+  <aside id="filters-panel">
+    <div class="filters-header">
+      <h2>Filtres</h2>
+      <button id="btn-close-filters" aria-label="Fermer">✕</button>
+    </div>
+    <div class="filters-body">
+      <div class="filters-section">
+        <span class="filters-label">Recherche libre</span>
+        <input type="text" id="filter-search" class="filters-search" placeholder="Commune, commentaire, auteur…">
+      </div>
+      <div class="filters-section">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span class="filters-label">Thématiques</span>
+          <div class="theme-check-actions">
+            <button type="button" id="btn-check-all">Tout cocher</button>
+            <button type="button" id="btn-check-none">Tout décocher</button>
+          </div>
+        </div>
+        <div class="theme-check-list" id="theme-check-list"></div>
+      </div>
+    </div>
+    <div class="filters-footer">
+      <span id="filters-count">0 / 0 points affichés</span>
+      <button id="btn-reset-filters">Réinitialiser</button>
+    </div>
+  </aside>
+</div>
+
+<!-- Modale de saisie -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2>Nouveau point</h2>
+    <p class="coords" id="coords-label"></p>
+    <form id="point-form">
+      <div class="field">
+        <label for="f-theme">Thématique</label>
+        <select id="f-theme"></select>
+      </div>
+      <div class="field" id="subtype-field" style="display:none">
+        <label for="f-subtype">Sous-type</label>
+        <select id="f-subtype"></select>
+      </div>
+      <div id="fields-container"></div>
+      <div class="modal-actions">
+        <button type="button" id="btn-cancel">Annuler</button>
+        <button type="submit" class="primary">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Panneau d'envoi, apparaît après chaque point saisi -->
+<div class="send-panel" id="send-panel">
+  <p class="ok-line">✓ Point enregistré sur la tablette</p>
+  <div class="actions">
+    <button id="btn-send-mail" class="primary">Envoyer par mail</button>
+    <button id="btn-send-share">Partager</button>
+    <button id="btn-send-dismiss">Fermer</button>
+  </div>
+</div>
+
+<script src="geosd-themes.js"></script>
+<script>
+(async function initApp() {
+  const ok = await loadLeaflet();
+  if (!ok) { document.getElementById('load-error').classList.add('show'); return; }
+  runApp();
+})();
+
+function runApp() {
+
+const statusEl = document.getElementById('status');
+const overlayEl = document.getElementById('overlay');
+const fieldsContainer = document.getElementById('fields-container');
+const coordsLabel = document.getElementById('coords-label');
+const pointForm = document.getElementById('point-form');
+const themeSelect = document.getElementById('f-theme');
+const subtypeField = document.getElementById('subtype-field');
+const subtypeSelect = document.getElementById('f-subtype');
+const sendPanel = document.getElementById('send-panel');
+
+let geojson = { type: 'FeatureCollection', features: [] };
+let markersById = {};
+let pendingLatLng = null;
+let lastSavedFeature = null;
+let editingFeature = null;
+const modalTitle = document.querySelector('#overlay h2');
+
+const map = L.map('map').setView([48.8566, 2.3522], 13);
+addBaseLayerSwitcher(map);
+const markersLayer = L.layerGroup().addTo(map);
+
+function setStatus(text, kind) { statusEl.textContent = text; statusEl.className = kind || ''; }
+
+/* ---- Formulaire thématique / sous-type ---- */
+function populateThemeSelect() {
+  themeSelect.innerHTML = '';
+  Object.keys(THEMES).forEach(key => {
+    const o = document.createElement('option');
+    o.value = key; o.textContent = THEMES[key].label;
+    themeSelect.appendChild(o);
+  });
+}
+function onThemeChange() {
+  const theme = THEMES[themeSelect.value];
+  if (theme && theme.subtypes) {
+    subtypeField.style.display = '';
+    subtypeSelect.innerHTML = '';
+    Object.keys(theme.subtypes).forEach(key => {
+      const o = document.createElement('option');
+      o.value = key; o.textContent = theme.subtypes[key].label;
+      subtypeSelect.appendChild(o);
+    });
+  } else {
+    subtypeField.style.display = 'none';
+    subtypeSelect.innerHTML = '';
+  }
+  renderFormFields();
+}
+themeSelect.addEventListener('change', onThemeChange);
+subtypeSelect.addEventListener('change', renderFormFields);
+
+function renderFormFields() {
+  const fields = getFieldsFor(themeSelect.value, subtypeSelect.value);
+  fieldsContainer.innerHTML = '';
+  fields.forEach(f => {
+    const wrap = document.createElement('div');
+    wrap.className = 'field';
+    const label = document.createElement('label');
+    label.textContent = f.label + (f.required ? ' *' : '');
+    label.setAttribute('for', 'f-' + f.name);
+    wrap.appendChild(label);
+    let input;
+    if (f.type === 'textarea') input = document.createElement('textarea');
+    else if (f.type === 'select') {
+      input = document.createElement('select');
+      const empty = document.createElement('option');
+      empty.value = ''; empty.textContent = '—';
+      input.appendChild(empty);
+      f.options.forEach(opt => {
+        const o = document.createElement('option'); o.value = opt; o.textContent = opt;
+        input.appendChild(o);
+      });
+    } else { input = document.createElement('input'); input.type = f.type; }
+    input.id = 'f-' + f.name;
+    input.name = f.name;
+    if (f.required) input.required = true;
+    wrap.appendChild(input);
+    fieldsContainer.appendChild(wrap);
+  });
+}
+
+function openModal(latlng, feature) {
+  pendingLatLng = latlng;
+  editingFeature = feature || null;
+  modalTitle.textContent = feature ? 'Modifier le point' : 'Nouveau point';
+  coordsLabel.textContent = `lat ${latlng.lat.toFixed(6)}, lon ${latlng.lng.toFixed(6)}` + (feature ? ' (position conservée)' : '');
+
+  if (feature) themeSelect.value = feature.properties.theme;
+  else themeSelect.selectedIndex = 0;
+  onThemeChange();
+
+  if (feature) {
+    const theme = THEMES[feature.properties.theme];
+    if (theme && theme.subtypes && feature.properties.subtype) {
+      subtypeSelect.value = feature.properties.subtype;
+      renderFormFields();
+    }
+    getFieldsFor(feature.properties.theme, feature.properties.subtype).forEach(f => {
+      const el = document.getElementById('f-' + f.name);
+      if (el) el.value = feature.properties[f.name] || '';
+    });
+  }
+  overlayEl.classList.add('show');
+}
+function closeModal() {
+  overlayEl.classList.remove('show');
+  pointForm.reset();
+  pendingLatLng = null;
+  editingFeature = null;
+}
+document.getElementById('btn-cancel').addEventListener('click', closeModal);
+overlayEl.addEventListener('click', e => { if (e.target === overlayEl) closeModal(); });
+
+map.on('click', e => openModal(e.latlng));
+
+pointForm.addEventListener('submit', e => {
+  e.preventDefault();
+  const themeKey = themeSelect.value;
+  const theme = THEMES[themeKey];
+  const properties = { theme: themeKey };
+  if (theme.subtypes) properties.subtype = subtypeSelect.value;
+  getFieldsFor(themeKey, subtypeSelect.value).forEach(f => {
+    properties[f.name] = document.getElementById('f-' + f.name).value;
+  });
+
+  let savedFeature;
+  if (editingFeature) {
+    editingFeature.properties = properties;
+    savedFeature = editingFeature;
+    const marker = markersById[editingFeature.id];
+    if (marker) {
+      marker.setStyle(markerStyle(editingFeature));
+      marker.setPopupContent(popupHtml(editingFeature, { canDelete: true, canEdit: true }));
+    }
+  } else {
+    savedFeature = {
+      type: 'Feature', id: crypto.randomUUID(),
+      geometry: { type: 'Point', coordinates: [pendingLatLng.lng, pendingLatLng.lat] },
+      properties
+    };
+    geojson.features.push(savedFeature);
+    addMarker(savedFeature);
+  }
+  buildThemeCheckList();
+  applyFilters();
+  persistFieldLocal();
+  updateToolbarCounts();
+  closeModal();
+  lastSavedFeature = savedFeature;
+  sendPanel.classList.add('show');
+});
+
+/* ---- Marqueurs (tout est éditable ici, pas de points en lecture seule
+   sauf ceux importés comme référence) ---- */
+function addMarker(feature) {
+  const [lng, lat] = feature.geometry.coordinates;
+  const marker = L.circleMarker([lat, lng], markerStyle(feature));
+  marker.featureId = feature.id;
+  marker.bindPopup(popupHtml(feature, { canDelete: true, canEdit: true }));
+  marker.addTo(markersLayer);
+  markersById[feature.id] = marker;
+}
+map.on('popupopen', e => {
+  const marker = e.popup._source;
+  if (!marker || !marker.featureId) return;
+  const delBtn = e.popup._contentNode.querySelector('.popup-del');
+  if (delBtn) delBtn.onclick = () => deletePoint(marker.featureId);
+  const editBtn = e.popup._contentNode.querySelector('.popup-edit');
+  if (editBtn) editBtn.onclick = () => {
+    map.closePopup();
+    const feature = geojson.features.find(f => f.id === marker.featureId);
+    if (feature) {
+      const [lng, lat] = feature.geometry.coordinates;
+      openModal(L.latLng(lat, lng), feature);
+    }
+  };
+});
+function deletePoint(id) {
+  const feature = geojson.features.find(f => f.id === id);
+  if (feature && feature.properties.__ref) return;
+  geojson.features = geojson.features.filter(f => f.id !== id);
+  const marker = markersById[id];
+  if (marker) { markersLayer.removeLayer(marker); delete markersById[id]; }
+  buildThemeCheckList();
+  applyFilters();
+  persistFieldLocal();
+  updateToolbarCounts();
+}
+function renderAllMarkers() {
+  markersLayer.clearLayers();
+  markersById = {};
+  geojson.features.forEach(addMarker);
+  if (geojson.features.length) {
+    const group = L.featureGroup(Object.values(markersById));
+    map.fitBounds(group.getBounds().pad(0.2));
+  }
+  buildThemeCheckList();
+  applyFilters();
+  updateToolbarCounts();
+}
+
+/* ---- Panneau de filtres (identique aux autres versions, sans date/fiabilité
+   pour rester compact sur petit écran — la saisie prime ici) ---- */
+const filtersPanel = document.getElementById('filters-panel');
+const themeCheckList = document.getElementById('theme-check-list');
+const filterSearch = document.getElementById('filter-search');
+const filtersCountEl = document.getElementById('filters-count');
+
+document.getElementById('btn-toggle-filters').addEventListener('click', () => filtersPanel.classList.toggle('show'));
+document.getElementById('btn-close-filters').addEventListener('click', () => filtersPanel.classList.remove('show'));
+
+function buildThemeCheckList() {
+  const counts = {}; THEME_KEYS.forEach(k => counts[k] = 0);
+  geojson.features.forEach(f => { if (counts[f.properties.theme] !== undefined) counts[f.properties.theme]++; });
+  const previousChecked = {};
+  themeCheckList.querySelectorAll('input[type=checkbox]').forEach(cb => previousChecked[cb.value] = cb.checked);
+  themeCheckList.innerHTML = '';
+  THEME_KEYS.forEach(key => {
+    const row = document.createElement('div'); row.className = 'theme-check-row';
+    const swatch = document.createElement('span'); swatch.className = 'swatch'; swatch.style.background = themeColor(key);
+    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = key; cb.id = 'filter-theme-' + key;
+    cb.checked = previousChecked.hasOwnProperty(key) ? previousChecked[key] : true;
+    cb.addEventListener('change', applyFilters);
+    const label = document.createElement('label'); label.setAttribute('for', cb.id); label.textContent = THEMES[key].label;
+    const count = document.createElement('span'); count.className = 'count'; count.textContent = counts[key];
+    row.append(swatch, cb, label, count);
+    themeCheckList.appendChild(row);
+  });
+}
+document.getElementById('btn-check-all').addEventListener('click', () => {
+  themeCheckList.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = true); applyFilters();
+});
+document.getElementById('btn-check-none').addEventListener('click', () => {
+  themeCheckList.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false); applyFilters();
+});
+document.getElementById('btn-reset-filters').addEventListener('click', () => {
+  filterSearch.value = '';
+  themeCheckList.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = true);
+  applyFilters();
+});
+filterSearch.addEventListener('input', applyFilters);
+
+function featureMatchesFilters(feature) {
+  const props = feature.properties;
+  const cb = document.getElementById('filter-theme-' + props.theme);
+  if (cb && !cb.checked) return false;
+  const query = normalizeText(filterSearch.value.trim());
+  if (query && !normalizeText(Object.values(props).join(' ')).includes(query)) return false;
+  return true;
+}
+function applyFilters() {
+  let shown = 0;
+  geojson.features.forEach(feature => {
+    const marker = markersById[feature.id];
+    if (!marker) return;
+    const match = featureMatchesFilters(feature);
+    const onMap = markersLayer.hasLayer(marker);
+    if (match && !onMap) markersLayer.addLayer(marker);
+    if (!match && onMap) markersLayer.removeLayer(marker);
+    if (match) shown++;
+  });
+  filtersCountEl.textContent = `${shown} / ${geojson.features.length} points affichés`;
+}
+
+populateThemeSelect();
+buildThemeCheckList();
+
+/* ---- Sauvegarde locale anti-crash (uniquement les points saisis, jamais
+   les points de référence importés) ---- */
+const FIELD_STORAGE_KEY = 'geosd_terrain_points';
+function persistFieldLocal() {
+  const fieldFeatures = geojson.features.filter(f => !f.properties.__ref);
+  try { localStorage.setItem(FIELD_STORAGE_KEY, JSON.stringify(fieldFeatures)); }
+  catch (err) { console.error('Sauvegarde locale impossible :', err); }
+}
+function restoreFieldLocal() {
+  try {
+    const raw = localStorage.getItem(FIELD_STORAGE_KEY);
+    if (!raw) return;
+    const restored = JSON.parse(raw);
+    if (Array.isArray(restored) && restored.length) {
+      geojson.features.push(...restored);
+      renderAllMarkers();
+      setStatus(restored.length + ' point(s) retrouvé(s) de la session précédente', 'ok');
+    }
+  } catch (err) { console.error('Restauration locale impossible :', err); }
+}
+function updateToolbarCounts() {
+  const count = geojson.features.filter(f => !f.properties.__ref).length;
+  const btn = document.getElementById('btn-export-all');
+  btn.textContent = `Exporter tout (${count})`;
+  btn.disabled = count === 0;
+  setStatus(count + (count > 1 ? ' points saisis' : ' point saisi'));
+}
+restoreFieldLocal();
+updateToolbarCounts();
+
+/* ---- Charger des points existants (référence, lecture seule) ---- */
+document.getElementById('btn-load-reference').addEventListener('click', () => {
+  document.getElementById('input-load-reference').click();
+});
+document.getElementById('input-load-reference').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    const features = Array.isArray(data.features) ? data.features : [];
+    features.forEach(f => {
+      f.properties = f.properties || {};
+      f.properties.__ref = true;
+      if (!f.id) f.id = crypto.randomUUID();
+    });
+    geojson.features.push(...features);
+    renderAllMarkers();
+    const age = describeFileAge(data.updated_at);
+    setStatus(features.length + ' point(s) de référence chargé(s) — ' + age.text, age.level === 'stale' ? 'err' : 'ok');
+  } catch (err) { setStatus('Erreur de lecture : ' + err.message, 'err'); }
+  e.target.value = '';
+});
+
+/* ---- Export groupé de secours ---- */
+function fieldFeatureCollection() {
+  return { type: 'FeatureCollection', features: geojson.features.filter(f => !f.properties.__ref) };
+}
+function downloadGeojson(collection, filename) {
+  const blob = new Blob([JSON.stringify(collection, null, 2)], { type: 'application/geo+json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+document.getElementById('btn-export-all').addEventListener('click', () => {
+  const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+  downloadGeojson(fieldFeatureCollection(), `geosd_terrain_${stamp}.geojson`);
+  setStatus('Export téléchargé', 'ok');
+});
+
+/* ---- Envoi immédiat du dernier point saisi (mail ou partage) ---- */
+function pointLabel(feature) {
+  const theme = THEMES[feature.properties.theme];
+  const fields = getFieldsFor(feature.properties.theme, feature.properties.subtype);
+  const val = fields.length ? feature.properties[fields[0].name] : null;
+  return (theme ? theme.label : 'Point') + (val ? ' — ' + val : '');
+}
+document.getElementById('btn-send-mail').addEventListener('click', () => {
+  if (!lastSavedFeature) return;
+  const body = JSON.stringify({ type: 'FeatureCollection', features: [lastSavedFeature] }, null, 2);
+  const subject = 'GeoSD — nouveau point — ' + pointLabel(lastSavedFeature);
+  const mailto = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  window.location.href = mailto;
+});
+document.getElementById('btn-send-share').addEventListener('click', async () => {
+  if (!lastSavedFeature) return;
+  const collection = { type: 'FeatureCollection', features: [lastSavedFeature] };
+  const filename = 'point_' + lastSavedFeature.id.slice(0, 8) + '.geojson';
+  try {
+    const file = new File([JSON.stringify(collection, null, 2)], filename, { type: 'application/geo+json' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: 'GeoSD — ' + pointLabel(lastSavedFeature) });
+    } else {
+      alert("Le partage de fichier n'est pas disponible sur cet appareil/navigateur — utilisez « Envoyer par mail » à la place.");
+    }
+  } catch (err) {
+    if (err.name !== 'AbortError') alert('Erreur de partage : ' + err.message);
+  }
+});
+document.getElementById('btn-send-dismiss').addEventListener('click', () => sendPanel.classList.remove('show'));
+
+}
+</script>
+</body>
+</html>

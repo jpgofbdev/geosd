@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoSD — Documentation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16323a;
+    --ink-soft:#3d5a5f;
+    --paper:#f4f2ec;
+    --panel:#fbfaf6;
+    --line:#c9c2ae;
+    --accent:#2e6b52;
+    --accent-dark:#1e4a38;
+    --danger:#8a3324;
+    --mono:'IBM Plex Mono', ui-monospace, monospace;
+    --sans:'IBM Plex Sans', system-ui, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    font-family:var(--sans);
+    color:var(--ink);
+    background:var(--paper);
+    margin:0;
+    line-height:1.6;
+  }
+  .page{
+    max-width:840px;
+    margin:0 auto;
+    padding:40px 24px 80px;
+  }
+  header.doc-header{
+    border-bottom:2px solid var(--ink);
+    padding-bottom:20px;
+    margin-bottom:32px;
+  }
+  header.doc-header .mark{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.08em;
+    color:var(--accent);
+    border:1px solid var(--accent);
+    padding:2px 6px;
+    border-radius:2px;
+  }
+  h1{ font-size:26px; margin:10px 0 6px; }
+  .subtitle{ color:var(--ink-soft); font-size:15px; margin:0; }
+
+  nav.toc{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:16px 22px;
+    margin-bottom:36px;
+  }
+  nav.toc h2{ font-size:13px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-soft); margin:0 0 10px; }
+  nav.toc ol{ margin:0; padding-left:20px; columns:2; column-gap:24px; font-size:14px; }
+  nav.toc li{ margin-bottom:6px; break-inside:avoid; }
+  nav.toc a{ color:var(--ink); text-decoration:none; }
+  nav.toc a:hover{ color:var(--accent); text-decoration:underline; }
+
+  h2{
+    font-size:19px;
+    margin:40px 0 14px;
+    padding-bottom:8px;
+    border-bottom:1px solid var(--line);
+    scroll-margin-top:20px;
+  }
+  h3{ font-size:15px; margin:22px 0 8px; scroll-margin-top:20px; }
+  p{ margin:0 0 14px; }
+  ul, ol{ margin:0 0 14px; padding-left:22px; }
+  li{ margin-bottom:6px; }
+  strong{ color:var(--ink); }
+
+  code{
+    font-family:var(--mono);
+    font-size:.9em;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:1px 5px;
+  }
+  pre{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:12px 16px;
+    overflow-x:auto;
+    margin:0 0 14px;
+  }
+  pre code{ border:none; background:none; padding:0; }
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    margin:0 0 18px;
+    font-size:13.5px;
+  }
+  th, td{
+    text-align:left;
+    padding:8px 12px;
+    border-bottom:1px solid var(--line);
+    vertical-align:top;
+  }
+  th{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    color:var(--ink-soft);
+    background:var(--panel);
+  }
+  tr:last-child td{ border-bottom:1px solid var(--ink); }
+
+  .note{
+    background:#e3ede8;
+    border:1px solid var(--accent);
+    border-left:4px solid var(--accent);
+    border-radius:4px;
+    padding:12px 16px;
+    margin:0 0 18px;
+    font-size:14px;
+  }
+  .warn{
+    background:#f3e4c6;
+    border:1px solid #c9a768;
+    border-left:4px solid #c9a768;
+    border-radius:4px;
+    padding:12px 16px;
+    margin:0 0 18px;
+    font-size:14px;
+  }
+
+  footer.doc-footer{
+    margin-top:56px;
+    padding-top:16px;
+    border-top:1px solid var(--line);
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--ink-soft);
+  }
+
+  @media print{
+    nav.toc{ display:none; }
+    body{ background:#fff; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="doc-header">
+  <span class="mark">DOC</span>
+  <h1>GeoSD — SIG minimaliste à 3 versions</h1>
+  <p class="subtitle">Application de saisie de points géolocalisés par thématique, sans compte utilisateur ni serveur applicatif.</p>
+</header>
+
+<nav class="toc">
+  <h2>Sommaire</h2>
+  <ol>
+    <li><a href="#versions">Les 3 versions</a></li>
+    <li><a href="#fichiers">Fichiers du projet</a></li>
+    <li><a href="#modele">Modifier le modèle de champs</a></li>
+    <li><a href="#tableau">Tableau de données (admin)</a></li>
+    <li><a href="#stats">Statistiques (admin)</a></li>
+    <li><a href="#modifier">Modifier un point existant</a></li>
+    <li><a href="#workflow">Workflow terrain → bureau</a></li>
+    <li><a href="#depot">Consultation et mise à jour du fichier</a></li>
+    <li><a href="#raccourcis">Raccourcis sur tablette</a></li>
+    <li><a href="#archi">Architecture technique</a></li>
+    <li><a href="#limites">Limitations connues</a></li>
+    <li><a href="#depannage">Dépannage</a></li>
+    <li><a href="#sauvegarde">Sauvegarde des données</a></li>
+    <li><a href="#evolution">Pistes d'évolution</a></li>
+  </ol>
+</nav>
+
+<section id="versions">
+  <h2>Les 3 versions</h2>
+  <table>
+    <thead><tr><th>Fichier</th><th>Usage</th><th>Où</th><th>Écriture</th></tr></thead>
+    <tbody>
+      <tr><td><code>geosd-admin.html</code></td><td>Intégration du fichier central, fusion des envois terrain</td><td>Poste desktop (Chrome/Edge/Opera)</td><td>Directe sur disque (File System Access API)</td></tr>
+      <tr><td><code>geosd-terrain-saisie.html</code></td><td>Saisie de nouveaux points sur le terrain</td><td>Tablette Android (ou tout mobile)</td><td>Mémoire locale (localStorage) + envoi mail/partage après chaque point</td></tr>
+      <tr><td><code>geosd-terrain-consultation.html</code></td><td>Consultation des points déjà connus, lecture seule</td><td>Tablette Android (ou tout mobile)</td><td>Aucune — fichier local ou dépôt distant</td></tr>
+    </tbody>
+  </table>
+  <p>Toutes les trois partagent deux fichiers communs à ne jamais dupliquer : <code>geosd-themes.js</code> (configuration des thématiques, généré depuis le CSV) et <code>geosd-common.css</code> (apparence).</p>
+  <div class="note"><strong>Les fichiers doivent rester dans le même dossier.</strong></div>
+</section>
+
+<section id="fichiers">
+  <h2>Fichiers du projet</h2>
+  <table>
+    <thead><tr><th>Fichier</th><th>Rôle</th><th>À éditer ?</th></tr></thead>
+    <tbody>
+      <tr><td><code>geosd-admin.html</code></td><td>Application desktop administrateur</td><td>Non</td></tr>
+      <tr><td><code>geosd-terrain-saisie.html</code></td><td>Application terrain — saisie</td><td>Non</td></tr>
+      <tr><td><code>geosd-terrain-consultation.html</code></td><td>Application terrain — consultation</td><td>Éventuellement, pour <code>DEPOT_URL</code></td></tr>
+      <tr><td><code>geosd-common.css</code></td><td>Apparence commune aux 3 versions</td><td>Non</td></tr>
+      <tr><td><code>geosd-themes.js</code></td><td>Config. des thématiques (généré) — ne pas éditer à la main</td><td>Non</td></tr>
+      <tr><td><code>modele-formulaires.csv</code></td><td>Modèle de champs par thématique — source de vérité</td><td><strong>Oui</strong></td></tr>
+      <tr><td><code>generate_themes.py</code></td><td>Régénère <code>geosd-themes.js</code> à partir du CSV</td><td>Non</td></tr>
+      <tr><td><code>*.geojson</code></td><td>Données saisies</td><td>Non manuellement</td></tr>
+      <tr><td><code>JOURNAL_DECISIONS.md</code></td><td>Historique des arbitrages et de leur raison d'être</td><td>Ajouter une entrée si nouvelle décision structurante</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="modele">
+  <h2>Modifier le modèle de champs</h2>
+  <p>Une ligne du CSV = un champ. Cette régénération met à jour les <strong>3 applications en un seul lancement</strong>.</p>
+  <ol>
+    <li>Éditer <code>modele-formulaires.csv</code> (Excel, Google Sheets, VS Code...).</li>
+    <li>Dans un terminal, se placer dans le dossier du projet, puis :
+      <pre><code>python3 generate_themes.py</code></pre>
+    </li>
+    <li>Vérifier le message <code>OK — N thématique(s) écrites dans geosd-themes.js (partagé par les 3 versions)</code>.</li>
+    <li>Recharger les pages ouvertes dans le navigateur.</li>
+  </ol>
+</section>
+
+<section id="tableau">
+  <h2>Tableau de données (geosd-admin.html)</h2>
+  <p>Bouton <strong>« Tableau »</strong> dans l'en-tête : liste tous les points avec leurs valeurs complètes — thématique, sous-type, les 7 champs communs (commune, date, heure, auteur signalement, auteur faits, commentaire, fiabilité, détectés automatiquement), une colonne « Détails spécifiques » pour les champs propres à chaque thématique, et les coordonnées.</p>
+  <div class="note">Respecte les filtres actifs (contrairement aux statistiques, qui affichent toujours tout) — utile pour croiser une recherche/filtre avec un export ciblé.</div>
+  <ul>
+    <li>Tri par date, thématique ou commune.</li>
+    <li>Actions directement depuis chaque ligne : <strong>Localiser</strong> (centre la carte et ouvre le point), <strong>Modifier</strong>, <strong>Supprimer</strong>.</li>
+    <li><strong>« Exporter en CSV (Excel) »</strong> : fichier ouvrable directement dans Excel (accents corrects). Pas un <code>.xlsx</code> natif — volontairement, pour ne pas ajouter de dépendance externe (SheetJS) au projet.</li>
+  </ul>
+</section>
+
+<section id="stats">
+  <h2>Statistiques (geosd-admin.html)</h2>
+  <p>Bouton <strong>« Statistiques »</strong> dans l'en-tête : histogramme (points par thématique et par mois, couleurs identiques à la carte) et tableau détaillé avec totaux par ligne/colonne, plus export CSV.</p>
+  <p>Toujours calculé sur l'ensemble du fichier, sans tenir compte des filtres actifs sur la carte. Aucune bibliothèque externe — graphique en SVG généré à la volée. Les thématiques ajoutées via le CSV apparaissent automatiquement.</p>
+</section>
+
+<section id="modifier">
+  <h2>Modifier un point existant</h2>
+  <p>Sur <code>geosd-admin.html</code> et <code>geosd-terrain-saisie.html</code>, cliquer sur un point puis <strong>« Modifier »</strong> dans le popup rouvre le formulaire pré-rempli avec ses valeurs actuelles.</p>
+  <div class="warn">La position géographique du point n'est volontairement pas modifiable depuis ce formulaire — pour déplacer un point, le supprimer et le ressaisir au bon endroit.</div>
+</section>
+
+<section id="workflow">
+  <h2>Workflow terrain → bureau</h2>
+  <ol>
+    <li><strong>Sur la tablette</strong> (<code>geosd-terrain-saisie.html</code>) : facultatif, charger le fichier central existant via « Charger points existants » pour un contexte visuel (points gris, non modifiables). Saisir les nouveaux points normalement.</li>
+    <li><strong>Après chaque point</strong> : un panneau propose « Envoyer par mail » ou « Partager » (fichier <code>.geojson</code> joint via le partage natif Android).</li>
+    <li><strong>En fin de tournée</strong>, « Exporter tout » télécharge un fichier de secours avec tous les points de la session.</li>
+    <li><strong>Au bureau</strong> (<code>geosd-admin.html</code>) : « Intégrer un envoi terrain » — sélection multiple possible, doublons ignorés automatiquement (même identifiant).</li>
+  </ol>
+</section>
+
+<section id="depot">
+  <h2>Consultation et mise à jour du fichier de référence</h2>
+  <p><strong>Protocole retenu :</strong> les agents étant responsables du contenu de leur matériel professionnel, aucun mécanisme d'authentification distant n'est nécessaire. Mise à jour par <strong>copie manuelle à la demande</strong> :</p>
+  <ol>
+    <li>Le fichier central à jour est disponible sur le dossier réseau de l'entreprise.</li>
+    <li>À intervalle régulier, copier ce fichier sur la tablette.</li>
+    <li>Dans la version terrain, bouton « Charger un fichier » → sélection du fichier copié.</li>
+  </ol>
+  <p><strong>Indicateur de fraîcheur automatique :</strong> chaque sauvegarde par <code>geosd-admin.html</code> horodate le fichier (<code>updated_at</code>). Les versions terrain affichent cet âge, avec alerte au-delà de <strong>30 jours</strong> (réglable dans <code>geosd-themes.js</code>, constante <code>STALE_AFTER_DAYS</code>).</p>
+  <p>Le mécanisme d'URL de dépôt distant (<code>DEPOT_URL</code>) reste dans le code, désactivé — à réactiver seulement si le protocole manuel s'avère insuffisant.</p>
+</section>
+
+<section id="raccourcis">
+  <h2>Installer des raccourcis sur la tablette</h2>
+  <ol>
+    <li>Ouvrir <code>geosd-terrain-saisie.html</code> dans Chrome.</li>
+    <li>Menu Chrome (⋮) → <strong>« Ajouter à l'écran d'accueil »</strong>.</li>
+    <li>Répéter avec <code>geosd-terrain-consultation.html</code>.</li>
+  </ol>
+</section>
+
+<section id="archi">
+  <h2>Architecture technique</h2>
+  <ul>
+    <li><strong>Aucun serveur applicatif.</strong> <code>geosd-admin.html</code> écrit directement sur disque via la File System Access API (Chrome/Edge/Opera desktop uniquement).</li>
+    <li><strong>Format des données :</strong> GeoJSON standard, réutilisable dans QGIS.</li>
+    <li><strong>Fonds de carte :</strong> OpenStreetMap et IGN Géoplateforme (<code>data.geopf.fr</code>, WMTS ouvert, sans clé).</li>
+  </ul>
+</section>
+
+<section id="limites">
+  <h2>Limitations connues</h2>
+  <ul>
+    <li><strong><code>geosd-admin.html</code> : Chrome/Edge/Opera desktop uniquement.</strong> Pas de version mobile prévue.</li>
+    <li><strong>Android ment parfois sur son support de l'écriture de fichiers</strong> — les versions terrain n'utilisent donc jamais cette API, indépendamment de ce que le navigateur prétend supporter.</li>
+    <li><code>mailto</code> a une limite de longueur (~2000 caractères) — utiliser « Partager » pour un commentaire long.</li>
+    <li>Le partage de fichier (<code>navigator.share</code>) dépend des applications installées — à tester sur le matériel cible.</li>
+    <li>Pas de fusion automatique en cas de modification simultanée du fichier central par deux personnes.</li>
+  </ul>
+</section>
+
+<section id="depannage">
+  <h2>Dépannage</h2>
+  <table>
+    <thead><tr><th>Symptôme</th><th>Cause probable</th><th>Solution</th></tr></thead>
+    <tbody>
+      <tr><td><code>L is not defined</code> / carte blanche</td><td>Pas d'accès internet, ou aperçu sandboxé</td><td>Ouvrir directement (double-clic), connexion active</td></tr>
+      <tr><td><code>Cross origin sub frames aren't allowed...</code></td><td>Fichier ouvert dans une iframe/aperçu</td><td>Ouvrir en onglet direct</td></tr>
+      <tr><td><code>User activation is required...</code> (Android)</td><td>Implémentation Android non fiable</td><td>Utiliser les versions terrain, pas l'admin, sur tablette</td></tr>
+      <tr><td>Marqueurs THEMES_START/END introuvables</td><td><code>generate_themes.py</code> ne trouve pas <code>geosd-themes.js</code></td><td>Vérifier que tous les fichiers sont dans le même dossier</td></tr>
+      <tr><td>Point mail incomplet</td><td>Corps du mail tronqué (limite <code>mailto</code>)</td><td>Réessayer avec « Partager »</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="sauvegarde">
+  <h2>Sauvegarde des données</h2>
+  <p>Le fichier <code>.geojson</code> central est la donnée la plus précieuse du projet (le reste est régénérable). Faire une copie datée régulièrement, avant toute séance d'intégration importante.</p>
+</section>
+
+<section id="evolution">
+  <h2>Pistes d'évolution</h2>
+  <ul>
+    <li>Champs spécifiques restants pour Phytosanitaires, VTM, FSC, Habitat/espèces protégées, Cueillette.</li>
+    <li>Sous-type « Eau &gt; RCE » à définir.</li>
+    <li>Suivi de l'évolution du support Android de la File System Access API.</li>
+  </ul>
+</section>
+
+<footer class="doc-footer">
+  GeoSD — documentation générée le 12/08/2026. Source de vérité complémentaire : JOURNAL_DECISIONS.md (le pourquoi des choix).
+</footer>
+
+</div>
+</body>
+</html>

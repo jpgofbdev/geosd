@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoSD — Consultation terrain</title>
+<link rel="stylesheet" href="geosd-common.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="mark">CONSULT.</span>
+    <h1>GeoSD</h1>
+  </div>
+  <div class="toolbar">
+    <span id="status">Aucun point chargé</span>
+    <button id="btn-toggle-filters">Filtres</button>
+    <button id="btn-load-local" class="primary">Charger un fichier</button>
+    <input type="file" id="input-load-local" accept=".geojson,.json" style="display:none;">
+    <button id="btn-reload" style="display:none;">Recharger le dépôt</button>
+  </div>
+</header>
+
+<div id="banner" class="banner show">
+  Version consultation — lecture seule, aucune saisie possible ici (utilisez GeoSD Terrain Saisie
+  pour ajouter des points). Protocole : récupérer le fichier à jour depuis le dossier réseau, puis
+  « Charger un fichier » ici.
+</div>
+<div id="freshness-banner" class="banner"></div>
+<div id="load-error" class="banner" style="background:#f6d6d0;border-color:#c0392b;color:#7b241c;">
+  Impossible de charger la bibliothèque cartographique. Vérifiez votre connexion, puis rechargez.
+</div>
+
+<div id="map-wrap">
+  <div id="map"></div>
+
+  <aside id="filters-panel">
+    <div class="filters-header">
+      <h2>Filtres</h2>
+      <button id="btn-close-filters" aria-label="Fermer">✕</button>
+    </div>
+    <div class="filters-body">
+      <div class="filters-section">
+        <span class="filters-label">Recherche libre</span>
+        <input type="text" id="filter-search" class="filters-search" placeholder="Commune, commentaire, auteur…">
+      </div>
+      <div class="filters-section">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span class="filters-label">Thématiques</span>
+          <div class="theme-check-actions">
+            <button type="button" id="btn-check-all">Tout cocher</button>
+            <button type="button" id="btn-check-none">Tout décocher</button>
+          </div>
+        </div>
+        <div class="theme-check-list" id="theme-check-list"></div>
+      </div>
+      <div class="filters-section">
+        <span class="filters-label">Période (date du signalement)</span>
+        <div class="filters-daterange">
+          <input type="date" id="filter-date-from">
+          <span style="color:var(--ink-soft); font-size:12px;">→</span>
+          <input type="date" id="filter-date-to">
+        </div>
+      </div>
+      <div class="filters-section">
+        <span class="filters-label">Fiabilité minimale</span>
+        <select id="filter-fiabilite" class="filters-select">
+          <option value="">Toutes</option>
+          <option value="1">≥ 1</option>
+          <option value="2">≥ 2</option>
+          <option value="3">≥ 3</option>
+          <option value="4">≥ 4</option>
+          <option value="5">= 5</option>
+        </select>
+      </div>
+    </div>
+    <div class="filters-footer">
+      <span id="filters-count">0 / 0 points affichés</span>
+      <button id="btn-reset-filters">Réinitialiser</button>
+    </div>
+  </aside>
+</div>
+
+<script src="geosd-themes.js"></script>
+<script>
+/* =========================================================
+   URL DU DÉPÔT (optionnel) — le protocole retenu est la copie manuelle
+   depuis le dossier réseau ("Charger un fichier"), avec le bandeau de
+   fraîcheur ci-dessous comme garde-fou. Cette URL reste disponible si un
+   hébergement distant est mis en place plus tard, mais n'est pas
+   nécessaire pour l'usage courant. Laisser vide sinon.
+   Exemple : const DEPOT_URL = 'https://exemple.org/points.geojson';
+   ========================================================= */
+const DEPOT_URL = '';
+
+(async function initApp() {
+  const ok = await loadLeaflet();
+  if (!ok) { document.getElementById('load-error').classList.add('show'); return; }
+  runApp();
+})();
+
+function runApp() {
+
+const statusEl = document.getElementById('status');
+const freshnessBanner = document.getElementById('freshness-banner');
+if (DEPOT_URL) document.getElementById('btn-reload').style.display = '';
+
+function showFreshness(updatedAtIso) {
+  const info = describeFileAge(updatedAtIso);
+  freshnessBanner.textContent = info.text;
+  freshnessBanner.className = 'banner show';
+  if (info.level === 'stale') {
+    freshnessBanner.style.background = '#f6d6d0';
+    freshnessBanner.style.borderColor = '#c0392b';
+    freshnessBanner.style.color = '#7b241c';
+  } else if (info.level === 'ok') {
+    freshnessBanner.style.background = '#e3ede8';
+    freshnessBanner.style.borderColor = 'var(--accent)';
+    freshnessBanner.style.color = 'var(--accent-dark)';
+  } else {
+    freshnessBanner.style.background = '#f3e4c6';
+    freshnessBanner.style.borderColor = '#c9a768';
+    freshnessBanner.style.color = '#6b4a13';
+  }
+}
+
+let geojson = { type: 'FeatureCollection', features: [] };
+let markersById = {};
+
+const map = L.map('map').setView([48.8566, 2.3522], 13);
+addBaseLayerSwitcher(map);
+const markersLayer = L.layerGroup().addTo(map);
+
+function setStatus(text, kind) { statusEl.textContent = text; statusEl.className = kind || ''; }
+
+/* ---- Marqueurs : toujours en lecture seule ici ---- */
+function addMarker(feature) {
+  const [lng, lat] = feature.geometry.coordinates;
+  const marker = L.circleMarker([lat, lng], markerStyle(feature));
+  marker.featureId = feature.id;
+  marker.bindPopup(popupHtml(feature, { canDelete: false }));
+  marker.addTo(markersLayer);
+  markersById[feature.id] = marker;
+}
+function renderAllMarkers() {
+  markersLayer.clearLayers();
+  markersById = {};
+  geojson.features.forEach(addMarker);
+  if (geojson.features.length) {
+    const group = L.featureGroup(Object.values(markersById));
+    map.fitBounds(group.getBounds().pad(0.2));
+  }
+  buildThemeCheckList();
+  applyFilters();
+  setStatus(geojson.features.length + ' point(s) chargé(s)', 'ok');
+}
+
+/* ---- Panneau de filtres ---- */
+const filtersPanel = document.getElementById('filters-panel');
+const themeCheckList = document.getElementById('theme-check-list');
+const filterSearch = document.getElementById('filter-search');
+const filterDateFrom = document.getElementById('filter-date-from');
+const filterDateTo = document.getElementById('filter-date-to');
+const filterFiabilite = document.getElementById('filter-fiabilite');
+const filtersCountEl = document.getElementById('filters-count');
+
+document.getElementById('btn-toggle-filters').addEventListener('click', () => filtersPanel.classList.toggle('show'));
+document.getElementById('btn-close-filters').addEventListener('click', () => filtersPanel.classList.remove('show'));
+
+function buildThemeCheckList() {
+  const counts = {}; THEME_KEYS.forEach(k => counts[k] = 0);
+  geojson.features.forEach(f => { if (counts[f.properties.theme] !== undefined) counts[f.properties.theme]++; });
+  const previousChecked = {};
+  themeCheckList.querySelectorAll('input[type=checkbox]').forEach(cb => previousChecked[cb.value] = cb.checked);
+  themeCheckList.innerHTML = '';
+  THEME_KEYS.forEach(key => {
+    const row = document.createElement('div'); row.className = 'theme-check-row';
+    const swatch = document.createElement('span'); swatch.className = 'swatch'; swatch.style.background = themeColor(key);
+    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = key; cb.id = 'filter-theme-' + key;
+    cb.checked = previousChecked.hasOwnProperty(key) ? previousChecked[key] : true;
+    cb.addEventListener('change', applyFilters);
+    const label = document.createElement('label'); label.setAttribute('for', cb.id); label.textContent = THEMES[key].label;
+    const count = document.createElement('span'); count.className = 'count'; count.textContent = counts[key];
+    row.append(swatch, cb, label, count);
+    themeCheckList.appendChild(row);
+  });
+}
+document.getElementById('btn-check-all').addEventListener('click', () => {
+  themeCheckList.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = true); applyFilters();
+});
+document.getElementById('btn-check-none').addEventListener('click', () => {
+  themeCheckList.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false); applyFilters();
+});
+document.getElementById('btn-reset-filters').addEventListener('click', () => {
+  filterSearch.value = ''; filterDateFrom.value = ''; filterDateTo.value = ''; filterFiabilite.value = '';
+  themeCheckList.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = true);
+  applyFilters();
+});
+[filterSearch].forEach(el => el.addEventListener('input', applyFilters));
+[filterDateFrom, filterDateTo, filterFiabilite].forEach(el => el.addEventListener('change', applyFilters));
+
+function featureMatchesFilters(feature) {
+  const props = feature.properties;
+  const cb = document.getElementById('filter-theme-' + props.theme);
+  if (cb && !cb.checked) return false;
+  const query = normalizeText(filterSearch.value.trim());
+  if (query && !normalizeText(Object.values(props).join(' ')).includes(query)) return false;
+  if (props.date) {
+    if (filterDateFrom.value && props.date < filterDateFrom.value) return false;
+    if (filterDateTo.value && props.date > filterDateTo.value) return false;
+  } else if (filterDateFrom.value || filterDateTo.value) return false;
+  if (filterFiabilite.value) {
+    const min = parseInt(filterFiabilite.value, 10);
+    const val = parseInt(props.fiabilite, 10);
+    if (isNaN(val) || val < min) return false;
+  }
+  return true;
+}
+function applyFilters() {
+  let shown = 0;
+  geojson.features.forEach(feature => {
+    const marker = markersById[feature.id];
+    if (!marker) return;
+    const match = featureMatchesFilters(feature);
+    const onMap = markersLayer.hasLayer(marker);
+    if (match && !onMap) markersLayer.addLayer(marker);
+    if (!match && onMap) markersLayer.removeLayer(marker);
+    if (match) shown++;
+  });
+  filtersCountEl.textContent = `${shown} / ${geojson.features.length} points affichés`;
+}
+buildThemeCheckList();
+
+/* ---- Chargement : fichier local (protocole recommandé) ou dépôt distant (optionnel) ---- */
+async function loadFromDepot() {
+  if (!DEPOT_URL) { setStatus('Aucune URL de dépôt configurée', 'err'); return; }
+  setStatus('Chargement du dépôt…');
+  try {
+    const res = await fetch(DEPOT_URL, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    geojson = data.features ? data : { type: 'FeatureCollection', features: [] };
+    renderAllMarkers();
+    showFreshness(geojson.updated_at);
+  } catch (err) {
+    setStatus('Erreur de chargement du dépôt : ' + err.message, 'err');
+  }
+}
+document.getElementById('btn-reload').addEventListener('click', loadFromDepot);
+
+document.getElementById('btn-load-local').addEventListener('click', () => {
+  document.getElementById('input-load-local').click();
+});
+document.getElementById('input-load-local').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    geojson = data.features ? data : { type: 'FeatureCollection', features: [] };
+    renderAllMarkers();
+    showFreshness(geojson.updated_at);
+  } catch (err) { setStatus('Erreur de lecture : ' + err.message, 'err'); }
+  e.target.value = '';
+});
+
+if (DEPOT_URL) loadFromDepot();
+
+}
+</script>
+</body>
+</html>

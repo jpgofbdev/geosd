@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoSD — Administration</title>
+<link rel="stylesheet" href="geosd-common.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="mark">ADMIN</span>
+    <h1>GeoSD</h1>
+  </div>
+  <div class="toolbar">
+    <span id="status">Aucun fichier ouvert</span>
+    <button id="btn-toggle-filters">Filtres</button>
+    <button id="btn-stats">Statistiques</button>
+    <button id="btn-table">Tableau</button>
+    <button id="btn-open">Ouvrir le fichier central</button>
+    <button id="btn-new" class="primary">Créer un nouveau fichier</button>
+    <button id="btn-merge-field">Intégrer un envoi terrain</button>
+    <input type="file" id="input-merge-field" accept=".geojson,.json" multiple style="display:none;">
+  </div>
+</header>
+
+<div id="banner" class="banner">
+  Ce navigateur ne supporte pas l'écriture directe de fichiers. Utilisez Chrome, Edge ou Opera
+  sur ordinateur (pas de version mobile pour l'administration — voir GeoSD Terrain).
+</div>
+<div id="load-error" class="banner" style="background:#f6d6d0;border-color:#c0392b;color:#7b241c;">
+  Impossible de charger la bibliothèque cartographique. Vérifiez votre connexion, puis rechargez.
+  Ouvrez ce fichier directement (double-clic), pas dans un aperçu intégré.
+</div>
+
+<div id="map-wrap">
+  <div id="map"></div>
+
+  <aside id="filters-panel">
+    <div class="filters-header">
+      <h2>Filtres</h2>
+      <button id="btn-close-filters" aria-label="Fermer">✕</button>
+    </div>
+    <div class="filters-body">
+      <div class="filters-section">
+        <span class="filters-label">Recherche libre</span>
+        <input type="text" id="filter-search" class="filters-search" placeholder="Commune, commentaire, auteur…">
+      </div>
+      <div class="filters-section">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span class="filters-label">Thématiques</span>
+          <div class="theme-check-actions">
+            <button type="button" id="btn-check-all">Tout cocher</button>
+            <button type="button" id="btn-check-none">Tout décocher</button>
+          </div>
+        </div>
+        <div class="theme-check-list" id="theme-check-list"></div>
+      </div>
+      <div class="filters-section">
+        <span class="filters-label">Période (date du signalement)</span>
+        <div class="filters-daterange">
+          <input type="date" id="filter-date-from">
+          <span style="color:var(--ink-soft); font-size:12px;">→</span>
+          <input type="date" id="filter-date-to">
+        </div>
+      </div>
+      <div class="filters-section">
+        <span class="filters-label">Fiabilité minimale</span>
+        <select id="filter-fiabilite" class="filters-select">
+          <option value="">Toutes</option>
+          <option value="1">≥ 1</option>
+          <option value="2">≥ 2</option>
+          <option value="3">≥ 3</option>
+          <option value="4">≥ 4</option>
+          <option value="5">= 5</option>
+        </select>
+      </div>
+    </div>
+    <div class="filters-footer">
+      <span id="filters-count">0 / 0 points affichés</span>
+      <button id="btn-reset-filters">Réinitialiser</button>
+    </div>
+  </aside>
+</div>
+
+<!-- Modale tableau de données -->
+<div class="overlay" id="table-overlay">
+  <div class="modal modal-wide">
+    <h2>Tableau des points</h2>
+    <p class="coords">Respecte les filtres actuellement actifs (thématique, période, fiabilité, recherche) — ouvrez le panneau Filtres pour affiner avant de consulter ou d'exporter.</p>
+    <div class="table-toolbar">
+      <span id="table-count">0 point(s) affiché(s)</span>
+      <select id="table-sort">
+        <option value="date-desc">Date (récent → ancien)</option>
+        <option value="date-asc">Date (ancien → récent)</option>
+        <option value="theme">Thématique</option>
+        <option value="commune">Commune</option>
+      </select>
+    </div>
+    <div class="stats-table-wrap" style="max-height:50vh;">
+      <table class="stats-table" id="data-table"></table>
+    </div>
+    <div class="modal-actions">
+      <button type="button" id="btn-table-export">Exporter en CSV (Excel)</button>
+      <button type="button" id="btn-table-close">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modale statistiques -->
+<div class="overlay" id="stats-overlay">
+  <div class="modal modal-wide">
+    <h2>Statistiques</h2>
+    <p class="coords">Nombre de points par thématique et par mois — toujours calculé sur l'ensemble du fichier, indépendamment des filtres actifs.</p>
+    <div id="stats-chart"></div>
+    <div class="stats-legend" id="stats-legend"></div>
+    <div class="stats-table-wrap">
+      <table class="stats-table" id="stats-table"></table>
+    </div>
+    <div class="modal-actions">
+      <button type="button" id="btn-stats-export">Exporter en CSV</button>
+      <button type="button" id="btn-stats-close">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modale de saisie / correction d'un point -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2>Point</h2>
+    <p class="coords" id="coords-label"></p>
+    <form id="point-form">
+      <div class="field">
+        <label for="f-theme">Thématique</label>
+        <select id="f-theme"></select>
+      </div>
+      <div class="field" id="subtype-field" style="display:none">
+        <label for="f-subtype">Sous-type</label>
+        <select id="f-subtype"></select>
+      </div>
+      <div id="fields-container"></div>
+      <div class="modal-actions">
+        <button type="button" id="btn-cancel">Annuler</button>
+        <button type="submit" class="primary">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="geosd-themes.js"></script>
+<script>
+(async function initApp() {
+  const ok = await loadLeaflet();
+  if (!ok) { document.getElementById('load-error').classList.add('show'); return; }
+  runApp();
+})();
+
+function runApp() {
+
+const statusEl = document.getElementById('status');
+const bannerEl = document.getElementById('banner');
+const overlayEl = document.getElementById('overlay');
+const fieldsContainer = document.getElementById('fields-container');
+const coordsLabel = document.getElementById('coords-label');
+const pointForm = document.getElementById('point-form');
+const themeSelect = document.getElementById('f-theme');
+const subtypeField = document.getElementById('subtype-field');
+const subtypeSelect = document.getElementById('f-subtype');
+
+const supported = !!window.showSaveFilePicker;
+if (!supported) {
+  bannerEl.classList.add('show');
+  document.getElementById('btn-open').disabled = true;
+  document.getElementById('btn-new').disabled = true;
+  document.getElementById('btn-merge-field').disabled = true;
+}
+
+let fileHandle = null;
+let geojson = { type: 'FeatureCollection', features: [] };
+let markersById = {};
+let pendingLatLng = null;
+let editingFeature = null;
+const modalTitle = document.querySelector('#overlay h2');
+
+const map = L.map('map').setView([48.8566, 2.3522], 13);
+addBaseLayerSwitcher(map);
+const markersLayer = L.layerGroup().addTo(map);
+
+function setStatus(text, kind) { statusEl.textContent = text; statusEl.className = kind || ''; }
+
+/* ---- Formulaire thématique / sous-type ---- */
+function populateThemeSelect() {
+  themeSelect.innerHTML = '';
+  Object.keys(THEMES).forEach(key => {
+    const o = document.createElement('option');
+    o.value = key; o.textContent = THEMES[key].label;
+    themeSelect.appendChild(o);
+  });
+}
+function onThemeChange() {
+  const theme = THEMES[themeSelect.value];
+  if (theme && theme.subtypes) {
+    subtypeField.style.display = '';
+    subtypeSelect.innerHTML = '';
+    Object.keys(theme.subtypes).forEach(key => {
+      const o = document.createElement('option');
+      o.value = key; o.textContent = theme.subtypes[key].label;
+      subtypeSelect.appendChild(o);
+    });
+  } else {
+    subtypeField.style.display = 'none';
+    subtypeSelect.innerHTML = '';
+  }
+  renderFormFields();
+}
+themeSelect.addEventListener('change', onThemeChange);
+subtypeSelect.addEventListener('change', renderFormFields);
+
+function renderFormFields() {
+  const fields = getFieldsFor(themeSelect.value, subtypeSelect.value);
+  fieldsContainer.innerHTML = '';
+  fields.forEach(f => {
+    const wrap = document.createElement('div');
+    wrap.className = 'field';
+    const label = document.createElement('label');
+    label.textContent = f.label + (f.required ? ' *' : '');
+    label.setAttribute('for', 'f-' + f.name);
+    wrap.appendChild(label);
+    let input;
+    if (f.type === 'textarea') input = document.createElement('textarea');
+    else if (f.type === 'select') {
+      input = document.createElement('select');
+      const empty = document.createElement('option');
+      empty.value = ''; empty.textContent = '—';
+      input.appendChild(empty);
+      f.options.forEach(opt => {
+        const o = document.createElement('option'); o.value = opt; o.textContent = opt;
+        input.appendChild(o);
+      });
+    } else { input = document.createElement('input'); input.type = f.type; }
+    input.id = 'f-' + f.name;
+    input.name = f.name;
+    if (f.required) input.required = true;
+    wrap.appendChild(input);
+    fieldsContainer.appendChild(wrap);
+  });
+}
+
+function openModal(latlng, feature) {
+  pendingLatLng = latlng;
+  editingFeature = feature || null;
+  modalTitle.textContent = feature ? 'Modifier le point' : 'Nouveau point';
+  coordsLabel.textContent = `lat ${latlng.lat.toFixed(6)}, lon ${latlng.lng.toFixed(6)}` + (feature ? ' (position conservée)' : '');
+
+  if (feature) themeSelect.value = feature.properties.theme;
+  else themeSelect.selectedIndex = 0;
+  onThemeChange();
+
+  if (feature) {
+    const theme = THEMES[feature.properties.theme];
+    if (theme && theme.subtypes && feature.properties.subtype) {
+      subtypeSelect.value = feature.properties.subtype;
+      renderFormFields();
+    }
+    getFieldsFor(feature.properties.theme, feature.properties.subtype).forEach(f => {
+      const el = document.getElementById('f-' + f.name);
+      if (el) el.value = feature.properties[f.name] || '';
+    });
+  }
+  overlayEl.classList.add('show');
+}
+function closeModal() {
+  overlayEl.classList.remove('show');
+  pointForm.reset();
+  pendingLatLng = null;
+  editingFeature = null;
+}
+document.getElementById('btn-cancel').addEventListener('click', closeModal);
+overlayEl.addEventListener('click', e => { if (e.target === overlayEl) closeModal(); });
+
+map.on('click', e => {
+  if (!fileHandle) { alert("Ouvrez ou créez d'abord le fichier central."); return; }
+  openModal(e.latlng);
+});
+
+pointForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  const themeKey = themeSelect.value;
+  const theme = THEMES[themeKey];
+  const properties = { theme: themeKey };
+  if (theme.subtypes) properties.subtype = subtypeSelect.value;
+  getFieldsFor(themeKey, subtypeSelect.value).forEach(f => {
+    properties[f.name] = document.getElementById('f-' + f.name).value;
+  });
+
+  if (editingFeature) {
+    editingFeature.properties = properties;
+    const marker = markersById[editingFeature.id];
+    if (marker) {
+      marker.setStyle(markerStyle(editingFeature));
+      marker.setPopupContent(popupHtml(editingFeature, { canDelete: true, canEdit: true }));
+    }
+  } else {
+    const feature = {
+      type: 'Feature', id: crypto.randomUUID(),
+      geometry: { type: 'Point', coordinates: [pendingLatLng.lng, pendingLatLng.lat] },
+      properties
+    };
+    geojson.features.push(feature);
+    addMarker(feature);
+  }
+  buildThemeCheckList();
+  applyFilters();
+  closeModal();
+  await saveToFile();
+});
+
+/* ---- Marqueurs ---- */
+function addMarker(feature) {
+  const [lng, lat] = feature.geometry.coordinates;
+  const marker = L.circleMarker([lat, lng], markerStyle(feature));
+  marker.featureId = feature.id;
+  marker.bindPopup(popupHtml(feature, { canDelete: true, canEdit: true }));
+  marker.addTo(markersLayer);
+  markersById[feature.id] = marker;
+}
+map.on('popupopen', e => {
+  const marker = e.popup._source;
+  if (!marker || !marker.featureId) return;
+  const delBtn = e.popup._contentNode.querySelector('.popup-del');
+  if (delBtn) delBtn.onclick = () => deletePoint(marker.featureId);
+  const editBtn = e.popup._contentNode.querySelector('.popup-edit');
+  if (editBtn) editBtn.onclick = () => {
+    map.closePopup();
+    const feature = geojson.features.find(f => f.id === marker.featureId);
+    if (feature) {
+      const [lng, lat] = feature.geometry.coordinates;
+      openModal(L.latLng(lat, lng), feature);
+    }
+  };
+});
+async function deletePoint(id) {
+  geojson.features = geojson.features.filter(f => f.id !== id);
+  const marker = markersById[id];
+  if (marker) { markersLayer.removeLayer(marker); delete markersById[id]; }
+  buildThemeCheckList();
+  applyFilters();
+  await saveToFile();
+}
+function renderAllMarkers() {
+  markersLayer.clearLayers();
+  markersById = {};
+  geojson.features.forEach(addMarker);
+  if (geojson.features.length) {
+    const group = L.featureGroup(Object.values(markersById));
+    map.fitBounds(group.getBounds().pad(0.2));
+  }
+  buildThemeCheckList();
+  applyFilters();
+}
+
+/* ---- Panneau de filtres ---- */
+const filtersPanel = document.getElementById('filters-panel');
+const themeCheckList = document.getElementById('theme-check-list');
+const filterSearch = document.getElementById('filter-search');
+const filterDateFrom = document.getElementById('filter-date-from');
+const filterDateTo = document.getElementById('filter-date-to');
+const filterFiabilite = document.getElementById('filter-fiabilite');
+const filtersCountEl = document.getElementById('filters-count');
+
+document.getElementById('btn-toggle-filters').addEventListener('click', () => filtersPanel.classList.toggle('show'));
+document.getElementById('btn-close-filters').addEventListener('click', () => filtersPanel.classList.remove('show'));
+
+function buildThemeCheckList() {
+  const counts = {}; THEME_KEYS.forEach(k => counts[k] = 0);
+  geojson.features.forEach(f => { if (counts[f.properties.theme] !== undefined) counts[f.properties.theme]++; });
+  const previousChecked = {};
+  themeCheckList.querySelectorAll('input[type=checkbox]').forEach(cb => previousChecked[cb.value] = cb.checked);
+  themeCheckList.innerHTML = '';
+  THEME_KEYS.forEach(key => {
+    const row = document.createElement('div'); row.className = 'theme-check-row';
+    const swatch = document.createElement('span'); swatch.className = 'swatch'; swatch.style.background = themeColor(key);
+    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = key; cb.id = 'filter-theme-' + key;
+    cb.checked = previousChecked.hasOwnProperty(key) ? previousChecked[key] : true;
+    cb.addEventListener('change', applyFilters);
+    const label = document.createElement('label'); label.setAttribute('for', cb.id); label.textContent = THEMES[key].label;
+    const count = document.createElement('span'); count.className = 'count'; count.textContent = counts[key];
+    row.append(swatch, cb, label, count);
+    themeCheckList.appendChild(row);
+  });
+}
+document.getElementById('btn-check-all').addEventListener('click', () => {
+  themeCheckList.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = true); applyFilters();
+});
+document.getElementById('btn-check-none').addEventListener('click', () => {
+  themeCheckList.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = false); applyFilters();
+});
+document.getElementById('btn-reset-filters').addEventListener('click', () => {
+  filterSearch.value = ''; filterDateFrom.value = ''; filterDateTo.value = ''; filterFiabilite.value = '';
+  themeCheckList.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = true);
+  applyFilters();
+});
+[filterSearch].forEach(el => el.addEventListener('input', applyFilters));
+[filterDateFrom, filterDateTo, filterFiabilite].forEach(el => el.addEventListener('change', applyFilters));
+
+function featureMatchesFilters(feature) {
+  const props = feature.properties;
+  const cb = document.getElementById('filter-theme-' + props.theme);
+  if (cb && !cb.checked) return false;
+  const query = normalizeText(filterSearch.value.trim());
+  if (query && !normalizeText(Object.values(props).join(' ')).includes(query)) return false;
+  if (props.date) {
+    if (filterDateFrom.value && props.date < filterDateFrom.value) return false;
+    if (filterDateTo.value && props.date > filterDateTo.value) return false;
+  } else if (filterDateFrom.value || filterDateTo.value) return false;
+  if (filterFiabilite.value) {
+    const min = parseInt(filterFiabilite.value, 10);
+    const val = parseInt(props.fiabilite, 10);
+    if (isNaN(val) || val < min) return false;
+  }
+  return true;
+}
+function applyFilters() {
+  let shown = 0;
+  geojson.features.forEach(feature => {
+    const marker = markersById[feature.id];
+    if (!marker) return;
+    const match = featureMatchesFilters(feature);
+    const onMap = markersLayer.hasLayer(marker);
+    if (match && !onMap) markersLayer.addLayer(marker);
+    if (!match && onMap) markersLayer.removeLayer(marker);
+    if (match) shown++;
+  });
+  filtersCountEl.textContent = `${shown} / ${geojson.features.length} points affichés`;
+}
+
+populateThemeSelect();
+buildThemeCheckList();
+
+/* ---- Fichier central : ouverture, création, sauvegarde ---- */
+const pickerOptions = { types: [{ description: 'GeoJSON', accept: { 'application/geo+json': ['.geojson', '.json'] } }] };
+
+document.getElementById('btn-new').addEventListener('click', async () => {
+  try {
+    fileHandle = await window.showSaveFilePicker({ suggestedName: 'points.geojson', ...pickerOptions });
+    geojson = { type: 'FeatureCollection', features: [] };
+    renderAllMarkers();
+    await saveToFile();
+    setStatus('Fichier créé : ' + fileHandle.name, 'ok');
+  } catch (err) { if (err.name !== 'AbortError') setStatus('Erreur : ' + err.message, 'err'); }
+});
+
+document.getElementById('btn-open').addEventListener('click', async () => {
+  try {
+    const [handle] = await window.showOpenFilePicker(pickerOptions);
+    const perm = await handle.requestPermission({ mode: 'readwrite' });
+    if (perm !== 'granted') { setStatus("Permission d'écriture refusée", 'err'); return; }
+    fileHandle = handle;
+    const file = await fileHandle.getFile();
+    const text = await file.text();
+    geojson = text.trim() ? JSON.parse(text) : { type: 'FeatureCollection', features: [] };
+    if (!geojson.features) geojson.features = [];
+    renderAllMarkers();
+    setStatus('Fichier ouvert : ' + fileHandle.name + ' (' + geojson.features.length + ' points)', 'ok');
+  } catch (err) { if (err.name !== 'AbortError') setStatus('Erreur : ' + err.message, 'err'); }
+});
+
+async function saveToFile() {
+  if (!fileHandle) return;
+  try {
+    geojson.updated_at = new Date().toISOString();
+    const writable = await fileHandle.createWritable();
+    await writable.write(JSON.stringify(geojson, null, 2));
+    await writable.close();
+    setStatus('Sauvegardé — ' + fileHandle.name + ' (' + geojson.features.length + ' points)', 'ok');
+  } catch (err) { setStatus('Erreur de sauvegarde : ' + err.message, 'err'); }
+}
+
+/* ---- Intégration des envois terrain (mail joint, partage, export groupé...) ---- */
+document.getElementById('btn-merge-field').addEventListener('click', () => {
+  if (!fileHandle) { alert("Ouvrez ou créez d'abord le fichier central avant d'intégrer un envoi terrain."); return; }
+  document.getElementById('input-merge-field').click();
+});
+document.getElementById('input-merge-field').addEventListener('change', async (e) => {
+  const files = Array.from(e.target.files || []);
+  if (!files.length) return;
+  let totalAdded = 0, totalSkipped = 0;
+  const existingIds = new Set(geojson.features.map(f => f.id));
+  for (const file of files) {
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      const incoming = Array.isArray(data.features) ? data.features : (data.type === 'Feature' ? [data] : []);
+      incoming.forEach(f => {
+        if (!f.id) f.id = crypto.randomUUID();
+        if (!existingIds.has(f.id)) {
+          if (f.properties) delete f.properties.__ref;
+          geojson.features.push(f);
+          existingIds.add(f.id);
+          totalAdded++;
+        } else { totalSkipped++; }
+      });
+    } catch (err) { console.error('Fichier ignoré (' + file.name + ') :', err.message); }
+  }
+  renderAllMarkers();
+  await saveToFile();
+  setStatus(totalAdded + ' point(s) intégré(s)' + (totalSkipped ? `, ${totalSkipped} déjà présent(s) ignoré(s)` : '') + ' — ' + fileHandle.name, 'ok');
+  e.target.value = '';
+});
+
+/* =========================================================
+   STATISTIQUES : nombre de points par thématique et par mois.
+   Toujours calculé sur l'ensemble du fichier (pas les filtres actifs).
+   Pas de bibliothèque de graphique externe — un simple histogramme SVG
+   généré à la main, pour rester léger et sans dépendance réseau.
+   ========================================================= */
+const statsOverlay = document.getElementById('stats-overlay');
+
+function computeStats() {
+  const counts = {}; // counts[themeKey][yyyy-mm] = n
+  THEME_KEYS.forEach(k => counts[k] = {});
+  const monthsSet = new Set();
+  geojson.features.forEach(f => {
+    if (f.properties.__ref) return;
+    const themeKey = f.properties.theme;
+    if (!counts[themeKey]) counts[themeKey] = {}; // thématique retirée du modèle depuis, on l'affiche quand même
+    const ym = (f.properties.date && /^\d{4}-\d{2}/.test(f.properties.date)) ? f.properties.date.slice(0, 7) : 'Sans date';
+    monthsSet.add(ym);
+    counts[themeKey][ym] = (counts[themeKey][ym] || 0) + 1;
+  });
+  const months = Array.from(monthsSet).filter(m => m !== 'Sans date').sort();
+  if (monthsSet.has('Sans date')) months.push('Sans date');
+  return { counts, months };
+}
+
+function renderStatsChart(counts, months) {
+  const container = document.getElementById('stats-chart');
+  if (!months.length) { container.innerHTML = '<p class="coords">Aucun point à afficher.</p>'; return; }
+
+  const barWidth = 28, gap = 16, marginLeft = 34, marginBottom = 56, marginTop = 16;
+  const chartHeight = 200;
+  const width = marginLeft + months.length * (barWidth + gap) + 10;
+  const height = marginTop + chartHeight + marginBottom;
+
+  const monthTotals = months.map(m => THEME_KEYS.reduce((s, k) => s + (counts[k]?.[m] || 0), 0));
+  const maxTotal = Math.max(1, ...monthTotals);
+
+  let bars = '';
+  months.forEach((m, i) => {
+    const x = marginLeft + i * (barWidth + gap);
+    let yCursor = marginTop + chartHeight;
+    THEME_KEYS.forEach(themeKey => {
+      const val = counts[themeKey]?.[m] || 0;
+      if (!val) return;
+      const barH = (val / maxTotal) * chartHeight;
+      yCursor -= barH;
+      const label = (THEMES[themeKey] ? THEMES[themeKey].label : themeKey) + ' — ' + m + ' : ' + val;
+      bars += `<rect x="${x}" y="${yCursor.toFixed(1)}" width="${barWidth}" height="${barH.toFixed(1)}" fill="${themeColor(themeKey)}"><title>${escapeHtml(label)}</title></rect>`;
+    });
+    const labelX = (x + barWidth / 2).toFixed(1);
+    const labelY = marginTop + chartHeight + 14;
+    bars += `<text x="${labelX}" y="${labelY}" font-size="10" text-anchor="end" transform="rotate(-40 ${labelX} ${labelY})" fill="var(--ink-soft)">${escapeHtml(m)}</text>`;
+    const totalY = marginTop + chartHeight - (monthTotals[i] / maxTotal) * chartHeight - 4;
+    bars += `<text x="${labelX}" y="${totalY.toFixed(1)}" font-size="10" text-anchor="middle" fill="var(--ink)">${monthTotals[i]}</text>`;
+  });
+
+  const axis = `<line x1="${marginLeft}" y1="${marginTop}" x2="${marginLeft}" y2="${marginTop + chartHeight}" stroke="var(--line)"/>` +
+    `<line x1="${marginLeft}" y1="${marginTop + chartHeight}" x2="${width - 10}" y2="${marginTop + chartHeight}" stroke="var(--line)"/>`;
+
+  container.innerHTML = `<svg viewBox="0 0 ${width} ${height}" style="width:100%; height:auto; max-height:280px; font-family:var(--sans);">${axis}${bars}</svg>`;
+}
+
+function renderStatsLegend() {
+  const legend = document.getElementById('stats-legend');
+  legend.innerHTML = '';
+  THEME_KEYS.forEach(key => {
+    const item = document.createElement('span');
+    item.className = 'legend-item';
+    const swatch = document.createElement('span');
+    swatch.className = 'swatch';
+    swatch.style.background = themeColor(key);
+    item.appendChild(swatch);
+    item.append((THEMES[key] ? THEMES[key].label : key));
+    legend.appendChild(item);
+  });
+}
+
+function renderStatsTable(counts, months) {
+  const table = document.getElementById('stats-table');
+  const themeKeysWithData = THEME_KEYS.filter(k => counts[k] && Object.keys(counts[k]).length);
+  let thead = '<thead><tr><th>Thématique</th>' + months.map(m => `<th>${escapeHtml(m)}</th>`).join('') + '<th class="stats-total-col">Total</th></tr></thead>';
+  let tbody = '<tbody>';
+  const colTotals = months.map(() => 0);
+  let grandTotal = 0;
+  themeKeysWithData.forEach(key => {
+    let rowTotal = 0;
+    const cells = months.map((m, i) => {
+      const val = counts[key][m] || 0;
+      rowTotal += val;
+      colTotals[i] += val;
+      return `<td>${val || ''}</td>`;
+    }).join('');
+    grandTotal += rowTotal;
+    tbody += `<tr><td>${escapeHtml(THEMES[key] ? THEMES[key].label : key)}</td>${cells}<td class="stats-total-col">${rowTotal}</td></tr>`;
+  });
+  tbody += `<tr class="stats-total-row"><td>Total</td>${colTotals.map(t => `<td>${t}</td>`).join('')}<td class="stats-total-col">${grandTotal}</td></tr>`;
+  tbody += '</tbody>';
+  table.innerHTML = thead + tbody;
+}
+
+let lastStats = null;
+function openStats() {
+  lastStats = computeStats();
+  renderStatsChart(lastStats.counts, lastStats.months);
+  renderStatsLegend();
+  renderStatsTable(lastStats.counts, lastStats.months);
+  statsOverlay.classList.add('show');
+}
+document.getElementById('btn-stats').addEventListener('click', openStats);
+document.getElementById('btn-stats-close').addEventListener('click', () => statsOverlay.classList.remove('show'));
+statsOverlay.addEventListener('click', e => { if (e.target === statsOverlay) statsOverlay.classList.remove('show'); });
+
+document.getElementById('btn-stats-export').addEventListener('click', () => {
+  if (!lastStats) return;
+  const { counts, months } = lastStats;
+  const themeKeysWithData = THEME_KEYS.filter(k => counts[k] && Object.keys(counts[k]).length);
+  const rows = [['Thématique', ...months, 'Total']];
+  const colTotals = months.map(() => 0);
+  let grandTotal = 0;
+  themeKeysWithData.forEach(key => {
+    let rowTotal = 0;
+    const cells = months.map((m, i) => { const v = counts[key][m] || 0; rowTotal += v; colTotals[i] += v; return v; });
+    grandTotal += rowTotal;
+    rows.push([THEMES[key] ? THEMES[key].label : key, ...cells, rowTotal]);
+  });
+  rows.push(['Total', ...colTotals, grandTotal]);
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(';')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'geosd_statistiques.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+});
+
+/* =========================================================
+   TABLEAU DE DONNÉES : toutes les valeurs de tous les points,
+   avec colonnes communes (déduites automatiquement — les champs
+   présents dans toutes les thématiques) + une colonne "Détails
+   spécifiques" pour le reste. Respecte les filtres actifs.
+   ========================================================= */
+const tableOverlay = document.getElementById('table-overlay');
+const tableSortSelect = document.getElementById('table-sort');
+
+function getCommonFieldNames() {
+  const fieldSets = THEME_KEYS.map(key => {
+    const theme = THEMES[key];
+    const names = new Set();
+    if (theme.subtypes) {
+      Object.values(theme.subtypes).forEach(sub => sub.fields.forEach(f => names.add(f.name)));
+    } else {
+      (theme.fields || []).forEach(f => names.add(f.name));
+    }
+    return names;
+  });
+  if (!fieldSets.length) return [];
+  return [...fieldSets[0]].filter(name => fieldSets.every(set => set.has(name)));
+}
+function getFieldLabel(name) {
+  for (const key of THEME_KEYS) {
+    const theme = THEMES[key];
+    const fieldLists = theme.subtypes ? Object.values(theme.subtypes).map(s => s.fields) : [theme.fields || []];
+    for (const fields of fieldLists) {
+      const found = fields.find(f => f.name === name);
+      if (found) return found.label;
+    }
+  }
+  return name;
+}
+function specificDetailsText(feature, commonNames) {
+  const fields = getFieldsFor(feature.properties.theme, feature.properties.subtype);
+  return fields.filter(f => !commonNames.includes(f.name))
+    .map(f => feature.properties[f.name] ? `${f.label} : ${feature.properties[f.name]}` : null)
+    .filter(Boolean).join(' · ');
+}
+
+function tableRows() {
+  const commonNames = getCommonFieldNames();
+  let rows = geojson.features.filter(f => !f.properties.__ref && featureMatchesFilters(f));
+  const sortVal = tableSortSelect.value;
+  rows = rows.slice().sort((a, b) => {
+    if (sortVal === 'date-desc') return (b.properties.date || '').localeCompare(a.properties.date || '');
+    if (sortVal === 'date-asc') return (a.properties.date || '').localeCompare(b.properties.date || '');
+    if (sortVal === 'theme') return (THEMES[a.properties.theme]?.label || '').localeCompare(THEMES[b.properties.theme]?.label || '');
+    if (sortVal === 'commune') return (a.properties.commune || '').localeCompare(b.properties.commune || '');
+    return 0;
+  });
+  return { rows, commonNames };
+}
+
+function renderTable() {
+  const { rows, commonNames } = tableRows();
+  const table = document.getElementById('data-table');
+  const headers = ['Thématique', 'Sous-type', ...commonNames.map(getFieldLabel), 'Détails spécifiques', 'Latitude', 'Longitude', 'Actions'];
+  let html = '<thead><tr>' + headers.map(h => `<th>${escapeHtml(h)}</th>`).join('') + '</tr></thead><tbody>';
+  rows.forEach(f => {
+    const theme = THEMES[f.properties.theme];
+    const themeLabel = theme ? theme.label : f.properties.theme;
+    const subtypeLabel = theme && theme.subtypes ? (theme.subtypes[f.properties.subtype] || {}).label || '' : '';
+    const commonCells = commonNames.map(n => `<td>${escapeHtml(f.properties[n] || '')}</td>`).join('');
+    const [lng, lat] = f.geometry.coordinates;
+    html += `<tr>` +
+      `<td>${escapeHtml(themeLabel)}</td><td>${escapeHtml(subtypeLabel)}</td>${commonCells}` +
+      `<td>${escapeHtml(specificDetailsText(f, commonNames))}</td>` +
+      `<td class="num-col">${lat.toFixed(5)}</td><td class="num-col">${lng.toFixed(5)}</td>` +
+      `<td><div class="row-actions">` +
+      `<button type="button" class="row-locate" data-id="${f.id}">Localiser</button>` +
+      `<button type="button" class="row-edit" data-id="${f.id}">Modifier</button>` +
+      `<button type="button" class="row-del" data-id="${f.id}">Supprimer</button>` +
+      `</div></td></tr>`;
+  });
+  html += '</tbody>';
+  table.innerHTML = html;
+
+  const totalCount = geojson.features.filter(f => !f.properties.__ref).length;
+  document.getElementById('table-count').textContent =
+    rows.length + ' point(s) affiché(s)' + (rows.length !== totalCount ? ` sur ${totalCount} (filtres actifs)` : '');
+
+  table.querySelectorAll('.row-locate').forEach(btn => btn.onclick = () => {
+    const feature = geojson.features.find(f => f.id === btn.dataset.id);
+    if (!feature) return;
+    const [lng, lat] = feature.geometry.coordinates;
+    tableOverlay.classList.remove('show');
+    map.setView([lat, lng], Math.max(map.getZoom(), 16));
+    const marker = markersById[feature.id];
+    if (marker) marker.openPopup();
+  });
+  table.querySelectorAll('.row-edit').forEach(btn => btn.onclick = () => {
+    const feature = geojson.features.find(f => f.id === btn.dataset.id);
+    if (!feature) return;
+    tableOverlay.classList.remove('show');
+    const [lng, lat] = feature.geometry.coordinates;
+    openModal(L.latLng(lat, lng), feature);
+  });
+  table.querySelectorAll('.row-del').forEach(btn => btn.onclick = async () => {
+    await deletePoint(btn.dataset.id);
+    renderTable();
+  });
+}
+
+document.getElementById('btn-table').addEventListener('click', () => { renderTable(); tableOverlay.classList.add('show'); });
+document.getElementById('btn-table-close').addEventListener('click', () => tableOverlay.classList.remove('show'));
+tableOverlay.addEventListener('click', e => { if (e.target === tableOverlay) tableOverlay.classList.remove('show'); });
+tableSortSelect.addEventListener('change', renderTable);
+
+document.getElementById('btn-table-export').addEventListener('click', () => {
+  const { rows, commonNames } = tableRows();
+  const header = ['Thématique', 'Sous-type', ...commonNames.map(getFieldLabel), 'Détails spécifiques', 'Latitude', 'Longitude'];
+  const csvRows = [header];
+  rows.forEach(f => {
+    const theme = THEMES[f.properties.theme];
+    const themeLabel = theme ? theme.label : f.properties.theme;
+    const subtypeLabel = theme && theme.subtypes ? (theme.subtypes[f.properties.subtype] || {}).label || '' : '';
+    const commonVals = commonNames.map(n => f.properties[n] || '');
+    const [lng, lat] = f.geometry.coordinates;
+    csvRows.push([themeLabel, subtypeLabel, ...commonVals, specificDetailsText(f, commonNames), lat, lng]);
+  });
+  const csv = csvRows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(';')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'geosd_points.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+});
+
+}
+</script>
+</body>
+</html>

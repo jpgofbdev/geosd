@@ -1,0 +1,123 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "19820ed0-74fa-40ff-b43d-a01cb491e436",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.0928955078125004,
+          48.44815082421627
+        ]
+      },
+      "properties": {
+        "theme": "eau",
+        "subtype": "pollution",
+        "type_pollution": "Organique",
+        "coloration": "",
+        "odeur": "",
+        "auteur_suppose": "",
+        "commune": "sdf",
+        "date": "2026-08-14",
+        "heure": "",
+        "auteur_signalement": "",
+        "auteur_faits": "",
+        "commentaire": "",
+        "fiabilite": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "c2e76451-6300-4516-be07-418958628d72",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.4941406250000002,
+          48.115133377959005
+        ]
+      },
+      "properties": {
+        "theme": "chasse",
+        "moment": "Jour",
+        "nb_coups_de_feu": "",
+        "type_arme": "",
+        "gibier_recherche": "",
+        "gibier_retrouve": "",
+        "vehicule_utilise": "",
+        "plaque_immatriculation": "",
+        "commune": "sd",
+        "date": "2026-08-16",
+        "heure": "01:59",
+        "auteur_signalement": "",
+        "auteur_faits": "",
+        "commentaire": "",
+        "fiabilite": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "62106e4d-3a78-4cfc-b246-c1b8aa9989a2",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.4060058593750004,
+          48.07294057939112
+        ]
+      },
+      "properties": {
+        "theme": "cueillette",
+        "commune": "fd",
+        "date": "2026-08-01",
+        "heure": "",
+        "auteur_signalement": "",
+        "auteur_faits": "",
+        "commentaire": "",
+        "fiabilite": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "a6490fc1-0dd9-44bb-9c51-ac308759e11c",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.2579345703125002,
+          47.54909624120264
+        ]
+      },
+      "properties": {
+        "theme": "habitat_especes",
+        "commune": "sfd",
+        "date": "2026-08-02",
+        "heure": "",
+        "auteur_signalement": "",
+        "auteur_faits": "",
+        "commentaire": "",
+        "fiabilite": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8f5098d5-e519-4e14-adc7-7cae4b038308",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.3648071289062504,
+          47.68979783203422
+        ]
+      },
+      "properties": {
+        "theme": "fsc",
+        "commune": "sdfdsf",
+        "date": "2026-08-08",
+        "heure": "",
+        "auteur_signalement": "",
+        "auteur_faits": "",
+        "commentaire": "",
+        "fiabilite": ""
+      }
+    }
+  ],
+  "updated_at": "2026-08-12T22:01:01.022Z"
+}
