@@ -1,9 +1,359 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Ma premiere page</title>
-  </head>
-  <body>
-    <h1>Hello, World!</h1>
-  </body>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoSD — Signalements de terrain géolocalisés</title>
+<meta name="description" content="GeoSD : saisie et suivi de points géolocalisés par thématique, sans compte utilisateur ni serveur applicatif.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16323a;
+    --ink-soft:#3d5a5f;
+    --paper:#f4f2ec;
+    --panel:#fbfaf6;
+    --line:#c9c2ae;
+    --accent:#2e6b52;
+    --accent-dark:#1e4a38;
+    --danger:#8a3324;
+    --mono:'IBM Plex Mono', ui-monospace, monospace;
+    --sans:'IBM Plex Sans', system-ui, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0;
+    font-family:var(--sans);
+    color:var(--ink);
+    background:var(--paper);
+    line-height:1.6;
+  }
+  a{ color:var(--accent-dark); }
+  :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+
+  .wrap{ max-width:1080px; margin:0 auto; padding:0 24px; }
+
+  /* ---- en-tête ---- */
+  header.site{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 0;
+    border-bottom:1px solid var(--line);
+  }
+  header.site .wrap{ display:flex; align-items:center; justify-content:space-between; width:100%; }
+  .brand{ display:flex; align-items:center; gap:10px; }
+  .brand .mark{
+    font-family:var(--mono); font-size:12px; letter-spacing:.08em; color:var(--accent);
+    border:1px solid var(--accent); padding:2px 6px; border-radius:2px;
+  }
+  .brand strong{ font-size:17px; letter-spacing:.01em; }
+  nav.site-nav a{
+    font-size:13px; font-weight:500; color:var(--ink-soft); text-decoration:none; margin-left:22px;
+  }
+  nav.site-nav a:hover{ color:var(--accent-dark); }
+
+  /* ---- hero ---- */
+  .hero{ position:relative; padding:64px 0 56px; overflow:hidden; }
+  .hero-grid{
+    display:grid; grid-template-columns:1.1fr .9fr; gap:40px; align-items:center;
+  }
+  .hero h1{
+    font-size:40px; line-height:1.15; margin:0 0 16px; letter-spacing:-.01em;
+  }
+  .hero .eyebrow{
+    font-family:var(--mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--accent); margin:0 0 14px;
+  }
+  .hero p.lede{ font-size:16.5px; color:var(--ink-soft); max-width:52ch; margin:0 0 28px; }
+  .hero-ctas{ display:flex; gap:10px; flex-wrap:wrap; }
+
+  .scatter-frame{
+    aspect-ratio:1/1; border:1px solid var(--line); border-radius:8px; background:var(--panel);
+    position:relative; overflow:hidden;
+  }
+  .scatter-frame svg{ width:100%; height:100%; display:block; }
+
+  /* ---- boutons ---- */
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:var(--sans); font-size:14px; font-weight:600;
+    padding:11px 18px; border-radius:4px; border:1px solid var(--ink);
+    background:var(--panel); color:var(--ink); text-decoration:none; cursor:pointer;
+  }
+  .btn:hover{ background:var(--ink); color:var(--panel); }
+  .btn.primary{ background:var(--accent); border-color:var(--accent-dark); color:#fff; }
+  .btn.primary:hover{ background:var(--accent-dark); }
+  .btn.small{ font-size:12.5px; padding:7px 12px; }
+
+  /* ---- sections génériques ---- */
+  section{ padding:56px 0; border-top:1px solid var(--line); }
+  section > .wrap > h2{
+    font-size:12px; font-family:var(--mono); letter-spacing:.08em; text-transform:uppercase;
+    color:var(--accent); margin:0 0 8px;
+  }
+  section > .wrap > h3{ font-size:26px; margin:0 0 34px; max-width:34ch; }
+
+  /* ---- fonctionnalités ---- */
+  .feature-grid{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:1px;
+    background:var(--line); border:1px solid var(--line); border-radius:8px; overflow:hidden;
+  }
+  .feature{ background:var(--panel); padding:22px 20px; }
+  .feature .swatch{
+    width:10px; height:10px; border-radius:50%; margin-bottom:14px;
+  }
+  .feature h4{ font-size:14.5px; margin:0 0 8px; }
+  .feature p{ font-size:13.5px; color:var(--ink-soft); margin:0; }
+
+  /* ---- les 3 versions ---- */
+  .version-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:18px; }
+  .version-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:8px;
+    padding:24px 22px; display:flex; flex-direction:column; gap:14px;
+  }
+  .version-card .mark{
+    align-self:flex-start; font-family:var(--mono); font-size:11px; letter-spacing:.08em;
+    border:1px solid var(--accent); color:var(--accent); padding:2px 6px; border-radius:2px;
+  }
+  .version-card h4{ font-size:17px; margin:0; }
+  .version-card p{ font-size:13.5px; color:var(--ink-soft); margin:0; flex:1; }
+  .version-card .req{
+    font-family:var(--mono); font-size:11.5px; color:var(--ink-soft);
+    border-top:1px dashed var(--line); padding-top:12px; margin:0;
+  }
+  .version-card .tip{
+    font-size:12px; background:#e3ede8; border-left:3px solid var(--accent);
+    padding:8px 10px; border-radius:3px; color:var(--accent-dark); margin:0;
+  }
+
+  /* ---- mode d'emploi ---- */
+  .steps{ counter-reset:step; display:flex; flex-direction:column; gap:0; }
+  .step{ display:flex; gap:20px; padding:20px 0; border-top:1px solid var(--line); }
+  .step:first-child{ border-top:none; }
+  .step .num{
+    counter-increment:step; font-family:var(--mono); font-size:13px; color:var(--accent);
+    flex:none; width:28px; padding-top:2px;
+  }
+  .step .num::before{ content:counter(step, decimal-leading-zero); }
+  .step h4{ font-size:15px; margin:0 0 6px; }
+  .step p{ font-size:13.5px; color:var(--ink-soft); margin:0; max-width:64ch; }
+
+  /* ---- démo ---- */
+  .demo-box{
+    display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap;
+    background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:26px 28px;
+  }
+  .demo-box .txt{ max-width:60ch; }
+  .demo-box code{ font-family:var(--mono); font-size:12.5px; background:var(--paper); border:1px solid var(--line); padding:1px 6px; border-radius:3px; }
+
+  /* ---- pied de page ---- */
+  footer{ padding:34px 0 50px; }
+  footer .wrap{
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;
+  }
+  footer p{ font-family:var(--mono); font-size:11.5px; color:var(--ink-soft); margin:0; }
+  footer a{ color:var(--ink-soft); }
+
+  @media (max-width:820px){
+    .hero-grid{ grid-template-columns:1fr; }
+    .scatter-frame{ order:-1; max-width:340px; margin:0 auto; }
+    .version-grid{ grid-template-columns:1fr; }
+    .hero h1{ font-size:32px; }
+  }
+
+  @media (prefers-reduced-motion:no-preference){
+    .scatter-frame circle.pulse{ animation:pulse 2.6s ease-in-out infinite; }
+    @keyframes pulse{
+      0%,100%{ r:5; opacity:.9; }
+      50%{ r:8; opacity:.55; }
+    }
+  }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <div class="brand">
+      <span class="mark">SIG</span>
+      <strong>GeoSD</strong>
+    </div>
+    <nav class="site-nav">
+      <a href="#fonctionnalites">Fonctionnalités</a>
+      <a href="#versions">Les 3 versions</a>
+      <a href="#mode-emploi">Mode d'emploi</a>
+      <a href="#demo">Démo</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <p class="eyebrow">SIG minimaliste — signalements de terrain</p>
+      <h1>Un point sur la carte, une thématique, un formulaire adapté.</h1>
+      <p class="lede">GeoSD centralise la saisie de points géolocalisés — chasse, pêche, pollution de l'eau, phytosanitaires et plus — sur fond OpenStreetMap et IGN. Sans compte utilisateur, sans serveur applicatif : les données restent sur votre poste ou votre réseau.</p>
+      <div class="hero-ctas">
+        <a class="btn primary" href="geosd-admin.html">Ouvrir l'administration</a>
+        <a class="btn" href="geosd-terrain-saisie.html">Saisie terrain</a>
+        <a class="btn" href="geosd-terrain-consultation.html">Consultation terrain</a>
+      </div>
+    </div>
+    <div class="scatter-frame" aria-hidden="true">
+      <svg viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+            <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#c9c2ae" stroke-width="1" opacity="0.5"/>
+          </pattern>
+        </defs>
+        <rect width="320" height="320" fill="url(#grid)"/>
+        <line x1="0" y1="160" x2="320" y2="160" stroke="#c9c2ae" stroke-width="1"/>
+        <line x1="160" y1="0" x2="160" y2="320" stroke="#c9c2ae" stroke-width="1"/>
+        <circle cx="70" cy="90" r="6" fill="#1b9e77"/>
+        <circle cx="118" cy="200" r="5" fill="#d95f02"/>
+        <circle cx="210" cy="60" r="5" fill="#7570b3"/>
+        <circle cx="250" cy="150" r="6" fill="#e7298a"/>
+        <circle cx="95" cy="255" r="5" fill="#66a61e"/>
+        <circle cx="185" cy="230" r="5" fill="#e6ab02"/>
+        <circle cx="260" cy="250" r="5" fill="#a6761d"/>
+        <circle cx="45" cy="160" r="5" fill="#666666"/>
+        <circle class="pulse" cx="160" cy="140" r="5" fill="#2e6b52"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<section id="fonctionnalites">
+  <div class="wrap">
+    <h2>Fonctionnalités</h2>
+    <h3>Tout ce qu'il faut pour suivre des signalements de terrain, rien de plus.</h3>
+    <div class="feature-grid">
+      <div class="feature">
+        <span class="swatch" style="background:#1b9e77"></span>
+        <h4>8 thématiques prédéfinies</h4>
+        <p>Chasse, pêche, eau, phytosanitaires, VTM, FSC, habitat/espèces protégées, cueillette — champs et sous-types configurables depuis un simple fichier CSV.</p>
+      </div>
+      <div class="feature">
+        <span class="swatch" style="background:#d95f02"></span>
+        <h4>Fonctionne sur le terrain</h4>
+        <p>Saisie hors-ligne, sauvegarde automatique locale, envoi du point par mail ou partage natif dès que possible.</p>
+      </div>
+      <div class="feature">
+        <span class="swatch" style="background:#7570b3"></span>
+        <h4>Fonds de carte OSM et IGN</h4>
+        <p>OpenStreetMap, Plan IGN et Orthophoto IGN, interchangeables en un clic.</p>
+      </div>
+      <div class="feature">
+        <span class="swatch" style="background:#e7298a"></span>
+        <h4>Filtres complets</h4>
+        <p>Par thématique, période, fiabilité, ou recherche libre sur tous les champs saisis.</p>
+      </div>
+      <div class="feature">
+        <span class="swatch" style="background:#66a61e"></span>
+        <h4>Tableau et statistiques</h4>
+        <p>Vue tableau exportable en CSV, histogramme mensuel par thématique — pour le suivi et le reporting.</p>
+      </div>
+      <div class="feature">
+        <span class="swatch" style="background:#a6761d"></span>
+        <h4>Aucune donnée hébergée à distance</h4>
+        <p>Format GeoJSON standard, ouvert dans QGIS. Tout reste sur votre poste ou votre réseau d'entreprise.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="versions">
+  <div class="wrap">
+    <h2>Les 3 versions</h2>
+    <h3>Une application par usage, pas un outil unique à configurer.</h3>
+    <div class="version-grid">
+
+      <div class="version-card">
+        <span class="mark">ADMIN</span>
+        <h4>Administration</h4>
+        <p>Fichier central : création, saisie, correction, intégration des envois terrain, tableau de données et statistiques.</p>
+        <p class="tip">Astuce : ouvert en HTTPS, vous pouvez parcourir un lecteur réseau mappé via « Ouvrir le fichier central » sans les soucis parfois rencontrés en accès direct file:// sur un chemin réseau.</p>
+        <p class="req">Chrome / Edge / Opera — poste de bureau</p>
+        <a class="btn small primary" href="geosd-admin.html">Ouvrir l'administration →</a>
+      </div>
+
+      <div class="version-card">
+        <span class="mark">TERRAIN</span>
+        <h4>Saisie terrain</h4>
+        <p>Saisie de nouveaux points en mobilité. Chaque point peut être envoyé immédiatement par mail ou partage, plus un export groupé de secours.</p>
+        <p class="req">Tout navigateur récent — mobile ou tablette</p>
+        <a class="btn small" href="geosd-terrain-saisie.html">Ouvrir la saisie terrain →</a>
+      </div>
+
+      <div class="version-card">
+        <span class="mark">CONSULT.</span>
+        <h4>Consultation terrain</h4>
+        <p>Lecture seule des points déjà connus, pour situer une intervention sans risque de modification accidentelle.</p>
+        <p class="req">Tout navigateur récent — mobile ou tablette</p>
+        <a class="btn small" href="geosd-terrain-consultation.html">Ouvrir la consultation →</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="mode-emploi">
+  <div class="wrap">
+    <h2>Mode d'emploi</h2>
+    <h3>Du terrain au fichier central, en quatre étapes.</h3>
+    <div class="steps">
+      <div class="step">
+        <span class="num"></span>
+        <div>
+          <h4>Sur le terrain, on saisit</h4>
+          <p>Ouvrir la version Saisie terrain, cliquer sur la carte pour créer un point, choisir la thématique et remplir le formulaire. Chaque point est sauvegardé automatiquement sur l'appareil.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="num"></span>
+        <div>
+          <h4>Le point part immédiatement</h4>
+          <p>Un panneau propose l'envoi par mail ou par partage natif dès l'enregistrement — pas besoin d'attendre la fin de la tournée pour transmettre l'information.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="num"></span>
+        <div>
+          <h4>Au bureau, on intègre</h4>
+          <p>Dans l'Administration, ouvrir le fichier central puis « Intégrer un envoi terrain » : sélection multiple possible, doublons ignorés automatiquement.</p>
+        </div>
+      </div>
+      <div class="step">
+        <span class="num"></span>
+        <div>
+          <h4>Le terrain se met à jour</h4>
+          <p>Le fichier central mis à jour est recopié sur le dossier réseau ; la version Consultation terrain affiche son âge et alerte au-delà de 30 jours, pour savoir quand redemander une copie fraîche.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="demo">
+  <div class="wrap">
+    <h2>Démonstration</h2>
+    <h3>Essayer avant de saisir ses propres données.</h3>
+    <div class="demo-box">
+      <div class="txt">
+        <p style="margin:0 0 8px;">Un jeu de données d'exemple, <code>points2.geojson</code>, est disponible pour tester les versions Administration et Consultation sans avoir encore de fichier réel. Téléchargez-le, puis utilisez « Ouvrir le fichier central » (Administration) ou « Charger un fichier » (Consultation) pour le charger.</p>
+        <p style="margin:0; font-size:12.5px; color:var(--ink-soft);">Vos propres relevés resteront ensuite en local — ce fichier de démonstration ne sert qu'à la découverte de l'outil.</p>
+      </div>
+      <a class="btn primary" href="points2.geojson" download>Télécharger points2.geojson</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>GeoSD — SIG minimaliste, sans compte ni serveur. Format GeoJSON standard.</p>
+    <p><a href="https://github.com/jpgofbdev/geosd">Code source sur GitHub</a></p>
+  </div>
+</footer>
+
+</body>
 </html>
