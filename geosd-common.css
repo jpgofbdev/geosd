@@ -4,19 +4,11 @@
    geosd-terrain-consultation.html
    Ne pas dupliquer ce fichier — le modifier ici suffit à
    mettre à jour l'apparence des 3 versions.
+   Couleurs et polices : voir geosd-tokens.css (importé ci-dessous),
+   pas définies ici directement.
    ============================================================ */
-  :root{
-    --ink:#16323a;
-    --ink-soft:#3d5a5f;
-    --paper:#f4f2ec;
-    --panel:#fbfaf6;
-    --line:#c9c2ae;
-    --accent:#2e6b52;
-    --accent-dark:#1e4a38;
-    --danger:#8a3324;
-    --mono:'IBM Plex Mono', ui-monospace, monospace;
-    --sans:'IBM Plex Sans', system-ui, sans-serif;
-  }
+@import url('geosd-tokens.css');
+
   *{box-sizing:border-box;}
   html,body{height:100%;margin:0;}
   body{
@@ -269,3 +261,5 @@
   .row-actions .row-del:hover{ background:#5e2216; }
   #data-table th, #data-table td{ text-align:left; }
   #data-table td.num-col{ text-align:right; font-family:var(--mono); }
+  .brand a{ color:var(--ink); text-decoration:none; }
+  .brand a:hover{ color:var(--accent); }
