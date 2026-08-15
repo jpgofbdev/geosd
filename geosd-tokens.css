@@ -1,0 +1,27 @@
+/* ============================================================
+   GeoSD — Design tokens (couleurs + polices), partagés entre
+   geosd-common.css (les 3 applications) et index.html.
+   C'est LE fichier à modifier pour tout changement de charte
+   graphique (ex. rapprochement de l'identité OFB) — une seule
+   ligne par variable, répercutée partout automatiquement.
+   Ne pas y mettre de mise en page ou de composants : ce fichier
+   ne contient que des variables CSS, rien d'autre.
+   ============================================================ */
+:root{
+  /* Palette rapprochée de l'identité visuelle OFB (ofb.gouv.fr) : vert
+     institutionnel dominant, sobriété "service public/nature". Codes
+     approximatifs (aucune charte graphique OFB officielle trouvée en
+     accès public) — à remplacer par les codes exacts si disponibles
+     en interne (service communication OFB), une seule ligne à changer
+     par variable. */
+  --ink:#1a2e22;
+  --ink-soft:#3f5747;
+  --paper:#f3f4ee;
+  --panel:#fbfbf8;
+  --line:#c7cabb;
+  --accent:#00694d;
+  --accent-dark:#004d38;
+  --danger:#8a3324;
+  --mono:'IBM Plex Mono', ui-monospace, monospace;
+  --sans:'IBM Plex Sans', system-ui, sans-serif;
+}
