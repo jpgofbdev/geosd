@@ -47,6 +47,29 @@ arrière par erreur, ou de refaire les mêmes hésitations.
 - **Export groupé de secours conservé en plus de l'envoi par point** —
   filet de sécurité en cas de réseau instable sur le terrain.
 
+## Gestion du stockage local terrain (purge)
+
+- **Aucune purge automatique, sous aucun prétexte.** Envisagé et écarté :
+  vider automatiquement après export, ou après clic sur "Envoyer"/"Partager".
+  Rejeté parce qu'aucun de ces mécanismes ne confirme une réception réelle
+  par l'administrateur (un `mailto` ouvre un brouillon, ça ne garantit pas
+  l'envoi ni la lecture). Un automatisme basé sur une action non confirmée
+  aurait pu effacer des points jamais réellement intégrés — le pire risque
+  identifié sur ce projet à ce stade.
+- **Purge manuelle avec confirmation écrite** (taper "SUPPRIMER", pas un
+  simple bouton OK/Annuler) plutôt qu'une confirmation faible façon
+  `window.confirm()` — cohérent avec la gravité de l'action (irréversible),
+  tout en restant un geste volontaire de l'agent, jamais initié par le
+  système.
+- **Pas de risque de doublon identifié même sans purge régulière** : la
+  fusion côté admin (par identifiant) rend l'absence de purge sans
+  incidence sur l'intégrité des données — seulement un coût de stockage/
+  confort, jamais un risque de corruption. Ça a permis de ne pas céder à la
+  tentation d'un automatisme "pratique" mais risqué.
+- **Périodicité suggérée dans la documentation, pas imposée dans le code**
+  (ex. hebdomadaire) — cohérent avec le reste du projet : aucune règle
+  métier rigide imposée à l'utilisateur, seulement des repères.
+
 ## Dépôt de référence (consultation terrain)
 
 - **Rejet de l'hébergement distant avec authentification.** Piste explorée

@@ -33,13 +33,16 @@
     <button id="btn-load-reference">Charger points existants</button>
     <input type="file" id="input-load-reference" accept=".geojson,.json" style="display:none;">
     <button id="btn-export-all" class="primary" disabled>Exporter tout (0)</button>
+    <button id="btn-purge" class="danger" disabled>Vider cet appareil</button>
   </div>
 </header>
 
 <div id="banner" class="banner show">
-  Chaque point saisi reste sur cette tablette (sauvegarde automatique anti-crash). Utilisez
+  Chaque point saisi reste sur cette tablette (sauvegarde automatique anti-crash) — <strong>rien
+  n'est jamais supprimé automatiquement</strong>, même après envoi. Utilisez
   <strong>« Envoyer par mail »</strong> ou <strong>« Partager »</strong> après chaque point pour le
-  transmettre au bureau, ou <strong>« Exporter tout »</strong> en fin de tournée.
+  transmettre au bureau, <strong>« Exporter tout »</strong> en fin de tournée, puis
+  <strong>« Vider cet appareil »</strong> une fois l'intégration confirmée par l'administrateur.
 </div>
 <div id="load-error" class="banner" style="background:#f6d6d0;border-color:#c0392b;color:#7b241c;">
   Impossible de charger la bibliothèque cartographique. Vérifiez votre connexion, puis rechargez.
@@ -106,6 +109,27 @@
     <button id="btn-send-mail" class="primary">Envoyer par mail</button>
     <button id="btn-send-share">Partager</button>
     <button id="btn-send-dismiss">Fermer</button>
+  </div>
+</div>
+
+<!-- Modale de purge : suppression définitive des points de l'appareil -->
+<div class="overlay" id="purge-overlay">
+  <div class="modal">
+    <h2>Vider les points de cet appareil</h2>
+    <p class="coords" id="purge-count-label"></p>
+    <p style="font-size:13px; color:var(--danger); margin:0 0 16px;">
+      ⚠ Cette action supprime définitivement ces points de la tablette — vérifiez
+      d'abord auprès de l'administrateur qu'ils ont bien été intégrés au fichier central.
+      Aucune récupération possible après confirmation.
+    </p>
+    <div class="field">
+      <label for="purge-confirm-input">Tapez SUPPRIMER pour confirmer</label>
+      <input type="text" id="purge-confirm-input" autocomplete="off" placeholder="SUPPRIMER">
+    </div>
+    <div class="modal-actions">
+      <button type="button" id="btn-purge-cancel">Annuler</button>
+      <button type="button" id="btn-purge-confirm" class="danger" disabled>Confirmer la suppression</button>
+    </div>
   </div>
 </div>
 
@@ -418,6 +442,7 @@ function updateToolbarCounts() {
   const btn = document.getElementById('btn-export-all');
   btn.textContent = `Exporter tout (${count})`;
   btn.disabled = count === 0;
+  document.getElementById('btn-purge').disabled = count === 0;
   setStatus(count + (count > 1 ? ' points saisis' : ' point saisi'));
 }
 restoreFieldLocal();
@@ -495,6 +520,45 @@ document.getElementById('btn-send-share').addEventListener('click', async () => 
   }
 });
 document.getElementById('btn-send-dismiss').addEventListener('click', () => sendPanel.classList.remove('show'));
+
+/* =========================================================
+   PURGE : suppression manuelle des points de l'appareil, jamais
+   automatique. Aucun mécanisme (export, mail, partage) ne confirme
+   que l'administrateur a réellement intégré les points — la
+   suppression reste donc un geste volontaire de l'agent, avec
+   confirmation écrite pour éviter tout clic accidentel.
+   ========================================================= */
+const purgeOverlay = document.getElementById('purge-overlay');
+const purgeConfirmInput = document.getElementById('purge-confirm-input');
+const purgeConfirmBtn = document.getElementById('btn-purge-confirm');
+
+document.getElementById('btn-purge').addEventListener('click', () => {
+  const count = geojson.features.filter(f => !f.properties.__ref).length;
+  document.getElementById('purge-count-label').textContent =
+    count + (count > 1 ? ' points seront supprimés.' : ' point sera supprimé.');
+  purgeConfirmInput.value = '';
+  purgeConfirmBtn.disabled = true;
+  purgeOverlay.classList.add('show');
+  purgeConfirmInput.focus();
+});
+document.getElementById('btn-purge-cancel').addEventListener('click', () => purgeOverlay.classList.remove('show'));
+purgeOverlay.addEventListener('click', e => { if (e.target === purgeOverlay) purgeOverlay.classList.remove('show'); });
+purgeConfirmInput.addEventListener('input', () => {
+  purgeConfirmBtn.disabled = purgeConfirmInput.value.trim().toUpperCase() !== 'SUPPRIMER';
+});
+purgeConfirmBtn.addEventListener('click', () => {
+  geojson.features.filter(f => !f.properties.__ref).forEach(f => {
+    const marker = markersById[f.id];
+    if (marker) { markersLayer.removeLayer(marker); delete markersById[f.id]; }
+  });
+  geojson.features = geojson.features.filter(f => f.properties.__ref);
+  persistFieldLocal();
+  buildThemeCheckList();
+  applyFilters();
+  updateToolbarCounts();
+  purgeOverlay.classList.remove('show');
+  setStatus('Appareil vidé', 'ok');
+});
 
 }
 </script>

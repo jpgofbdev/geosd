@@ -200,6 +200,29 @@ déplacer un point, le supprimer et le ressaisir au bon endroit.
    fichiers reçus (la sélection multiple est possible, pratique si plusieurs
    mails sont arrivés). Les points déjà présents (même identifiant) sont
    ignorés automatiquement, pas de doublon.
+5. **Une fois l'intégration confirmée par l'administrateur**, l'agent peut
+   vider sa tablette via **"Vider cet appareil"** (bouton rouge, tapez
+   `SUPPRIMER` pour confirmer). Purement manuel et volontaire — voir
+   ci-dessous pourquoi il n'y a aucune suppression automatique.
+
+### Gestion du stockage local (pourquoi rien n'est automatique)
+
+- Les points saisis restent sur l'appareil **indéfiniment** tant que
+  l'agent ne les efface pas lui-même — fermer l'onglet, éteindre la
+  tablette, rouvrir le lendemain : rien n'est perdu.
+- **Aucune purge automatique** n'a lieu, ni après "Exporter tout", ni après
+  "Envoyer par mail"/"Partager" — aucun de ces mécanismes ne confirme
+  réellement que l'administrateur a reçu et intégré le point (un `mailto`
+  ouvre un brouillon, il ne garantit pas l'envoi). Supprimer automatiquement
+  sur la foi d'une action non confirmée serait le pire risque du projet :
+  perte de données irréversible sur le terrain.
+- **Pas de risque de doublon en cas de non-purge** : la fusion admin ignore
+  déjà les points déjà présents (même identifiant). Le seul coût de ne
+  jamais purger est l'accumulation sur l'appareil (fichiers d'export plus
+  gros avec le temps), pas un risque de corruption.
+- **Périodicité suggérée, pas imposée :** vider l'appareil une fois par
+  semaine ou en fin de tournée, après vérification orale/visuelle avec
+  l'administrateur que l'intégration a bien eu lieu.
 
 ## Version consultation et mise à jour du fichier de référence
 
