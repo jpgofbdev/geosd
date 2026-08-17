@@ -29,7 +29,8 @@ du même dépôt pour un hébergement web).
 | `geosd-admin.html` | Application desktop administrateur | Non |
 | `geosd-terrain-saisie.html` | Application terrain — saisie | Non |
 | `geosd-terrain-consultation.html` | Application terrain — consultation | Éventuellement, pour `DEPOT_URL` (voir plus bas) |
-| `geosd-common.css` | Apparence commune aux 3 versions | Non |
+| `geosd-tokens.css` | Couleurs et polices (charte graphique) — **seul fichier à éditer pour un changement de style** | Oui, si évolution de charte |
+| `geosd-common.css` | Mise en page et composants communs aux 3 versions (importe `geosd-tokens.css`) | Non |
 | `geosd-themes.js` | Config. des thématiques et des territoires (généré/édité) — **ne pas éditer le bloc THEMES à la main** | Oui, pour `TERRITOIRES` (voir plus bas) |
 | `modele-formulaires.csv` | Modèle de champs par thématique — **source de vérité** | **Oui**, c'est le fichier à modifier |
 | `generate_themes.py` | Régénère le bloc THEMES de `geosd-themes.js` à partir du CSV | Non |
@@ -72,6 +73,28 @@ dizaines) de territoires nommés, et évite d'avoir à maintenir de vrais
 contours géographiques (fichier de frontières administratives) dans le
 projet — plus simple à faire évoluer.
 
+## Charte graphique
+
+Toutes les couleurs et polices des 3 applications **et** de `index.html`
+viennent d'un seul fichier : **`geosd-tokens.css`**. C'est le seul fichier
+à modifier pour tout changement de style — une variable changée là se
+répercute partout automatiquement (`geosd-common.css` l'importe via
+`@import`, `index.html` le lie directement).
+
+Palette actuelle : rapprochée de l'identité visuelle de l'OFB
+(ofb.gouv.fr) — vert institutionnel sobre. **Codes approximatifs**, aucune
+charte graphique officielle OFB trouvée en accès public au moment du
+réglage. À remplacer par les codes exacts si obtenus auprès du service
+communication OFB (une ligne par variable dans `geosd-tokens.css`).
+
+La typographie (IBM Plex Mono/Sans) n'a volontairement pas été changée
+pour la police officielle de l'État ("Marianne") — cela aurait ajouté une
+dépendance CDN supplémentaire pour un gain visuel marginal. De même, le
+bandeau "RÉPUBLIQUE FRANÇAISE" des sites `.gouv.fr` officiels n'a pas été
+ajouté : GeoSD est un prototype interne, pas (encore) un service validé
+institutionnellement — l'ajouter préventivement aurait pu créer une
+confusion sur son statut.
+
 ## Hébergement web (GitHub Pages)
 
 Le projet peut être servi tel quel comme site statique — `index.html`
@@ -95,6 +118,16 @@ présente l'outil et pointe vers les 3 versions et le fichier de démo.
   "code source" public consultable).
 
 ## Modifier le modèle de champs (thématiques communes aux 3 versions)
+
+**Encodage du CSV (accents dans Excel) :** `modele-formulaires.csv` doit
+rester encodé en UTF-8 avec BOM pour qu'Excel affiche les accents
+correctement à l'ouverture. Si vous le modifiez et le réenregistrez
+depuis Excel, choisissez impérativement **"CSV UTF-8 (délimité par des
+virgules)"** dans la liste des formats — pas "CSV (délimité par des
+virgules)" tout court, qui retire le BOM et fait réapparaître le problème.
+Le script `generate_themes.py` gère les deux cas (avec ou sans BOM) sans
+réglage particulier de votre part.
+
 
 1. Éditer `modele-formulaires.csv` (Excel, Google Sheets, VS Code...).
 2. Dans un terminal, se placer dans le dossier du projet, puis :
@@ -248,6 +281,9 @@ rouvrant directement la bonne version.
 | `Marqueurs THEMES_START/THEMES_END introuvables` | `generate_themes.py` ne trouve pas `geosd-themes.js` dans le dossier courant | Vérifier avec `dir`/`ls` que tous les fichiers sont dans le même dossier |
 | `Not allowed to request permissions in this context` (chemin réseau) | Fichier ouvert via un chemin UNC direct (`file://serveur/...`), traité différemment d'un disque local par Chrome | Mapper le dossier réseau en lettre de lecteur (`Z:`) et ouvrir depuis là (`file:///Z:/...`), ou héberger `geosd-admin.html` en HTTPS |
 | Un point envoyé par mail n'arrive pas intact | Corps du mail tronqué (limite `mailto`) | Réessayer avec "Partager" |
+| `ReferenceError: initTerritory is not defined` (ou toute fonction manquante) sur GitHub Pages | Un fichier interdépendant (souvent `geosd-themes.js`) est resté en version périmée sur le dépôt alors que d'autres ont été mis à jour | Renvoyer **tous les fichiers en bloc** sur GitHub à chaque mise à jour, pas au cas par cas |
+| GitHub affiche "Your site is published" mais les changements n'apparaissent pas | Badge de publication pas toujours synchrone avec le déploiement réel | Vérifier l'onglet **Actions** du dépôt (horodatage précis du dernier déploiement Pages), puis Ctrl+F5 pour ignorer le cache navigateur |
+| `404 Not Found` sur un fichier `.woff2` (police IBM Plex) dans la console | Aléa ponctuel du CDN Google Fonts sur une graisse de police précise | Sans gravité — repli automatique sur une police système via `--sans:'IBM Plex Sans', system-ui, sans-serif`, rien à corriger |
 
 ## Sauvegarde des données
 
