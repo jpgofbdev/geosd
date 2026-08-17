@@ -185,37 +185,41 @@ déplacer un point, le supprimer et le ressaisir au bon endroit.
 1. **Sur la tablette (`geosd-terrain-saisie.html`)** : facultatif, charger
    le fichier central existant via "Charger points existants" pour avoir un
    contexte visuel (points affichés en gris, non modifiables). Saisir les
-   nouveaux points normalement.
-2. **Après chaque point** : un panneau propose "Envoyer par mail" (le point
-   est collé en texte dans le corps d'un brouillon de mail — fonctionne sur
-   n'importe quelle tablette) ou "Partager" (fichier `.geojson` joint via le
-   partage natif Android, si une application compatible est installée
-   — Gmail, Drive...). Les deux méthodes sont indépendantes, à choisir selon
-   la situation (réseau, applications disponibles).
-3. **En fin de tournée**, "Exporter tout" télécharge un fichier de secours
-   avec tous les points de la session, au cas où certains envois individuels
-   auraient échoué.
-4. **Au bureau (`geosd-admin.html`)** : ouvrir (ou créer) le fichier
+   nouveaux points normalement — une brève confirmation ("✓ Point
+   enregistré sur la tablette") s'affiche après chaque saisie.
+2. **En fin de tournée**, **"Exporter tout"** télécharge un fichier
+   `.geojson` regroupant tous les points saisis sur l'appareil — à
+   transmettre au bureau par le moyen de son choix (mail avec pièce jointe
+   ajoutée manuellement depuis l'application de messagerie, clé USB,
+   dossier partagé).
+3. **Au bureau (`geosd-admin.html`)** : ouvrir (ou créer) le fichier
    central, puis "Intégrer un envoi terrain" — sélectionner un ou plusieurs
-   fichiers reçus (la sélection multiple est possible, pratique si plusieurs
-   mails sont arrivés). Les points déjà présents (même identifiant) sont
-   ignorés automatiquement, pas de doublon.
-5. **Une fois l'intégration confirmée par l'administrateur**, l'agent peut
-   vider sa tablette via **"Vider cet appareil"** (bouton rouge, tapez
-   `SUPPRIMER` pour confirmer). Purement manuel et volontaire — voir
-   ci-dessous pourquoi il n'y a aucune suppression automatique.
+   fichiers reçus (la sélection multiple est possible). Les points déjà
+   présents (même identifiant) sont ignorés automatiquement, pas de
+   doublon.
+4. **Une fois l'intégration confirmée par l'administrateur**, l'agent peut
+   effacer sa tablette via **"Effacer les saisies en cours"** (bouton
+   rouge, tapez `SUPPRIMER` pour confirmer). Purement manuel et volontaire
+   — voir ci-dessous pourquoi il n'y a aucune suppression automatique.
+
+**Pas d'envoi individuel par point.** Une version antérieure proposait un
+envoi immédiat par mail ou partage natif après chaque point. Retirée : le
+protocole `mailto` ne permet techniquement de joindre aucun fichier (limite
+du protocole, pas un choix), et le partage natif (`navigator.share`)
+s'est révélé peu fiable en pratique. L'export groupé en fin de tournée est
+désormais l'unique méthode de sortie des données — plus simple à expliquer
+aux agents, un seul geste à retenir.
 
 ### Gestion du stockage local (pourquoi rien n'est automatique)
 
 - Les points saisis restent sur l'appareil **indéfiniment** tant que
   l'agent ne les efface pas lui-même — fermer l'onglet, éteindre la
   tablette, rouvrir le lendemain : rien n'est perdu.
-- **Aucune purge automatique** n'a lieu, ni après "Exporter tout", ni après
-  "Envoyer par mail"/"Partager" — aucun de ces mécanismes ne confirme
-  réellement que l'administrateur a reçu et intégré le point (un `mailto`
-  ouvre un brouillon, il ne garantit pas l'envoi). Supprimer automatiquement
-  sur la foi d'une action non confirmée serait le pire risque du projet :
-  perte de données irréversible sur le terrain.
+- **Aucune purge automatique** n'a lieu, y compris après "Exporter tout" —
+  ce mécanisme ne confirme pas que l'administrateur a réellement reçu et
+  intégré les points. Supprimer automatiquement sur la foi d'une action non
+  confirmée serait le pire risque du projet : perte de données
+  irréversible sur le terrain.
 - **Pas de risque de doublon en cas de non-purge** : la fusion admin ignore
   déjà les points déjà présents (même identifiant). Le seul coût de ne
   jamais purger est l'accumulation sur l'appareil (fichiers d'export plus
@@ -284,13 +288,6 @@ rouvrant directement la bonne version.
   ("permission d'écriture refusée"). Les 2 versions terrain n'utilisent donc
   jamais cette API, par choix, indépendamment de ce que le navigateur
   prétend supporter.
-- **`mailto` a une limite de longueur** (variable selon le client mail,
-  ~2000 caractères en pratique) : convient pour un point avec quelques
-  champs, mais peut échouer sur un point avec un commentaire très long.
-  Dans ce cas, utiliser "Partager" à la place.
-- **Le partage de fichier (`navigator.share` avec pièce jointe)** dépend des
-  applications installées sur la tablette — à tester sur le matériel cible
-  avant déploiement (comportement variable selon fabricant/version Android).
 - **Pas de fusion automatique en cas de modification simultanée** du fichier
   central par deux personnes — un seul poste administrateur à la fois.
 
@@ -303,7 +300,6 @@ rouvrant directement la bonne version.
 | `User activation is required to request permissions` (Android) | Implémentation Android non fiable de la File System Access API | Normal — utiliser les versions terrain, pas `geosd-admin.html`, sur tablette |
 | `Marqueurs THEMES_START/THEMES_END introuvables` | `generate_themes.py` ne trouve pas `geosd-themes.js` dans le dossier courant | Vérifier avec `dir`/`ls` que tous les fichiers sont dans le même dossier |
 | `Not allowed to request permissions in this context` (chemin réseau) | Fichier ouvert via un chemin UNC direct (`file://serveur/...`), traité différemment d'un disque local par Chrome | Mapper le dossier réseau en lettre de lecteur (`Z:`) et ouvrir depuis là (`file:///Z:/...`), ou héberger `geosd-admin.html` en HTTPS |
-| Un point envoyé par mail n'arrive pas intact | Corps du mail tronqué (limite `mailto`) | Réessayer avec "Partager" |
 | `ReferenceError: initTerritory is not defined` (ou toute fonction manquante) sur GitHub Pages | Un fichier interdépendant (souvent `geosd-themes.js`) est resté en version périmée sur le dépôt alors que d'autres ont été mis à jour | Renvoyer **tous les fichiers en bloc** sur GitHub à chaque mise à jour, pas au cas par cas |
 | GitHub affiche "Your site is published" mais les changements n'apparaissent pas | Badge de publication pas toujours synchrone avec le déploiement réel | Vérifier l'onglet **Actions** du dépôt (horodatage précis du dernier déploiement Pages), puis Ctrl+F5 pour ignorer le cache navigateur |
 | `404 Not Found` sur un fichier `.woff2` (police IBM Plex) dans la console | Aléa ponctuel du CDN Google Fonts sur une graisse de police précise | Sans gravité — repli automatique sur une police système via `--sans:'IBM Plex Sans', system-ui, sans-serif`, rien à corriger |

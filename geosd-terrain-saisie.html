@@ -33,16 +33,16 @@
     <button id="btn-load-reference">Charger points existants</button>
     <input type="file" id="input-load-reference" accept=".geojson,.json" style="display:none;">
     <button id="btn-export-all" class="primary" disabled>Exporter tout (0)</button>
-    <button id="btn-purge" class="danger" disabled>Vider cet appareil</button>
+    <button id="btn-purge" class="danger" disabled>Effacer les saisies en cours</button>
   </div>
 </header>
 
 <div id="banner" class="banner show">
   Chaque point saisi reste sur cette tablette (sauvegarde automatique anti-crash) — <strong>rien
-  n'est jamais supprimé automatiquement</strong>, même après envoi. Utilisez
-  <strong>« Envoyer par mail »</strong> ou <strong>« Partager »</strong> après chaque point pour le
-  transmettre au bureau, <strong>« Exporter tout »</strong> en fin de tournée, puis
-  <strong>« Vider cet appareil »</strong> une fois l'intégration confirmée par l'administrateur.
+  n'est jamais supprimé automatiquement</strong>. En fin de tournée, utilisez
+  <strong>« Exporter tout »</strong> pour télécharger un fichier à transmettre au bureau (mail,
+  clé USB, dossier partagé), puis <strong>« Effacer les saisies en cours »</strong> une fois
+  l'intégration confirmée par l'administrateur.
 </div>
 <div id="load-error" class="banner" style="background:#f6d6d0;border-color:#c0392b;color:#7b241c;">
   Impossible de charger la bibliothèque cartographique. Vérifiez votre connexion, puis rechargez.
@@ -106,8 +106,6 @@
 <div class="send-panel" id="send-panel">
   <p class="ok-line">✓ Point enregistré sur la tablette</p>
   <div class="actions">
-    <button id="btn-send-mail" class="primary">Envoyer par mail</button>
-    <button id="btn-send-share">Partager</button>
     <button id="btn-send-dismiss">Fermer</button>
   </div>
 </div>
@@ -115,7 +113,7 @@
 <!-- Modale de purge : suppression définitive des points de l'appareil -->
 <div class="overlay" id="purge-overlay">
   <div class="modal">
-    <h2>Vider les points de cet appareil</h2>
+    <h2>Effacer les saisies en cours</h2>
     <p class="coords" id="purge-count-label"></p>
     <p style="font-size:13px; color:var(--danger); margin:0 0 16px;">
       ⚠ Cette action supprime définitivement ces points de la tablette — vérifiez
@@ -156,7 +154,6 @@ const sendPanel = document.getElementById('send-panel');
 let geojson = { type: 'FeatureCollection', features: [] };
 let markersById = {};
 let pendingLatLng = null;
-let lastSavedFeature = null;
 let editingFeature = null;
 const modalTitle = document.querySelector('#overlay h2');
 
@@ -298,7 +295,6 @@ pointForm.addEventListener('submit', e => {
   persistFieldLocal();
   updateToolbarCounts();
   closeModal();
-  lastSavedFeature = savedFeature;
   sendPanel.classList.add('show');
 });
 
@@ -490,35 +486,6 @@ document.getElementById('btn-export-all').addEventListener('click', () => {
   setStatus('Export téléchargé', 'ok');
 });
 
-/* ---- Envoi immédiat du dernier point saisi (mail ou partage) ---- */
-function pointLabel(feature) {
-  const theme = THEMES[feature.properties.theme];
-  const fields = getFieldsFor(feature.properties.theme, feature.properties.subtype);
-  const val = fields.length ? feature.properties[fields[0].name] : null;
-  return (theme ? theme.label : 'Point') + (val ? ' — ' + val : '');
-}
-document.getElementById('btn-send-mail').addEventListener('click', () => {
-  if (!lastSavedFeature) return;
-  const body = JSON.stringify({ type: 'FeatureCollection', features: [lastSavedFeature] }, null, 2);
-  const subject = 'GeoSD — nouveau point — ' + pointLabel(lastSavedFeature);
-  const mailto = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
-  window.location.href = mailto;
-});
-document.getElementById('btn-send-share').addEventListener('click', async () => {
-  if (!lastSavedFeature) return;
-  const collection = { type: 'FeatureCollection', features: [lastSavedFeature] };
-  const filename = 'point_' + lastSavedFeature.id.slice(0, 8) + '.geojson';
-  try {
-    const file = new File([JSON.stringify(collection, null, 2)], filename, { type: 'application/geo+json' });
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file], title: 'GeoSD — ' + pointLabel(lastSavedFeature) });
-    } else {
-      alert("Le partage de fichier n'est pas disponible sur cet appareil/navigateur — utilisez « Envoyer par mail » à la place.");
-    }
-  } catch (err) {
-    if (err.name !== 'AbortError') alert('Erreur de partage : ' + err.message);
-  }
-});
 document.getElementById('btn-send-dismiss').addEventListener('click', () => sendPanel.classList.remove('show'));
 
 /* =========================================================
@@ -557,7 +524,7 @@ purgeConfirmBtn.addEventListener('click', () => {
   applyFilters();
   updateToolbarCounts();
   purgeOverlay.classList.remove('show');
-  setStatus('Appareil vidé', 'ok');
+  setStatus('Saisies effacées', 'ok');
 });
 
 }

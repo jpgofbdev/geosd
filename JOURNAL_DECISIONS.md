@@ -39,18 +39,28 @@ arrière par erreur, ou de refaire les mêmes hésitations.
   confirmé par test réel sur tablette). La détection se fait donc aussi
   par user-agent Android, pas uniquement par présence de la fonction.
 
-- **Envoi terrain : mail ET partage natif, au choix de l'agent** (pas un
-  seul mécanisme imposé) — décision prise parce que la fiabilité de
-  `navigator.share` avec pièce jointe varie selon fabricant/version
-  Android, non testable à l'avance de façon exhaustive.
+- **Envoi terrain par point (mail + partage natif) — décision initiale
+  revenue en arrière.** Choix d'origine : mail ET partage natif au choix de
+  l'agent, pour transmettre chaque point immédiatement après saisie.
+  Abandonné après usage : le partage natif (`navigator.share`) s'est révélé
+  peu fiable en pratique (dépend fortement des applications installées), et
+  le mail par point n'a jamais permis de joindre le fichier — `mailto` ne
+  supporte aucune pièce jointe, c'est une limite du protocole, pas un bug
+  contournable. Plutôt que de garder un mécanisme à moitié fonctionnel,
+  simplification nette : un seul geste de sortie des données, **"Exporter
+  tout"** en fin de tournée, laissant l'agent joindre le fichier lui-même
+  depuis son application mail habituelle. Plus simple à expliquer, moins de
+  code à maintenir, aucune perte réelle de fonctionnalité (l'agent gardait
+  de toute façon "Exporter tout" en filet de sécurité dès le départ).
 
-- **Export groupé de secours conservé en plus de l'envoi par point** —
-  filet de sécurité en cas de réseau instable sur le terrain.
+- **Export groupé conservé comme unique méthode de sortie** — devenu le
+  seul mécanisme après le retrait ci-dessus, plutôt qu'un simple filet de
+  secours parmi d'autres.
 
 ## Gestion du stockage local terrain (purge)
 
 - **Aucune purge automatique, sous aucun prétexte.** Envisagé et écarté :
-  vider automatiquement après export, ou après clic sur "Envoyer"/"Partager".
+  vider automatiquement après export, ou après clic sur "Exporter tout".
   Rejeté parce qu'aucun de ces mécanismes ne confirme une réception réelle
   par l'administrateur (un `mailto` ouvre un brouillon, ça ne garantit pas
   l'envoi ni la lecture). Un automatisme basé sur une action non confirmée
