@@ -142,6 +142,91 @@ const THEMES = {
 };
 // ==THEMES_END==
 
+/* ---- Territoires disponibles (un par service départemental) ----
+   Rectangle [ [lat_sud, lng_ouest], [lat_nord, lng_est] ] par territoire.
+   Pour ajouter un service : une seule ligne à ajouter ici, les 3
+   applications le proposent automatiquement dans le sélecteur.
+   Emprises approximatives — à ajuster visuellement si besoin.
+   ========================================================= */
+const TERRITOIRES = {
+  cher:          { label: "Cher (18)",            bounds: [[46.65, 2.05], [47.35, 3.05]] },
+  eureetloir:    { label: "Eure-et-Loir (28)",      bounds: [[48.00, 0.75], [48.75, 1.85]] },
+  indre:         { label: "Indre (36)",             bounds: [[46.35, 0.90], [47.15, 2.00]] },
+  indreetloire:  { label: "Indre-et-Loire (37)",    bounds: [[46.85, 0.05], [47.55, 1.25]] },
+  loiretcher:    { label: "Loir-et-Cher (41)",      bounds: [[47.35, 0.85], [48.05, 2.00]] },
+  loiret:        { label: "Loiret (45)",            bounds: [[47.55, 1.50], [48.20, 2.95]] }
+};
+const TERRITORY_STORAGE_KEY = 'geosd_territoire';
+
+function getSavedTerritory() {
+  try {
+    const key = localStorage.getItem(TERRITORY_STORAGE_KEY);
+    return TERRITOIRES[key] ? key : null;
+  } catch (e) { return null; }
+}
+function saveTerritory(key) {
+  try { localStorage.setItem(TERRITORY_STORAGE_KEY, key); } catch (e) { /* ignoré */ }
+}
+function applyTerritory(map, key) {
+  const t = TERRITOIRES[key];
+  if (t) map.fitBounds(t.bounds);
+  else map.setView([46.7, 2.0], 6); // vue France entière si aucun territoire choisi
+}
+function territoryLabel(key) {
+  return (TERRITOIRES[key] && TERRITOIRES[key].label) || 'Non choisi';
+}
+
+/* Affiche le sélecteur de territoire (overlay réutilisant le style des
+   modales existantes). onDone(key) est appelé après le choix, ou après
+   "Passer" (key = null). */
+function showTerritoryPicker(map, currentKey, onDone) {
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay show';
+  overlay.id = 'territory-overlay';
+  const options = Object.keys(TERRITOIRES).map(k =>
+    `<option value="${k}"${k === currentKey ? ' selected' : ''}>${escapeHtml(TERRITOIRES[k].label)}</option>`
+  ).join('');
+  overlay.innerHTML = `
+    <div class="modal">
+      <h2>Choisissez votre territoire</h2>
+      <p class="coords">Ce réglage est mémorisé sur cet appareil — modifiable à tout moment depuis l'en-tête.</p>
+      <div class="field">
+        <label for="territory-select">Service départemental</label>
+        <select id="territory-select">${options}</select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="territory-skip">Passer (vue France entière)</button>
+        <button type="button" id="territory-confirm" class="primary">Continuer</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  document.getElementById('territory-confirm').addEventListener('click', () => {
+    const key = document.getElementById('territory-select').value;
+    saveTerritory(key);
+    applyTerritory(map, key);
+    overlay.remove();
+    if (onDone) onDone(key);
+  });
+  document.getElementById('territory-skip').addEventListener('click', () => {
+    applyTerritory(map, null);
+    overlay.remove();
+    if (onDone) onDone(null);
+  });
+}
+
+/* Point d'entrée à appeler une fois la carte créée. */
+function initTerritory(map, onReady) {
+  const saved = getSavedTerritory();
+  if (saved) {
+    applyTerritory(map, saved);
+    if (onReady) onReady(saved);
+  } else {
+    map.setView([46.7, 2.0], 6);
+    showTerritoryPicker(map, null, onReady);
+  }
+}
+
 /* ---- Couleurs par thématique (palette colorblind-friendly, cyclique) ---- */
 const THEME_COLOR_PALETTE = [
   '#1b9e77', '#d95f02', '#7570b3', '#e7298a',
@@ -275,6 +360,7 @@ function describeFileAge(updatedAtIso) {
   }
   return { text: `Fichier daté du ${dateStr} — ${days} jour(s)`, level: 'ok' };
 }
+
 function ignWmtsLayer(layerName, format) {
   return L.tileLayer(
     'https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0' +
