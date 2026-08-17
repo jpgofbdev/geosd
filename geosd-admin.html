@@ -13,11 +13,12 @@
 <header>
   <div class="brand">
     <span class="mark">ADMIN</span>
-    <h1>GeoSD</h1>
+    <h1><a href="index.html">GeoSD</a></h1>
   </div>
   <div class="toolbar">
     <span id="status">Aucun fichier ouvert</span>
     <button id="btn-toggle-filters">Filtres</button>
+    <button id="btn-territory">Territoire : —</button>
     <button id="btn-stats">Statistiques</button>
     <button id="btn-table">Tableau</button>
     <button id="btn-open">Ouvrir le fichier central</button>
@@ -185,7 +186,14 @@ let pendingLatLng = null;
 let editingFeature = null;
 const modalTitle = document.querySelector('#overlay h2');
 
-const map = L.map('map').setView([48.8566, 2.3522], 13);
+const map = L.map('map');
+function updateTerritoryButton(key) {
+  document.getElementById('btn-territory').textContent = 'Territoire : ' + territoryLabel(key);
+}
+initTerritory(map, updateTerritoryButton);
+document.getElementById('btn-territory').addEventListener('click', () => {
+  showTerritoryPicker(map, getSavedTerritory(), updateTerritoryButton);
+});
 addBaseLayerSwitcher(map);
 const markersLayer = L.layerGroup().addTo(map);
 

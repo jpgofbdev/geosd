@@ -1,35 +1,98 @@
 # GeoSD — SIG minimaliste à 3 versions
 
 Application de saisie de points géolocalisés par thématique, sans compte
-utilisateur ni serveur applicatif. Le projet est désormais découpé en
-**3 versions indépendantes**, chacune adaptée à un usage précis.
+utilisateur ni serveur applicatif. Le projet est découpé en
+**3 versions indépendantes**, chacune adaptée à un usage précis, plus une
+page d'accueil de présentation (`index.html`) pour l'hébergement public
+(GitHub Pages).
 
 ## Les 3 versions
 
 | Fichier | Usage | Où | Écriture |
 |---|---|---|---|
-| `geosd-admin.html` | Intégration du fichier central, fusion des envois terrain | Poste desktop (Chrome/Edge/Opera) | Directe sur disque (File System Access API) |
+| `geosd-admin.html` | Intégration du fichier central, fusion des envois terrain, tableau et statistiques | Poste desktop (Chrome/Edge/Opera) | Directe sur disque (File System Access API) |
 | `geosd-terrain-saisie.html` | Saisie de nouveaux points sur le terrain | Tablette Android (ou tout mobile) | En mémoire locale (localStorage) + envoi par mail/partage après chaque point |
 | `geosd-terrain-consultation.html` | Consultation des points déjà connus, lecture seule | Tablette Android (ou tout mobile) | Aucune — fichier local ou dépôt distant |
 
 Toutes les trois partagent deux fichiers communs à ne jamais dupliquer :
-- `geosd-themes.js` — configuration des thématiques (généré depuis le CSV)
+- `geosd-themes.js` — configuration des thématiques et des territoires (généré/édité)
 - `geosd-common.css` — apparence
 
-**Les 5 fichiers doivent rester dans le même dossier.**
+**Tous les fichiers doivent rester dans le même dossier** (ou à la racine
+du même dépôt pour un hébergement web).
 
 ## Fichiers du projet
 
 | Fichier | Rôle | À éditer ? |
 |---|---|---|
+| `index.html` | Page d'accueil / présentation (hébergement GitHub Pages) | Occasionnellement (copie/coordonnées) |
 | `geosd-admin.html` | Application desktop administrateur | Non |
 | `geosd-terrain-saisie.html` | Application terrain — saisie | Non |
 | `geosd-terrain-consultation.html` | Application terrain — consultation | Éventuellement, pour `DEPOT_URL` (voir plus bas) |
 | `geosd-common.css` | Apparence commune aux 3 versions | Non |
-| `geosd-themes.js` | Config. des thématiques (généré) — **ne pas éditer à la main** | Non |
+| `geosd-themes.js` | Config. des thématiques et des territoires (généré/édité) — **ne pas éditer le bloc THEMES à la main** | Oui, pour `TERRITOIRES` (voir plus bas) |
 | `modele-formulaires.csv` | Modèle de champs par thématique — **source de vérité** | **Oui**, c'est le fichier à modifier |
-| `generate_themes.py` | Régénère `geosd-themes.js` à partir du CSV | Non |
-| `*.geojson` | Données saisies | Non manuellement |
+| `generate_themes.py` | Régénère le bloc THEMES de `geosd-themes.js` à partir du CSV | Non |
+| `points2.geojson` | Jeu de données de démonstration (aucune vraie donnée) | Non |
+| `*.geojson` (données réelles) | Données saisies | Non manuellement |
+| `JOURNAL_DECISIONS.md` | Historique des arbitrages et de leur raison d'être | Ajouter une entrée si nouvelle décision structurante |
+
+## Sélecteur de territoire (une instance pour les 6 services de la région)
+
+GeoSD est pensé ici pour être **hébergé une seule fois** (ex. sur GitHub
+Pages) et utilisé par les 6 services départementaux de la région Centre-Val
+de Loire — chacun avec ses propres fichiers de données, mais la même
+application.
+
+**À la première ouverture** (sur un poste ou un appareil donné), un
+sélecteur demande de choisir son service départemental dans une liste. La
+carte s'ouvre alors automatiquement sur le territoire correspondant. Ce
+choix est **mémorisé sur l'appareil** (pas de compte, juste
+`localStorage`) — il ne sera plus redemandé ensuite.
+
+- **Changer de territoire** : bouton **"Territoire : ..."** dans l'en-tête,
+  à tout moment, dans les 3 applications.
+- **"Passer"** : ouvre une vue France entière, sans mémoriser de choix — le
+  sélecteur réapparaîtra à la prochaine ouverture.
+
+**Ajouter un 7ᵉ territoire (ou modifier une emprise existante) :** éditer
+l'objet `TERRITOIRES` en haut de `geosd-themes.js` — une seule ligne par
+territoire, format :
+```js
+loiret: { label: "Loiret (45)", bounds: [[47.55, 1.50], [48.20, 2.95]] }
+```
+Le rectangle est `[[lat_sud, lng_ouest], [lat_nord, lng_est]]`. Comme pour
+les thématiques, **un seul fichier à modifier, les 3 applications suivent
+automatiquement**. Les emprises actuelles sont approximatives — à ajuster
+visuellement si besoin en testant la page.
+
+**Choix volontairement écarté :** une carte cliquable pour choisir le
+territoire. Un menu déroulant suffit largement pour 6 (voire quelques
+dizaines) de territoires nommés, et évite d'avoir à maintenir de vrais
+contours géographiques (fichier de frontières administratives) dans le
+projet — plus simple à faire évoluer.
+
+## Hébergement web (GitHub Pages)
+
+Le projet peut être servi tel quel comme site statique — `index.html`
+présente l'outil et pointe vers les 3 versions et le fichier de démo.
+
+- **Tous les fichiers à la racine du même dépôt/branche publiée**
+  (`index.html`, les 3 `.html`, `geosd-common.css`, `geosd-themes.js`,
+  `points2.geojson`) — les liens entre eux sont en chemin relatif.
+- **Aucune vraie donnée ne doit jamais être commitée** dans ce dépôt —
+  seul `points2.geojson` (démonstration fictive) doit s'y trouver. Les
+  fichiers `.geojson` réels des services restent en local/réseau, jamais
+  sur GitHub.
+- Ouvrir `geosd-admin.html` en HTTPS (via GitHub Pages) plutôt qu'en
+  `file://` local évite certains soucis rencontrés avec les chemins réseau
+  UNC (voir Dépannage) — la File System Access API fonctionne aussi bien
+  en HTTPS qu'en `file://`, et le sélecteur de fichier reste libre de
+  parcourir n'importe quel lecteur local ou réseau mappé, quelle que soit
+  l'origine de la page.
+- Pied de page de `index.html` : coordonnées de contact plutôt qu'un lien
+  vers le dépôt (le dépôt n'est pas destiné à être mis en avant comme
+  "code source" public consultable).
 
 ## Modifier le modèle de champs (thématiques communes aux 3 versions)
 
@@ -183,6 +246,7 @@ rouvrant directement la bonne version.
 | `Cross origin sub frames aren't allowed...` | Fichier ouvert dans une iframe/aperçu | Ouvrir en onglet direct |
 | `User activation is required to request permissions` (Android) | Implémentation Android non fiable de la File System Access API | Normal — utiliser les versions terrain, pas `geosd-admin.html`, sur tablette |
 | `Marqueurs THEMES_START/THEMES_END introuvables` | `generate_themes.py` ne trouve pas `geosd-themes.js` dans le dossier courant | Vérifier avec `dir`/`ls` que tous les fichiers sont dans le même dossier |
+| `Not allowed to request permissions in this context` (chemin réseau) | Fichier ouvert via un chemin UNC direct (`file://serveur/...`), traité différemment d'un disque local par Chrome | Mapper le dossier réseau en lettre de lecteur (`Z:`) et ouvrir depuis là (`file:///Z:/...`), ou héberger `geosd-admin.html` en HTTPS |
 | Un point envoyé par mail n'arrive pas intact | Corps du mail tronqué (limite `mailto`) | Réessayer avec "Partager" |
 
 ## Sauvegarde des données
@@ -196,6 +260,13 @@ séance d'intégration importante.
 - Champs spécifiques restants pour Phytosanitaires, VTM, FSC,
   Habitat/espèces protégées, Cueillette.
 - Sous-type "Eau > RCE" à définir.
+- PWA installable pour les 2 versions terrain (manifeste + mise en cache
+  hors-ligne) — évoqué, pas encore implémenté. Rendrait l'icône d'écran
+  d'accueil réellement fonctionnelle sans réseau, pas juste un raccourci
+  vers une page à recharger.
+- Emprises exactes des 6 territoires (`TERRITOIRES` dans
+  `geosd-themes.js`) à vérifier/ajuster — actuellement des approximations
+  de départ, pas des contours officiels.
 - Suivi à prévoir sur l'évolution du support Android de la File System
   Access API (statut en cours de développement côté Chromium, sans
-  garantie de date — voir échanges avec l'assistant pour le détail).
+  garantie de date — voir JOURNAL_DECISIONS.md pour le détail).

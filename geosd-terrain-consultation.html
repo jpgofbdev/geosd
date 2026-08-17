@@ -13,11 +13,12 @@
 <header>
   <div class="brand">
     <span class="mark">CONSULT.</span>
-    <h1>GeoSD</h1>
+    <h1><a href="index.html">GeoSD</a></h1>
   </div>
   <div class="toolbar">
     <span id="status">Aucun point chargé</span>
     <button id="btn-toggle-filters">Filtres</button>
+    <button id="btn-territory">Territoire : —</button>
     <button id="btn-load-local" class="primary">Charger un fichier</button>
     <input type="file" id="input-load-local" accept=".geojson,.json" style="display:none;">
     <button id="btn-reload" style="display:none;">Recharger le dépôt</button>
@@ -130,7 +131,14 @@ function showFreshness(updatedAtIso) {
 let geojson = { type: 'FeatureCollection', features: [] };
 let markersById = {};
 
-const map = L.map('map').setView([48.8566, 2.3522], 13);
+const map = L.map('map');
+function updateTerritoryButton(key) {
+  document.getElementById('btn-territory').textContent = 'Territoire : ' + territoryLabel(key);
+}
+initTerritory(map, updateTerritoryButton);
+document.getElementById('btn-territory').addEventListener('click', () => {
+  showTerritoryPicker(map, getSavedTerritory(), updateTerritoryButton);
+});
 addBaseLayerSwitcher(map);
 const markersLayer = L.layerGroup().addTo(map);
 
