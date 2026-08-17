@@ -1,4 +1,4 @@
-theme_key,theme_label,subtype_key,subtype_label,field_name,field_label,field_type,required,options
+﻿theme_key,theme_label,subtype_key,subtype_label,field_name,field_label,field_type,required,options
 chasse,Chasse,,,moment,Braconnage,select,oui,"Jour,Nuit"
 chasse,Chasse,,,nb_coups_de_feu,Nombre de coups de feu entendus,number,non,
 chasse,Chasse,,,type_arme,Type d'arme perçu,select,non,"Carabine,Fusil,Indéterminé"
