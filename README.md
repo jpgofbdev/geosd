@@ -4,7 +4,7 @@ Application de saisie de points géolocalisés par thématique, sans compte
 utilisateur ni serveur applicatif. Le projet est découpé en
 **3 versions indépendantes**, chacune adaptée à un usage précis, plus une
 page d'accueil de présentation (`index.html`) pour l'hébergement public
-(GitHub Pages).
+(GitHub Pages)..
 
 ## Les 3 versions
 
