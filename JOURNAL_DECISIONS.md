@@ -114,6 +114,15 @@ arrière par erreur, ou de refaire les mêmes hésitations.
 - **Pas de bibliothèque de graphique externe** — histogramme en SVG fait
   à la main, pour éviter un nouveau risque de dépendance CDN (leçon tirée
   des soucis de chargement de Leaflet en cours de projet).
+- **Saisie prédictive du champ "commune" (terrain-saisie) via `<datalist>`
+  HTML natif**, pas de librairie d'autocomplete JS. Liste des communes
+  (Centre-Val de Loire, `commune_majusucle_CVL.csv`) intégrée au même bloc
+  généré que `THEMES` dans `geosd-themes.js` (`generate_themes.py` étendu),
+  pour rester utilisable hors-ligne et cohérent avec le principe "un seul
+  fichier CSV = source de vérité". Champ **texte libre conservé** (pas de
+  `<select>`) : une commune absente de la liste (limitrophe hors région,
+  faute dans le CSV source) reste saisissable. Affichage volontairement en
+  MAJUSCULES (cohérence avec le CSV source / exports existants).
 
 ## Incidents résolus (pour ne pas les reproduire)
 

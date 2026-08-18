@@ -102,6 +102,9 @@
   </div>
 </div>
 
+<!-- Suggestions pour le champ "commune" (saisie prédictive, texte libre conservé) -->
+<datalist id="communes-list"></datalist>
+
 <!-- Panneau d'envoi, apparaît après chaque point saisi -->
 <div class="send-panel" id="send-panel">
   <p class="ok-line">✓ Point enregistré sur la tablette</p>
@@ -170,6 +173,17 @@ const markersLayer = L.layerGroup().addTo(map);
 
 function setStatus(text, kind) { statusEl.textContent = text; statusEl.className = kind || ''; }
 
+/* ---- Saisie prédictive du champ "commune" (COMMUNES_CVL, geosd-themes.js) ---- */
+function populateCommunesList() {
+  const list = document.getElementById('communes-list');
+  (window.COMMUNES_CVL || []).forEach(nom => {
+    const o = document.createElement('option');
+    o.value = nom;
+    list.appendChild(o);
+  });
+}
+populateCommunesList();
+
 /* ---- Formulaire thématique / sous-type ---- */
 function populateThemeSelect() {
   themeSelect.innerHTML = '';
@@ -223,6 +237,10 @@ function renderFormFields() {
     input.id = 'f-' + f.name;
     input.name = f.name;
     if (f.required) input.required = true;
+    if (f.name === 'commune') {
+      input.setAttribute('list', 'communes-list');
+      input.setAttribute('autocapitalize', 'characters');
+    }
     wrap.appendChild(input);
     fieldsContainer.appendChild(wrap);
   });

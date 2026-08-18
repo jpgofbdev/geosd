@@ -27,6 +27,14 @@ JS_PATH = Path("geosd-themes.js")
 START_MARKER = "// ==THEMES_START=="
 END_MARKER = "// ==THEMES_END=="
 
+# Liste des communes (Centre-Val de Loire) pour la saisie prédictive du
+# champ "commune". CSV à une seule colonne : nom_commune (en MAJUSCULES,
+# affichage voulu tel quel). Optionnel : si le fichier est absent, le bloc
+# COMMUNES existant dans geosd-themes.js est laissé inchangé.
+COMMUNES_CSV_PATH = Path("commune_majusucle_CVL.csv")
+COMMUNES_START_MARKER = "// ==COMMUNES_START=="
+COMMUNES_END_MARKER = "// ==COMMUNES_END=="
+
 
 def bool_fr(value):
     return value.strip().lower() in ("oui", "true", "1", "yes")
@@ -113,6 +121,37 @@ def to_js_object(themes):
     return "\n".join(lines)
 
 
+def load_communes(csv_path):
+    with csv_path.open(encoding="utf-8-sig", newline="") as f:
+        reader = csv.DictReader(f)
+        if "nom_commune" not in (reader.fieldnames or []):
+            sys.exit(
+                f"Colonne 'nom_commune' introuvable dans {csv_path} "
+                f"(colonnes trouvées : {reader.fieldnames})."
+            )
+        communes = sorted({
+            row["nom_commune"].strip()
+            for row in reader
+            if row.get("nom_commune", "").strip()
+        })
+    return communes
+
+
+def to_js_communes(communes):
+    lines = ["const COMMUNES_CVL = ["]
+    lines += [f"  {json.dumps(c, ensure_ascii=False)}," for c in communes]
+    lines.append("];")
+    return "\n".join(lines)
+
+
+def replace_block(js, start_marker, end_marker, block):
+    if start_marker not in js or end_marker not in js:
+        sys.exit(f"Marqueurs {start_marker} / {end_marker} introuvables dans geosd-themes.js.")
+    pattern = re.compile(re.escape(start_marker) + r".*?" + re.escape(end_marker), re.DOTALL)
+    replacement = f"{start_marker}\n{block}\n{end_marker}"
+    return pattern.sub(replacement, js, count=1)
+
+
 def main():
     if not CSV_PATH.exists():
         sys.exit(f"Fichier introuvable : {CSV_PATH}")
@@ -123,18 +162,18 @@ def main():
     js_block = to_js_object(themes)
 
     js = JS_PATH.read_text(encoding="utf-8")
-    if START_MARKER not in js or END_MARKER not in js:
-        sys.exit(
-            "Marqueurs // ==THEMES_START== / // ==THEMES_END== introuvables "
-            "dans geosd-themes.js."
-        )
-
-    pattern = re.compile(re.escape(START_MARKER) + r".*?" + re.escape(END_MARKER), re.DOTALL)
-    replacement = f"{START_MARKER}\n{js_block}\n{END_MARKER}"
-    new_js = pattern.sub(replacement, js, count=1)
-
-    JS_PATH.write_text(new_js, encoding="utf-8")
+    js = replace_block(js, START_MARKER, END_MARKER, js_block)
     print(f"OK — {len(themes)} thématique(s) écrites dans {JS_PATH} (partagé par les 3 versions)")
+
+    if COMMUNES_CSV_PATH.exists():
+        communes = load_communes(COMMUNES_CSV_PATH)
+        communes_block = to_js_communes(communes)
+        js = replace_block(js, COMMUNES_START_MARKER, COMMUNES_END_MARKER, communes_block)
+        print(f"OK — {len(communes)} commune(s) écrites dans {JS_PATH} (saisie prédictive)")
+    else:
+        print(f"(ignoré) {COMMUNES_CSV_PATH} introuvable — bloc COMMUNES laissé inchangé")
+
+    JS_PATH.write_text(js, encoding="utf-8")
 
 
 if __name__ == "__main__":
