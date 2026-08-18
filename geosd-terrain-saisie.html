@@ -299,7 +299,7 @@ function attachCommuneAutocomplete(input, wrap) {
   input.addEventListener('input', () => {
     const q = normalizeText(input.value.trim());
     if (!q) { close(); return; }
-    matches = (window.COMMUNES_CVL || [])
+    matches = COMMUNES_CVL
       .filter(nom => normalizeText(nom).includes(q))
       .slice(0, 8);
     activeIndex = -1;

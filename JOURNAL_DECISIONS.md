@@ -135,6 +135,20 @@ arrière par erreur, ou de refaire les mêmes hésitations.
 
 ## Incidents résolus (pour ne pas les reproduire)
 
+- **`window.MA_CONST` renvoie `undefined` alors que `MA_CONST` fonctionne**
+  → une déclaration `const`/`let` au niveau global d'un `<script>` (ex.
+  `THEMES`, `COMMUNES_CVL` dans `geosd-themes.js`) n'est **pas** attachée à
+  `window`, contrairement à `var` ou à une fonction déclarée globalement.
+  Piège rencontré deux fois de suite lors de l'ajout de la saisie
+  prédictive "commune" : (1) diagnostic — `window.COMMUNES_CVL.length` en
+  console échouait alors que la donnée était bien chargée (`COMMUNES_CVL`
+  tout court fonctionnait) ; (2) bug réel dans le code applicatif —
+  `attachCommuneAutocomplete` filtrait sur `(window.COMMUNES_CVL || [])`,
+  qui valait donc toujours `[]`, d'où un menu de suggestions présent dans
+  le DOM mais toujours vide. Corrigé en référençant `COMMUNES_CVL`
+  directement (sans `window.`). **Réflexe à garder** : toujours tester
+  une variable globale déclarée en `const`/`let` par son nom nu en
+  console, jamais via `window.`.
 - Chargement Leaflet échouant selon le contexte de test → CDN de secours
   en cascade (jsDelivr → unpkg → cdnjs) + message d'erreur explicite
   distinguant "pas de réseau" de "ouvert dans un aperçu sandboxé".
