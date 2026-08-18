@@ -133,6 +133,17 @@ arrière par erreur, ou de refaire les mêmes hésitations.
   Affichage volontairement en MAJUSCULES (cohérence avec le CSV source /
   exports existants).
 
+- **Géolocalisation "Ma position" (terrain-saisie) : `navigator.geolocation`
+  natif**, un seul relevé par clic (`getCurrentPosition`, pas de suivi
+  continu `watchPosition`) — plus économique en batterie sur une tournée
+  longue, l'agent reclique pour rafraîchir. Bouton de contrôle Leaflet
+  custom (topleft, style `leaflet-bar` natif). Sur échec/refus (poste fixe
+  sans GPS, politique DSI bloquant la permission, navigateur incompatible)
+  → message d'erreur clair via `setStatus(..., 'err')`, rien ne casse
+  ailleurs dans l'appli. Raccourci **"Ajouter un point ici"** dans la
+  popup de position explicitement facultatif : le clic normal sur la carte
+  pour créer un point reste inchangé, disponible en toutes circonstances.
+
 ## Incidents résolus (pour ne pas les reproduire)
 
 - **`window.MA_CONST` renvoie `undefined` alors que `MA_CONST` fonctionne**

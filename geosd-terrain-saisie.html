@@ -44,6 +44,18 @@
   .commune-suggestion-item.active{
     background:var(--paper);
   }
+
+  /* ---- Contrôle "Ma position" (Leaflet natif, cf. JOURNAL_DECISIONS.md) ---- */
+  .locate-control a{
+    display:flex; align-items:center; justify-content:center;
+    color:var(--accent);
+  }
+  .locate-control a:hover{ color:var(--accent-dark); }
+  .locate-control.locating a{
+    opacity:.5; pointer-events:none;
+    animation:locate-pulse 1s ease-in-out infinite;
+  }
+  @keyframes locate-pulse{ 50%{ opacity:.15; } }
 </style>
 </head>
 <body>
@@ -194,8 +206,88 @@ document.getElementById('btn-territory').addEventListener('click', () => {
 });
 addBaseLayerSwitcher(map);
 const markersLayer = L.layerGroup().addTo(map);
+const positionLayer = L.layerGroup().addTo(map);
 
 function setStatus(text, kind) { statusEl.textContent = text; statusEl.className = kind || ''; }
+
+/* ---- Géolocalisation ("Ma position") ----
+   API navigator.geolocation native (pas de dépendance) : demande une
+   permission explicite au navigateur, souvent indisponible/bloquée sur
+   poste fixe (pas de GPS, politique DSI) — géré proprement via un message
+   d'erreur, sans casser le reste de l'appli. Un seul relevé par clic
+   (pas de suivi continu type watchPosition), plus économique en batterie
+   sur une tournée terrain longue ; l'agent reclique pour rafraîchir.
+   Le raccourci "Ajouter un point ici" dans la popup est explicitement
+   facultatif : le clic normal sur la carte pour créer un point reste
+   disponible et inchangé. */
+let locateControlContainer = null;
+
+const LocateControl = L.Control.extend({
+  options: { position: 'topleft' },
+  onAdd: function () {
+    const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control locate-control');
+    locateControlContainer = container;
+    const link = L.DomUtil.create('a', '', container);
+    link.href = '#';
+    link.title = 'Ma position';
+    link.setAttribute('aria-label', 'Centrer la carte sur ma position');
+    link.innerHTML =
+      '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">' +
+      '<circle cx="12" cy="12" r="3"/>' +
+      '<path d="M12 2v4M12 18v4M2 12h4M18 12h4" stroke-linecap="round"/>' +
+      '</svg>';
+    L.DomEvent.disableClickPropagation(container);
+    L.DomEvent.on(link, 'click', L.DomEvent.stop);
+    L.DomEvent.on(link, 'click', locateMe);
+    return container;
+  }
+});
+map.addControl(new LocateControl());
+
+function locateMe() {
+  if (!navigator.geolocation) {
+    setStatus('Géolocalisation non disponible sur cet appareil ou ce navigateur.', 'err');
+    return;
+  }
+  if (locateControlContainer) locateControlContainer.classList.add('locating');
+  setStatus('Recherche de la position…');
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      if (locateControlContainer) locateControlContainer.classList.remove('locating');
+      const latlng = L.latLng(pos.coords.latitude, pos.coords.longitude);
+      const accuracy = Math.round(pos.coords.accuracy);
+      positionLayer.clearLayers();
+      L.circle(latlng, {
+        radius: pos.coords.accuracy,
+        color: '#00694d', weight: 1, fillColor: '#00694d', fillOpacity: 0.08
+      }).addTo(positionLayer);
+      const marker = L.circleMarker(latlng, {
+        radius: 8, weight: 2, color: '#fff', fillColor: '#00694d', fillOpacity: 1
+      }).addTo(positionLayer);
+      marker.bindPopup(
+        '<p class="popup-title">Votre position</p>' +
+        '<p class="popup-field">Précision : ±' + accuracy + ' m</p>' +
+        '<div class="popup-actions"><button class="popup-add-here" type="button">Ajouter un point ici</button></div>'
+      );
+      map.setView(latlng, Math.max(map.getZoom(), 16));
+      marker.openPopup();
+      setStatus('Position trouvée (précision ±' + accuracy + ' m).', 'ok');
+    },
+    err => {
+      if (locateControlContainer) locateControlContainer.classList.remove('locating');
+      let msg = 'Impossible d’obtenir votre position.';
+      if (err.code === err.PERMISSION_DENIED) {
+        msg = 'Géolocalisation refusée : autorisez l’accès à la position dans les paramètres du navigateur si besoin.';
+      } else if (err.code === err.POSITION_UNAVAILABLE) {
+        msg = 'Position indisponible (pas de signal GPS ici).';
+      } else if (err.code === err.TIMEOUT) {
+        msg = 'Délai dépassé pour obtenir la position, réessayez.';
+      }
+      setStatus(msg, 'err');
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
+  );
+}
 
 /* ---- Formulaire thématique / sous-type ---- */
 function populateThemeSelect() {
@@ -412,6 +504,13 @@ function addMarker(feature) {
 }
 map.on('popupopen', e => {
   const marker = e.popup._source;
+  const addHereBtn = e.popup._contentNode.querySelector('.popup-add-here');
+  if (addHereBtn && marker) {
+    addHereBtn.onclick = () => {
+      map.closePopup();
+      openModal(marker.getLatLng());
+    };
+  }
   if (!marker || !marker.featureId) return;
   const delBtn = e.popup._contentNode.querySelector('.popup-del');
   if (delBtn) delBtn.onclick = () => deletePoint(marker.featureId);
