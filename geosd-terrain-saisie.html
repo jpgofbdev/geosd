@@ -17,6 +17,33 @@
   .send-panel .ok-line{ display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:var(--accent); margin:0 0 10px; }
   .send-panel .actions{ display:flex; gap:8px; flex-wrap:wrap; }
   .send-panel .actions button{ flex:1; min-width:120px; }
+
+  /* Suggestions "commune" : menu fait main plutôt que <datalist> natif,
+     invisible dans Chrome quand un ancêtre a overflow:auto (cas de
+     .modal ici) — voir JOURNAL_DECISIONS.md. */
+  .field-commune{ position:relative; }
+  .commune-suggestions{
+    display:none;
+    position:absolute; left:0; right:0; top:100%;
+    z-index:20;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-top:none;
+    border-radius:0 0 3px 3px;
+    max-height:180px;
+    overflow-y:auto;
+    box-shadow:0 4px 10px rgba(22,50,58,.15);
+  }
+  .commune-suggestions.show{ display:block; }
+  .commune-suggestion-item{
+    padding:8px 9px;
+    font-size:14px;
+    cursor:pointer;
+  }
+  .commune-suggestion-item:hover,
+  .commune-suggestion-item.active{
+    background:var(--paper);
+  }
 </style>
 </head>
 <body>
@@ -102,9 +129,6 @@
   </div>
 </div>
 
-<!-- Suggestions pour le champ "commune" (saisie prédictive, texte libre conservé) -->
-<datalist id="communes-list"></datalist>
-
 <!-- Panneau d'envoi, apparaît après chaque point saisi -->
 <div class="send-panel" id="send-panel">
   <p class="ok-line">✓ Point enregistré sur la tablette</p>
@@ -173,17 +197,6 @@ const markersLayer = L.layerGroup().addTo(map);
 
 function setStatus(text, kind) { statusEl.textContent = text; statusEl.className = kind || ''; }
 
-/* ---- Saisie prédictive du champ "commune" (COMMUNES_CVL, geosd-themes.js) ---- */
-function populateCommunesList() {
-  const list = document.getElementById('communes-list');
-  (window.COMMUNES_CVL || []).forEach(nom => {
-    const o = document.createElement('option');
-    o.value = nom;
-    list.appendChild(o);
-  });
-}
-populateCommunesList();
-
 /* ---- Formulaire thématique / sous-type ---- */
 function populateThemeSelect() {
   themeSelect.innerHTML = '';
@@ -237,13 +250,84 @@ function renderFormFields() {
     input.id = 'f-' + f.name;
     input.name = f.name;
     if (f.required) input.required = true;
-    if (f.name === 'commune') {
-      input.setAttribute('list', 'communes-list');
-      input.setAttribute('autocapitalize', 'characters');
-    }
     wrap.appendChild(input);
+    if (f.name === 'commune') {
+      wrap.classList.add('field-commune');
+      input.setAttribute('autocomplete', 'off');
+      input.setAttribute('autocapitalize', 'characters');
+      attachCommuneAutocomplete(input, wrap);
+    }
     fieldsContainer.appendChild(wrap);
   });
+}
+
+/* ---- Menu de suggestions "commune" (COMMUNES_CVL, geosd-themes.js) ----
+   Fait main plutôt que <datalist> natif : invisible dans Chrome quand un
+   ancêtre a overflow:auto (cas de .modal ici). Champ texte libre conservé
+   — le menu propose, il ne contraint pas la saisie. */
+function attachCommuneAutocomplete(input, wrap) {
+  const box = document.createElement('div');
+  box.className = 'commune-suggestions';
+  wrap.appendChild(box);
+  let matches = [];
+  let activeIndex = -1;
+
+  function close() {
+    box.innerHTML = '';
+    box.classList.remove('show');
+    matches = [];
+    activeIndex = -1;
+  }
+
+  function render() {
+    box.innerHTML = '';
+    matches.forEach((nom, i) => {
+      const item = document.createElement('div');
+      item.className = 'commune-suggestion-item' + (i === activeIndex ? ' active' : '');
+      item.textContent = nom;
+      // mousedown (pas click) : se déclenche avant le blur de l'input
+      item.addEventListener('mousedown', e => {
+        e.preventDefault();
+        input.value = nom;
+        close();
+      });
+      box.appendChild(item);
+    });
+    box.classList.toggle('show', matches.length > 0);
+  }
+
+  input.addEventListener('input', () => {
+    const q = normalizeText(input.value.trim());
+    if (!q) { close(); return; }
+    matches = (window.COMMUNES_CVL || [])
+      .filter(nom => normalizeText(nom).includes(q))
+      .slice(0, 8);
+    activeIndex = -1;
+    render();
+  });
+
+  input.addEventListener('keydown', e => {
+    if (!matches.length) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      activeIndex = Math.min(activeIndex + 1, matches.length - 1);
+      render();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      activeIndex = Math.max(activeIndex - 1, 0);
+      render();
+    } else if (e.key === 'Enter') {
+      if (activeIndex >= 0) {
+        e.preventDefault();
+        input.value = matches[activeIndex];
+        close();
+      }
+    } else if (e.key === 'Escape') {
+      close();
+    }
+  });
+
+  input.addEventListener('blur', () => { setTimeout(close, 100); });
 }
 
 function openModal(latlng, feature) {

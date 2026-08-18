@@ -114,15 +114,24 @@ arrière par erreur, ou de refaire les mêmes hésitations.
 - **Pas de bibliothèque de graphique externe** — histogramme en SVG fait
   à la main, pour éviter un nouveau risque de dépendance CDN (leçon tirée
   des soucis de chargement de Leaflet en cours de projet).
-- **Saisie prédictive du champ "commune" (terrain-saisie) via `<datalist>`
-  HTML natif**, pas de librairie d'autocomplete JS. Liste des communes
-  (Centre-Val de Loire, `commune_majusucle_CVL.csv`) intégrée au même bloc
-  généré que `THEMES` dans `geosd-themes.js` (`generate_themes.py` étendu),
-  pour rester utilisable hors-ligne et cohérent avec le principe "un seul
-  fichier CSV = source de vérité". Champ **texte libre conservé** (pas de
-  `<select>`) : une commune absente de la liste (limitrophe hors région,
-  faute dans le CSV source) reste saisissable. Affichage volontairement en
-  MAJUSCULES (cohérence avec le CSV source / exports existants).
+- **Saisie prédictive du champ "commune" (terrain-saisie) : menu fait
+  main en JS, pas `<datalist>` HTML natif.** Première tentative avec
+  `<datalist>` (voir décision suivante pour l'intégration des données) :
+  invisible en pratique dans Chrome, car le popup natif de suggestions est
+  cadré par le premier ancêtre `overflow` non-`visible` — ici `.modal`
+  (`overflow:auto`, nécessaire pour les formulaires longs). Bug connu de
+  Chromium sans contournement CSS simple. Remplacé par un petit menu
+  déroulant positionné en HTML/CSS normal (`position:absolute` dans le
+  conteneur du champ, donc jamais clippé), filtrage sur `COMMUNES_CVL` via
+  `normalizeText` (déjà utilisé ailleurs pour la recherche/filtre), sans
+  dépendance externe. Champ toujours **texte libre** : le menu propose, il
+  ne contraint pas.
+- **Liste des communes (Centre-Val de Loire, `commune_majusucle_CVL.csv`)
+  intégrée au même bloc généré que `THEMES` dans `geosd-themes.js`**
+  (`generate_themes.py` étendu), pour rester utilisable hors-ligne et
+  cohérent avec le principe "un seul fichier CSV = source de vérité".
+  Affichage volontairement en MAJUSCULES (cohérence avec le CSV source /
+  exports existants).
 
 ## Incidents résolus (pour ne pas les reproduire)
 
