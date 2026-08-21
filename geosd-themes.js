@@ -1893,6 +1893,47 @@ const COMMUNES_CVL = [
 ];
 // ==COMMUNES_END==
 
+/* ---- Régions PMTiles disponibles (fond de carte hors-ligne) ----
+   Un fichier .pmtiles par grande région, sur le même serveur. Ajouter
+   une région : une seule ligne à ajouter ici, elle apparaît
+   automatiquement dans le sélecteur du module hors-ligne
+   (geosd-offline-map.js) et peut devenir le fond de carte vectoriel
+   (addBaseLayerSwitcher, plus bas dans ce fichier).
+   ========================================================= */
+const PMTILES_BASE_URL = 'https://tiles.jpg-cvl-dev.fr/tiles/';
+const PMTILES_REGIONS = [
+  { code: 'AURA', label: 'Auvergne-Rhône-Alpes' },
+  { code: 'BFC',  label: 'Bourgogne-Franche-Comté' },
+  { code: 'BRE',  label: 'Bretagne' },
+  { code: 'CVL',  label: 'Centre-Val de Loire' },
+  { code: 'COR',  label: 'Corse' },
+  { code: 'GES',  label: 'Grand Est' },
+  { code: 'HDF',  label: 'Hauts-de-France' },
+  { code: 'IDF',  label: 'Île-de-France' },
+  { code: 'NOR',  label: 'Normandie' },
+  { code: 'NAQ',  label: 'Nouvelle-Aquitaine' },
+  { code: 'OCC',  label: 'Occitanie' },
+  { code: 'PACA', label: 'Provence-Alpes-Côte d\'Azur' },
+  { code: 'PDL',  label: 'Pays de la Loire' }
+];
+function pmtilesUrlFor(code) { return PMTILES_BASE_URL + code + '.pmtiles'; }
+
+// Région actuellement utilisée comme fond vectoriel (indépendant du
+// territoire cartographique ci-dessous — un territoire est une simple
+// emprise de zoom initial, une région PMTiles est un fichier de
+// données). CVL par défaut, cohérent avec les territoires existants
+// (tous en Centre-Val de Loire).
+const PMTILES_ACTIVE_REGION_KEY = 'geosd_pmtiles_active_region';
+function getActivePmtilesRegion() {
+  try {
+    const saved = localStorage.getItem(PMTILES_ACTIVE_REGION_KEY);
+    return PMTILES_REGIONS.some(r => r.code === saved) ? saved : 'CVL';
+  } catch (e) { return 'CVL'; }
+}
+function setActivePmtilesRegion(code) {
+  try { localStorage.setItem(PMTILES_ACTIVE_REGION_KEY, code); } catch (e) { /* ignoré */ }
+}
+
 /* ---- Territoires disponibles (un par service départemental) ----
    Rectangle [ [lat_sud, lng_ouest], [lat_nord, lng_est] ] par territoire.
    Pour ajouter un service : une seule ligne à ajouter ici, les 3
@@ -2079,11 +2120,13 @@ async function loadFromCandidates(loader, candidates) {
   return false;
 }
 const LEAFLET_CSS_CANDIDATES = [
+  'vendor/leaflet.css', // copie locale, prioritaire — élimine la dépendance au CDN pour le premier chargement sur un nouvel appareil (cf. README-spike.md, étape 28)
   'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
   'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css'
 ];
 const LEAFLET_JS_CANDIDATES = [
+  'vendor/leaflet.js', // copie locale, prioritaire — voir remarque ci-dessus
   'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
   'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js'
@@ -2128,9 +2171,233 @@ function addBaseLayerSwitcher(map) {
   const lyrIgnPlan = ignWmtsLayer('GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2', 'image/png');
   const lyrIgnOrtho = ignWmtsLayer('ORTHOIMAGERY.ORTHOPHOTOS', 'image/jpeg');
   lyrOSM.addTo(map);
-  L.control.layers(
+  const layersControl = L.control.layers(
     { 'OpenStreetMap': lyrOSM, 'Plan IGN': lyrIgnPlan, 'Orthophoto IGN': lyrIgnOrtho },
     null,
     { position: 'topright', collapsed: false }
   ).addTo(map);
+
+  /* ============================================================
+     SPIKE PMTiles — voir README-spike.md pour le contexte complet.
+     Seul ajout de ce spike dans ce fichier : une entrée "Fond PMTiles
+     (test)" greffée sur le switcher existant, sans toucher aux fonds
+     déjà en place ni au reste de l'application.
+
+     ⚠ Écarts par rapport au plan initial (documentés dans
+     README-spike.md, section Journal) :
+     1. `pmtiles`+`leafletRasterLayer` (raster) → `protomaps-leaflet`
+        (vectoriel), après erreur constatée : CVL.pmtiles contient des
+        tuiles MVT, pas raster.
+     2. Thème générique `light` → règles de style sur mesure
+        (`paint_rules`/`label_rules`), après constat que le thème
+        intégré ne matchait presque rien : il suppose le schéma de
+        couches "basemap" standard de Protomaps, alors que ce tuileset
+        utilise le schéma réel listé ci-dessous (proche d'OpenMapTiles),
+        celui du prototype MapLibre `offline-map-lab`.
+
+     Dépendance externe (remplace pmtiles.js) : protomaps-leaflet, build
+     UMD, expose window.protomapsL avec leafletLayer() et les
+     symbolizers (PolygonSymbolizer, LineSymbolizer, TextSymbolizer...).
+     Chargement paresseux via loadScript/loadFromCandidates, déjà
+     définis plus bas dans ce même fichier pour Leaflet — réutilisés ici
+     pour rester cohérent avec le protocole de chargement CDN-avec-repli
+     déjà en place.
+
+     Règles ci-dessous : transposition manuelle du style.json MapLibre
+     du prototype offline-map-lab (fourni par l'équipe) vers l'API
+     protomaps-leaflet, couche par couche (landuse/landcover/water/
+     waterway/transportation/transportation_name/place). Schéma de
+     couches réel du tuileset confirmé par inspection (pmtiles.io) :
+     aerodrome_label, aeroway, boundary, building, housenumber,
+     landcover, landuse, mountain_peak, park, place, poi, transportation,
+     transportation_name, water, water_name, waterway — seul le
+     sous-ensemble utilisé par le style MapLibre d'origine est repris
+     ici pour ce premier essai (pas de bâti, POI, aérodromes... pour
+     rester au plus près du style existant sans en inventer un nouveau).
+
+     ⚠ Deux points non vérifiables depuis cet environnement (pas
+     d'accès réseau ici), à confirmer au premier test réel :
+     - le rendu en tirets des cours d'eau intermittents (option `dash`
+       du LineSymbolizer) ;
+     - le suivi du tracé par les libellés de cours d'eau/routes
+       (`symbol-placement:"line"` en MapLibre n'a pas d'équivalent
+       garanti dans protomaps-leaflet ; ils s'afficheront probablement
+       en un point plutôt que le long de la ligne — dégradation
+       acceptée pour ce premier essai, à noter comme écart si confirmé).
+     ============================================================ */
+  const PROTOMAPS_JS_CANDIDATES = [
+    'vendor/protomaps-leaflet.js', // copie locale, prioritaire — voir README-spike.md, étape 28
+    'https://cdn.jsdelivr.net/npm/protomaps-leaflet@2/dist/protomaps-leaflet.js',
+    'https://unpkg.com/protomaps-leaflet@2/dist/protomaps-leaflet.js'
+  ];
+  // Région active mémorisée par le module hors-ligne
+  // (geosd-offline-map.js) — CVL par défaut si aucune n'a encore été
+  // choisie. Le fichier régional lui-même peut être servi depuis le
+  // réseau ou, s'il a été téléchargé pour un usage hors-ligne,
+  // intercepté et servi localement par sw-precache.js — de façon
+  // transparente pour ce code, qui ne fait que fournir une URL normale.
+  const PMTILES_URL = pmtilesUrlFor(getActivePmtilesRegion());
+
+  // Interpolation linéaire par paliers, pour reproduire les expressions
+  // ["interpolate", ["linear"], ["zoom"], ...] du style.json d'origine.
+  function pmtilesLerp(zoom, stops) {
+    if (zoom <= stops[0][0]) return stops[0][1];
+    for (let i = 0; i < stops.length - 1; i++) {
+      const [z0, v0] = stops[i], [z1, v1] = stops[i + 1];
+      if (zoom >= z0 && zoom <= z1) return v0 + (zoom - z0) / (z1 - z0) * (v1 - v0);
+    }
+    return stops[stops.length - 1][1];
+  }
+
+  loadFromCandidates(loadScript, PROTOMAPS_JS_CANDIDATES).then(ok => {
+    if (!ok || typeof window.protomapsL === 'undefined') {
+      console.error('SPIKE PMTiles : bibliothèque protomaps-leaflet non chargée (candidats CDN épuisés) — fond PMTiles indisponible pour cette session.');
+      return;
+    }
+    try {
+      const P = protomapsL;
+
+      /* ---- DIAGNOSTIC (étape 6, cf. README-spike.md) ----
+         Constat : avec les règles complètes ci-dessous, rien ne
+         s'affiche du tout (même plus l'eau), sans la moindre erreur en
+         console — signe probable qu'une exception silencieuse dans une
+         des fonctions (filter/width/font) fait avorter tout le rendu
+         de la tuile en interne, sans remonter. Pour isoler la cause
+         sans deviner à l'aveugle : bascule temporaire sur un jeu de
+         règles minimal (une seule couche, aucun filtre, aucune
+         fonction). PMTILES_DEBUG_MODE=true utilise ce jeu réduit ;
+         repasser à false une fois l'affichage de base confirmé, pour
+         revenir aux règles complètes déjà écrites. */
+      const PMTILES_DEBUG_MODE = false;
+
+      const paint_rules_debug = [
+        {
+          dataLayer: 'transportation',
+          symbolizer: new P.LineSymbolizer({ color: 'red', width: 3 })
+        }
+      ];
+      const label_rules_debug = [];
+
+      const paint_rules_full = [
+        // landuse_soft
+        {
+          dataLayer: 'landuse', minzoom: 6,
+          symbolizer: new P.PolygonSymbolizer({ fill: '#f2f0e6', opacity: 0.45 })
+        },
+        // landcover_wood
+        {
+          dataLayer: 'landcover', minzoom: 6,
+          filter: (z, f) => f.props.class === 'wood',
+          symbolizer: new P.PolygonSymbolizer({ fill: '#cfe8cf', opacity: 0.75 })
+        },
+        // landcover_grass (grass + park)
+        {
+          dataLayer: 'landcover', minzoom: 10,
+          filter: (z, f) => f.props.class === 'grass' || f.props.class === 'park',
+          symbolizer: new P.PolygonSymbolizer({ fill: '#dff1d2', opacity: 0.65 })
+        },
+        // water
+        {
+          dataLayer: 'water',
+          symbolizer: new P.PolygonSymbolizer({ fill: '#a0c8f0' })
+        },
+        // waterway_minor (fossés / intermittents), en tirets
+        {
+          dataLayer: 'waterway',
+          filter: (z, f) => f.props.class === 'ditch' || f.props.intermittent === 1,
+          symbolizer: new P.LineSymbolizer({
+            color: '#86bce8',
+            width: z => pmtilesLerp(z, [[10, 0.9], [12, 1.4], [14, 2.2]]),
+            dash: [1.5, 1.5]
+          })
+        },
+        // waterway_main (cours d'eau permanents)
+        {
+          dataLayer: 'waterway',
+          filter: (z, f) => f.props.class !== 'ditch' && f.props.intermittent === 0,
+          symbolizer: new P.LineSymbolizer({
+            color: '#2b7bbf',
+            width: z => pmtilesLerp(z, [[6, 0.4], [8, 0.8], [10, 1.7], [12, 2.6], [14, 3.8]])
+          })
+        },
+        // roads
+        {
+          dataLayer: 'transportation',
+          symbolizer: new P.LineSymbolizer({
+            color: '#888',
+            width: z => pmtilesLerp(z, [[6, 0.3], [10, 0.7], [14, 1.3]])
+          })
+        }
+      ];
+
+      const label_rules_full = [
+        // waterway_minor_label
+        {
+          dataLayer: 'waterway', minzoom: 12,
+          filter: (z, f) => !!f.props.name && (f.props.class === 'ditch' || f.props.intermittent === 1),
+          symbolizer: new P.TextSymbolizer({
+            label_props: ['name'], fill: '#4d93c8', stroke: '#ffffff', width: 2,
+            font: z => `${pmtilesLerp(z, [[12, 10], [14, 11]])}px sans-serif`
+          })
+        },
+        // waterway_main_label
+        {
+          dataLayer: 'waterway', minzoom: 10,
+          filter: (z, f) => !!f.props.name && f.props.class !== 'ditch' && f.props.intermittent === 0,
+          symbolizer: new P.TextSymbolizer({
+            label_props: ['name'], fill: '#1f6fb3', stroke: '#ffffff', width: 2,
+            font: z => `${pmtilesLerp(z, [[10, 11], [12, 12], [14, 13]])}px sans-serif`
+          })
+        },
+        // road_name (coalesce name:fr / name)
+        {
+          dataLayer: 'transportation_name', minzoom: 13,
+          symbolizer: new P.TextSymbolizer({
+            label_props: ['name:fr', 'name'], fill: '#444', stroke: '#ffffff', width: 1.5,
+            font: '11px sans-serif'
+          })
+        },
+        // place (coalesce name:fr / name)
+        {
+          dataLayer: 'place', minzoom: 6,
+          symbolizer: new P.TextSymbolizer({
+            label_props: ['name:fr', 'name'], fill: '#111', stroke: '#ffffff', width: 1.6,
+            font: z => `${pmtilesLerp(z, [[6, 11], [10, 14], [14, 16]])}px sans-serif`
+          })
+        }
+      ];
+
+      const paint_rules = PMTILES_DEBUG_MODE ? paint_rules_debug : paint_rules_full;
+      const label_rules = PMTILES_DEBUG_MODE ? label_rules_debug : label_rules_full;
+      if (PMTILES_DEBUG_MODE) {
+        console.warn('SPIKE PMTiles : PMTILES_DEBUG_MODE actif — une seule règle minimale (routes en rouge) au lieu du style complet. Voir README-spike.md, étape 6 bis.');
+      }
+
+      /* ---- SPIKE PMTiles — hypothèse "sur-zoom" (étape 7, cf. README) ----
+         Rien ne se dessine même avec la règle minimale, sans erreur.
+         Piste : la vue testée est à un zoom très profond (z19 observé
+         sur les tuiles OSM en échec dans la même page) ; les tuilesets
+         vectoriels type OpenMapTiles montent rarement au-delà du zoom
+         natif 14. Sans sur-zoom (réutiliser/agrandir la tuile la plus
+         profonde disponible), demander une zone à un niveau de zoom
+         que l'archive ne contient pas donnerait exactement ce qui est
+         observé. maxDataZoom déclare le zoom natif max de l'archive à
+         protomaps-leaflet pour qu'il fasse ce sur-zoom automatiquement
+         au-delà. Valeur 14 : hypothèse la plus courante pour ce type de
+         tuileset, pas confirmée pour CVL.pmtiles — à ajuster si le
+         zoom natif réel est différent (voir pmtiles.io, qui affiche le
+         zoom max de l'archive dans ses métadonnées). */
+      const lyrPmtiles = P.leafletLayer({
+        url: PMTILES_URL,
+        paintRules: paint_rules,
+        labelRules: label_rules,
+        backgroundColor: '#ffffff',
+        maxDataZoom: 14,
+        attribution: 'PMTiles (spike) — CVL'
+      });
+      layersControl.addBaseLayer(lyrPmtiles, 'Fond PMTiles (test)');
+    } catch (err) {
+      console.error('SPIKE PMTiles : échec d’initialisation de la couche.', err);
+    }
+  });
 }

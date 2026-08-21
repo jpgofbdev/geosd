@@ -69,6 +69,7 @@
     <span id="status">0 point saisi</span>
     <button id="btn-toggle-filters">Filtres</button>
     <button id="btn-territory">Territoire : —</button>
+    <button id="btn-offline-map">Fond hors-ligne</button>
     <button id="btn-load-reference">Charger points existants</button>
     <input type="file" id="input-load-reference" accept=".geojson,.json" style="display:none;">
     <button id="btn-export-all" class="primary" disabled>Exporter tout (0)</button>
@@ -171,6 +172,7 @@
 </div>
 
 <script src="geosd-themes.js"></script>
+<script src="geosd-offline-map.js"></script>
 <script>
 (async function initApp() {
   const ok = await loadLeaflet();
