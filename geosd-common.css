@@ -210,6 +210,18 @@
   .theme-check-actions button{
     border:none; background:none; padding:0; font-size:11px; text-decoration:underline; color:var(--accent);
   }
+  .filters-mode-toggle{ display:flex; gap:14px; font-size:12px; }
+  .filters-mode-toggle label{ display:flex; align-items:center; gap:5px; cursor:pointer; color:var(--ink); }
+  .filters-subgroup{ display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+  .filters-subgroup-label{ font-size:11px; color:var(--ink-soft); }
+  .filters-chip-list{ display:flex; flex-wrap:wrap; gap:6px; }
+  .filters-chip{ display:inline-flex; }
+  .filters-chip input{ position:absolute; opacity:0; width:0; height:0; }
+  .filters-chip span{
+    display:inline-block; padding:4px 10px; border:1px solid var(--line); border-radius:14px;
+    font-size:12px; cursor:pointer; user-select:none; color:var(--ink); background:#fff;
+  }
+  .filters-chip input:checked + span{ background:var(--accent); border-color:var(--accent); color:#fff; }
   .filters-daterange{ display:flex; gap:8px; align-items:center; }
   .filters-daterange input{
     flex:1; min-width:0; font-family:var(--sans); font-size:12px;

@@ -36,9 +36,10 @@ const STORE_NAME = 'regions';
 // Coquille applicative : fichiers propres à GeoSD, indispensables au
 // démarrage de la page. Chemins relatifs à ce script (donc résolus
 // dans le même dossier que sw-precache.js sur GitHub Pages).
-const SHELL_CACHE = 'geosd-shell-v1';
+const SHELL_CACHE = 'geosd-shell-v2';
 const APP_SHELL_URLS = [
   'geosd-terrain-saisie.html',
+  'geosd-terrain-consultation.html',
   'geosd-themes.js',
   'geosd-offline-map.js',
   'geosd-common.css',

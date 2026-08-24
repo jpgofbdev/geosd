@@ -1,28 +1,169 @@
-# GeoSD — SIG minimaliste à 3 versions
 
+/
+GeoSD
+GeoSD
+
+
+
+
+
+
+
+Récents
+Comportement de l'application en mode hors connexion
+il y a 18 heures
+Saisie prédictive des communes en Centre-Val de Loire
+il y a 3 jours
+SIG minimaliste avec saisie de points thématiques
+il y a 3 jours
+Gestion du projet
+il y a 6 jours
+Optimiser le déploiement de code vers GitHub
+13 août
+Instructions
+Application GeoSD pour un service départemental — 3 versions HTML autonomes, voir README.md pour le détail Toujours répondre en français. Après toute modification de modele-formulaires.csv, régénérer via python3 generate_themes.py et vérifier la syntaxe JS avant de livrer. Ne jamais ajouter de dépendance CDN externe sans en discuter d'abord (on a déjà eu des problèmes avec Leaflet). Suppression de points sans confirmation (choix assumé). Voir README.md pour l'architecture complète.
+
+Contexte
+5 % de la capacité du projet utilisée
+Mode de recherche
+
+geosd-terrain-saisie.html
+737 lignes
+
+html
+
+
+
+
+geosd-offline-map.js
+283 lignes
+
+js
+
+
+
+
+sw-precache.js
+219 lignes
+
+js
+
+
+
+
+geosd-themes.js
+2 404 lignes
+
+js
+
+
+
+
+generate_themes.py
+181 lignes
+
+py
+
+
+
+
+JOURNAL_DECISIONS.md
+318 lignes
+
+md
+
+
+
+
+README.md
+328 lignes
+
+md
+
+
+
+
+geosd-common.css
+266 lignes
+
+css
+
+
+
+
+index.html
+348 lignes
+
+html
+
+
+
+
+geosd-tokens.css
+28 lignes
+
+css
+
+
+
+
+geosd-terrain-consultation.html
+284 lignes
+
+html
+
+
+
+
+geosd-admin.html
+792 lignes
+
+html
+
+
+
+
+modeleformulaires.csv
+csv
+
+
+
+
+commune_majusucle_CVL.csv
+csv
+
+
+
+Programmé
+Configurez des tâches récurrentes pour ce projet.
+
+README.md
+
+
+# GeoSD — SIG minimaliste à 3 versions
+ 
 Application de saisie de points géolocalisés par thématique, sans compte
 utilisateur ni serveur applicatif. Le projet est découpé en
 **3 versions indépendantes**, chacune adaptée à un usage précis, plus une
 page d'accueil de présentation (`index.html`) pour l'hébergement public
-(GitHub Pages)..
-
+(GitHub Pages).
+ 
 ## Les 3 versions
-
+ 
 | Fichier | Usage | Où | Écriture |
 |---|---|---|---|
 | `geosd-admin.html` | Intégration du fichier central, fusion des envois terrain, tableau et statistiques | Poste desktop (Chrome/Edge/Opera) | Directe sur disque (File System Access API) |
 | `geosd-terrain-saisie.html` | Saisie de nouveaux points sur le terrain | Tablette Android (ou tout mobile) | En mémoire locale (localStorage) + envoi par mail/partage après chaque point |
 | `geosd-terrain-consultation.html` | Consultation des points déjà connus, lecture seule | Tablette Android (ou tout mobile) | Aucune — fichier local ou dépôt distant |
-
+ 
 Toutes les trois partagent deux fichiers communs à ne jamais dupliquer :
 - `geosd-themes.js` — configuration des thématiques et des territoires (généré/édité)
 - `geosd-common.css` — apparence
-
 **Tous les fichiers doivent rester dans le même dossier** (ou à la racine
 du même dépôt pour un hébergement web).
-
+ 
 ## Fichiers du projet
-
+ 
 | Fichier | Rôle | À éditer ? |
 |---|---|---|
 | `index.html` | Page d'accueil / présentation (hébergement GitHub Pages) | Occasionnellement (copie/coordonnées) |
@@ -37,25 +178,24 @@ du même dépôt pour un hébergement web).
 | `points2.geojson` | Jeu de données de démonstration (aucune vraie donnée) | Non |
 | `*.geojson` (données réelles) | Données saisies | Non manuellement |
 | `JOURNAL_DECISIONS.md` | Historique des arbitrages et de leur raison d'être | Ajouter une entrée si nouvelle décision structurante |
-
+ 
 ## Sélecteur de territoire (une instance pour les 6 services de la région)
-
+ 
 GeoSD est pensé ici pour être **hébergé une seule fois** (ex. sur GitHub
 Pages) et utilisé par les 6 services départementaux de la région Centre-Val
 de Loire — chacun avec ses propres fichiers de données, mais la même
 application.
-
+ 
 **À la première ouverture** (sur un poste ou un appareil donné), un
 sélecteur demande de choisir son service départemental dans une liste. La
 carte s'ouvre alors automatiquement sur le territoire correspondant. Ce
 choix est **mémorisé sur l'appareil** (pas de compte, juste
 `localStorage`) — il ne sera plus redemandé ensuite.
-
+ 
 - **Changer de territoire** : bouton **"Territoire : ..."** dans l'en-tête,
   à tout moment, dans les 3 applications.
 - **"Passer"** : ouvre une vue France entière, sans mémoriser de choix — le
   sélecteur réapparaîtra à la prochaine ouverture.
-
 **Ajouter un 7ᵉ territoire (ou modifier une emprise existante) :** éditer
 l'objet `TERRITOIRES` en haut de `geosd-themes.js` — une seule ligne par
 territoire, format :
@@ -66,27 +206,27 @@ Le rectangle est `[[lat_sud, lng_ouest], [lat_nord, lng_est]]`. Comme pour
 les thématiques, **un seul fichier à modifier, les 3 applications suivent
 automatiquement**. Les emprises actuelles sont approximatives — à ajuster
 visuellement si besoin en testant la page.
-
+ 
 **Choix volontairement écarté :** une carte cliquable pour choisir le
 territoire. Un menu déroulant suffit largement pour 6 (voire quelques
 dizaines) de territoires nommés, et évite d'avoir à maintenir de vrais
 contours géographiques (fichier de frontières administratives) dans le
 projet — plus simple à faire évoluer.
-
+ 
 ## Charte graphique
-
+ 
 Toutes les couleurs et polices des 3 applications **et** de `index.html`
 viennent d'un seul fichier : **`geosd-tokens.css`**. C'est le seul fichier
 à modifier pour tout changement de style — une variable changée là se
 répercute partout automatiquement (`geosd-common.css` l'importe via
 `@import`, `index.html` le lie directement).
-
+ 
 Palette actuelle : rapprochée de l'identité visuelle de l'OFB
 (ofb.gouv.fr) — vert institutionnel sobre. **Codes approximatifs**, aucune
 charte graphique officielle OFB trouvée en accès public au moment du
 réglage. À remplacer par les codes exacts si obtenus auprès du service
 communication OFB (une ligne par variable dans `geosd-tokens.css`).
-
+ 
 La typographie (IBM Plex Mono/Sans) n'a volontairement pas été changée
 pour la police officielle de l'État ("Marianne") — cela aurait ajouté une
 dépendance CDN supplémentaire pour un gain visuel marginal. De même, le
@@ -94,12 +234,12 @@ bandeau "RÉPUBLIQUE FRANÇAISE" des sites `.gouv.fr` officiels n'a pas été
 ajouté : GeoSD est un prototype interne, pas (encore) un service validé
 institutionnellement — l'ajouter préventivement aurait pu créer une
 confusion sur son statut.
-
+ 
 ## Hébergement web (GitHub Pages)
-
+ 
 Le projet peut être servi tel quel comme site statique — `index.html`
 présente l'outil et pointe vers les 3 versions et le fichier de démo.
-
+ 
 - **Tous les fichiers à la racine du même dépôt/branche publiée**
   (`index.html`, les 3 `.html`, `geosd-common.css`, `geosd-themes.js`,
   `points2.geojson`) — les liens entre eux sont en chemin relatif.
@@ -116,9 +256,8 @@ présente l'outil et pointe vers les 3 versions et le fichier de démo.
 - Pied de page de `index.html` : coordonnées de contact plutôt qu'un lien
   vers le dépôt (le dépôt n'est pas destiné à être mis en avant comme
   "code source" public consultable).
-
 ## Modifier le modèle de champs (thématiques communes aux 3 versions)
-
+ 
 **Encodage du CSV (accents dans Excel) :** `modele-formulaires.csv` doit
 rester encodé en UTF-8 avec BOM pour qu'Excel affiche les accents
 correctement à l'ouverture. Si vous le modifiez et le réenregistrez
@@ -127,8 +266,8 @@ virgules)"** dans la liste des formats — pas "CSV (délimité par des
 virgules)" tout court, qui retire le BOM et fait réapparaître le problème.
 Le script `generate_themes.py` gère les deux cas (avec ou sans BOM) sans
 réglage particulier de votre part.
-
-
+ 
+ 
 1. Éditer `modele-formulaires.csv` (Excel, Google Sheets, VS Code...).
 2. Dans un terminal, se placer dans le dossier du projet, puis :
    ```
@@ -138,9 +277,34 @@ réglage particulier de votre part.
    (partagé par les 3 versions)`.
 4. Recharger les pages ouvertes dans le navigateur — **un seul lancement du
    script met à jour les 3 applications**, plus besoin de le faire 3 fois.
+## Filtres de la carte (geosd-admin.html et geosd-terrain-consultation.html)
+ 
+Bouton **"Filtres"** dans l'en-tête, ouvre un panneau latéral : recherche
+libre (commune, commentaire, auteur), thématiques (cases à cocher, tout
+cocher/décocher), période (date de début/fin du signalement), fiabilité
+minimale. Tous les filtres se combinent en ET, et le compteur en bas du
+panneau indique le nombre de points affichés sur le total.
+ 
+**Filtre "Jour de semaine / Mois" (`geosd-admin.html` uniquement)** —
+permet de sélectionner les points selon des critères calendaires,
+combinables en ET avec les autres filtres du panneau :
+- **Mode Simple** : jours de la semaine et mois multi-sélectionnables
+  (puces cliquables), combinés en ET entre les deux catégories, en OU à
+  l'intérieur d'une même catégorie. Catégorie non renseignée = ignorée.
+- **Mode Occurrence** : mêmes puces jours/mois, plus une troisième liste
+  (1er / 2e / 3e / 4e / Dernier) pour cibler une occurrence précise du
+  jour dans le mois — ex. "le premier lundi d'octobre", "les deux
+  premiers dimanches de novembre", "le dernier vendredi du mois, tous
+  mois confondus".
 
+Les deux modes sont exclusifs (un seul actif à la fois). Ce filtre n'a
+pas de notion d'année propre : s'il est combiné avec le filtre de
+période (date début/fin), le résultat reste borné à cette période ;
+sinon toutes les années présentes dans le fichier sont considérées.
+Volontairement absent de `geosd-terrain-consultation.html` et
+`geosd-terrain-saisie.html` (besoin limité à l'usage bureau).
 ## Tableau de données (geosd-admin.html)
-
+ 
 Bouton **"Tableau"** dans l'en-tête : liste tous les points avec leurs
 valeurs complètes — thématique, sous-type, les 7 champs communs (commune,
 date, heure, auteur signalement, auteur faits, commentaire, fiabilité,
@@ -148,7 +312,7 @@ détectés automatiquement), une colonne "Détails spécifiques" pour les
 champs propres à chaque thématique, et les coordonnées. **Respecte les
 filtres actifs** (contrairement aux statistiques, qui affichent toujours
 tout) — utile pour croiser une recherche/filtre avec un export ciblé.
-
+ 
 - Tri par date, thématique ou commune.
 - Actions directement depuis chaque ligne : **Localiser** (centre la carte
   et ouvre le point), **Modifier**, **Supprimer**.
@@ -159,9 +323,8 @@ tout) — utile pour croiser une recherche/filtre avec un export ciblé.
   `.xlsx` (feuilles multiples, mise en forme) devient nécessaire, il faudra
   ajouter une bibliothèque JS dédiée (SheetJS), avec le même genre de CDN de
   secours déjà en place pour Leaflet.
-
 ## Statistiques (geosd-admin.html)
-
+ 
 Bouton **"Statistiques"** dans l'en-tête : ouvre un histogramme (points par
 thématique et par mois, couleurs identiques à la carte) et un tableau
 détaillé avec totaux par ligne/colonne, plus un bouton **"Exporter en CSV"**
@@ -171,17 +334,17 @@ le graphique est un simple SVG généré à la volée, donc aucune dépendance
 réseau supplémentaire et aucune maintenance liée à une librairie tierce.
 Les thématiques ajoutées via le CSV apparaissent automatiquement, sans
 retouche nécessaire.
-
+ 
 ## Modifier un point existant
-
+ 
 Sur `geosd-admin.html` et `geosd-terrain-saisie.html`, cliquer sur un point
 puis **"Modifier"** dans le popup rouvre le formulaire pré-rempli avec ses
 valeurs actuelles (thématique, sous-type, champs). La position géographique
 du point n'est volontairement pas modifiable depuis ce formulaire — pour
 déplacer un point, le supprimer et le ressaisir au bon endroit.
-
+ 
 ## Workflow terrain → bureau
-
+ 
 1. **Sur la tablette (`geosd-terrain-saisie.html`)** : facultatif, charger
    le fichier central existant via "Charger points existants" pour avoir un
    contexte visuel (points affichés en gris, non modifiables). Saisir les
@@ -201,7 +364,6 @@ déplacer un point, le supprimer et le ressaisir au bon endroit.
    effacer sa tablette via **"Effacer les saisies en cours"** (bouton
    rouge, tapez `SUPPRIMER` pour confirmer). Purement manuel et volontaire
    — voir ci-dessous pourquoi il n'y a aucune suppression automatique.
-
 **Pas d'envoi individuel par point.** Une version antérieure proposait un
 envoi immédiat par mail ou partage natif après chaque point. Retirée : le
 protocole `mailto` ne permet techniquement de joindre aucun fichier (limite
@@ -209,9 +371,9 @@ du protocole, pas un choix), et le partage natif (`navigator.share`)
 s'est révélé peu fiable en pratique. L'export groupé en fin de tournée est
 désormais l'unique méthode de sortie des données — plus simple à expliquer
 aux agents, un seul geste à retenir.
-
+ 
 ### Gestion du stockage local (pourquoi rien n'est automatique)
-
+ 
 - Les points saisis restent sur l'appareil **indéfiniment** tant que
   l'agent ne les efface pas lui-même — fermer l'onglet, éteindre la
   tablette, rouvrir le lendemain : rien n'est perdu.
@@ -227,13 +389,12 @@ aux agents, un seul geste à retenir.
 - **Périodicité suggérée, pas imposée :** vider l'appareil une fois par
   semaine ou en fin de tournée, après vérification orale/visuelle avec
   l'administrateur que l'intégration a bien eu lieu.
-
 ## Version consultation et mise à jour du fichier de référence
-
+ 
 **Protocole retenu :** les agents étant responsables du contenu de leur
 matériel professionnel, aucun mécanisme d'authentification distant n'est
 nécessaire. La mise à jour se fait par **copie manuelle à la demande** :
-
+ 
 1. Le fichier central à jour est disponible sur le dossier réseau de
    l'entreprise (celui géré via `geosd-admin.html`).
 2. À intervalle régulier (ou avant une tournée), copier ce fichier sur la
@@ -241,35 +402,33 @@ nécessaire. La mise à jour se fait par **copie manuelle à la demande** :
 3. Dans `geosd-terrain-consultation.html` (ou `geosd-terrain-saisie.html`
    pour la couche de référence), bouton **"Charger un fichier"** → sélection
    du fichier copié.
-
 **Indicateur de fraîcheur automatique :** chaque sauvegarde par
 `geosd-admin.html` horodate désormais le fichier (`updated_at`). Les
 versions terrain affichent cet âge après chargement, avec une alerte
 visuelle si le fichier a plus de **30 jours** (seuil réglable dans
 `geosd-themes.js`, constante `STALE_AFTER_DAYS`) — rappel simple pour savoir
 quand redemander une copie à jour, sans mécanisme d'expiration forcé.
-
+ 
 **Dépôt distant (optionnel, non retenu pour l'instant) :** le code garde la
 possibilité de charger automatiquement depuis une URL (`DEPOT_URL` en haut
 de `geosd-terrain-consultation.html`, vide par défaut, bouton "Recharger le
 dépôt" masqué tant qu'elle n'est pas renseignée) — à réactiver seulement si
 le protocole manuel s'avère trop contraignant à l'usage.
-
+ 
 ## Installer des raccourcis sur la tablette
-
+ 
 Pour un accès rapide depuis l'écran d'accueil Android, sans passer par un
 navigateur ou un gestionnaire de fichiers à chaque fois :
-
+ 
 1. Ouvrir `geosd-terrain-saisie.html` dans Chrome (double-tap ou via un
    gestionnaire de fichiers).
 2. Menu Chrome (⋮, en haut à droite) → **"Ajouter à l'écran d'accueil"**.
 3. Répéter avec `geosd-terrain-consultation.html`.
-
 Deux icônes distinctes apparaissent alors sur l'écran d'accueil, chacune
 rouvrant directement la bonne version.
-
+ 
 ## Architecture technique
-
+ 
 - **Aucun serveur applicatif.** `geosd-admin.html` écrit directement sur
   disque via la File System Access API (Chrome/Edge/Opera desktop
   uniquement). Les 2 versions terrain n'écrivent jamais de fichier
@@ -277,9 +436,8 @@ rouvrant directement la bonne version.
 - **Format des données :** GeoJSON standard, réutilisable dans QGIS.
 - **Fonds de carte :** OpenStreetMap et IGN Géoplateforme (`data.geopf.fr`,
   WMTS ouvert, sans clé), identiques dans les 3 versions.
-
 ## Limitations connues
-
+ 
 - **`geosd-admin.html` : Chrome/Edge/Opera desktop uniquement.** Aucune
   version mobile de l'administration n'est prévue — l'écriture directe de
   fichier n'est pas fiable sur Android (voir plus bas) et absente sur iOS.
@@ -290,9 +448,8 @@ rouvrant directement la bonne version.
   prétend supporter.
 - **Pas de fusion automatique en cas de modification simultanée** du fichier
   central par deux personnes — un seul poste administrateur à la fois.
-
 ## Dépannage
-
+ 
 | Symptôme | Cause probable | Solution |
 |---|---|---|
 | `L is not defined` / carte blanche | Pas d'accès internet, ou fichier ouvert dans un aperçu sandboxé | Ouvrir directement (double-clic), connexion active |
@@ -303,15 +460,15 @@ rouvrant directement la bonne version.
 | `ReferenceError: initTerritory is not defined` (ou toute fonction manquante) sur GitHub Pages | Un fichier interdépendant (souvent `geosd-themes.js`) est resté en version périmée sur le dépôt alors que d'autres ont été mis à jour | Renvoyer **tous les fichiers en bloc** sur GitHub à chaque mise à jour, pas au cas par cas |
 | GitHub affiche "Your site is published" mais les changements n'apparaissent pas | Badge de publication pas toujours synchrone avec le déploiement réel | Vérifier l'onglet **Actions** du dépôt (horodatage précis du dernier déploiement Pages), puis Ctrl+F5 pour ignorer le cache navigateur |
 | `404 Not Found` sur un fichier `.woff2` (police IBM Plex) dans la console | Aléa ponctuel du CDN Google Fonts sur une graisse de police précise | Sans gravité — repli automatique sur une police système via `--sans:'IBM Plex Sans', system-ui, sans-serif`, rien à corriger |
-
+ 
 ## Sauvegarde des données
-
+ 
 Le fichier `.geojson` central est la donnée la plus précieuse du projet
 (le reste est régénérable). Faire une copie datée régulièrement, avant toute
 séance d'intégration importante.
-
+ 
 ## Pistes d'évolution
-
+ 
 - Champs spécifiques restants pour Phytosanitaires, VTM, FSC,
   Habitat/espèces protégées, Cueillette.
 - Sous-type "Eau > RCE" à définir.
@@ -325,13 +482,21 @@ séance d'intégration importante.
 - Suivi à prévoir sur l'évolution du support Android de la File System
   Access API (statut en cours de développement côté Chromium, sans
   garantie de date — voir JOURNAL_DECISIONS.md pour le détail).
-
-  ## Fond de carte hors-ligne
+ 
+## Fond de carte hors-ligne
 
 GeoSD permet de télécharger un fond de carte vectoriel (PMTiles) pour
 un usage sans connexion réseau, y compris à froid (application rouverte
 sans réseau après une coupure complète). Accessible via le bouton
-« Fond hors-ligne » dans l'en-tête de `geosd-terrain-saisie.html`.
+« Fond hors-ligne » dans l'en-tête de `geosd-terrain-saisie.html`
+**et** de `geosd-terrain-consultation.html` — gestion identique dans les
+deux versions (mêmes régions proposées, même jauge d'espace, même purge).
+
+Le fond téléchargé est **partagé entre les deux versions terrain** : le
+stockage (IndexedDB) est propre à l'appareil, pas à la page ouverte. Un
+agent peut donc télécharger une région depuis la saisie et la retrouver
+aussitôt en consultation (ou l'inverse), sans le retélécharger. Un seul
+fond régional reste stocké à la fois (remplacement, pas cumul).
 
 - `geosd-offline-map.js` — module de gestion (téléchargement par
   région, jauge d'espace, purge).

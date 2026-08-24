@@ -68,6 +68,37 @@
           <input type="date" id="filter-date-to">
         </div>
       </div>
+      <div class="filters-section" id="filter-daymonth-section">
+        <span class="filters-label">Jour de semaine / Mois</span>
+        <div class="filters-mode-toggle">
+          <label><input type="radio" name="filter-daymonth-mode" id="filter-mode-simple" value="simple" checked> Simple</label>
+          <label><input type="radio" name="filter-daymonth-mode" id="filter-mode-occurrence" value="occurrence"> Occurrence (ex : 1er lundi)</label>
+        </div>
+        <div id="filter-simple-block">
+          <div class="filters-subgroup">
+            <span class="filters-subgroup-label">Jours de la semaine</span>
+            <div class="filters-chip-list" id="filter-weekday-list"></div>
+          </div>
+          <div class="filters-subgroup">
+            <span class="filters-subgroup-label">Mois</span>
+            <div class="filters-chip-list" id="filter-month-list"></div>
+          </div>
+        </div>
+        <div id="filter-occurrence-block" style="display:none">
+          <div class="filters-subgroup">
+            <span class="filters-subgroup-label">Jours de la semaine</span>
+            <div class="filters-chip-list" id="filter-occ-weekday-list"></div>
+          </div>
+          <div class="filters-subgroup">
+            <span class="filters-subgroup-label">Mois</span>
+            <div class="filters-chip-list" id="filter-occ-month-list"></div>
+          </div>
+          <div class="filters-subgroup">
+            <span class="filters-subgroup-label">Occurrence dans le mois</span>
+            <div class="filters-chip-list" id="filter-occ-rank-list"></div>
+          </div>
+        </div>
+      </div>
       <div class="filters-section">
         <span class="filters-label">Fiabilité minimale</span>
         <select id="filter-fiabilite" class="filters-select">
@@ -91,7 +122,7 @@
 <div class="overlay" id="table-overlay">
   <div class="modal modal-wide">
     <h2>Tableau des points</h2>
-    <p class="coords">Respecte les filtres actuellement actifs (thématique, période, fiabilité, recherche) — ouvrez le panneau Filtres pour affiner avant de consulter ou d'exporter.</p>
+    <p class="coords">Respecte les filtres actuellement actifs (thématique, période, jour/mois, fiabilité, recherche) — ouvrez le panneau Filtres pour affiner avant de consulter ou d'exporter.</p>
     <div class="table-toolbar">
       <span id="table-count">0 point(s) affiché(s)</span>
       <select id="table-sort">
@@ -382,6 +413,66 @@ const filtersCountEl = document.getElementById('filters-count');
 document.getElementById('btn-toggle-filters').addEventListener('click', () => filtersPanel.classList.toggle('show'));
 document.getElementById('btn-close-filters').addEventListener('click', () => filtersPanel.classList.remove('show'));
 
+/* ---- Filtre jour de semaine / mois / occurrence ---- */
+// Valeurs alignées sur Date.getDay() : 0=dimanche … 6=samedi
+const WEEKDAYS_FR = [
+  { val: 1, label: 'Lun' }, { val: 2, label: 'Mar' }, { val: 3, label: 'Mer' },
+  { val: 4, label: 'Jeu' }, { val: 5, label: 'Ven' }, { val: 6, label: 'Sam' },
+  { val: 0, label: 'Dim' }
+];
+const MONTHS_FR = [
+  { val: 1, label: 'Janv' }, { val: 2, label: 'Févr' }, { val: 3, label: 'Mars' },
+  { val: 4, label: 'Avr' }, { val: 5, label: 'Mai' }, { val: 6, label: 'Juin' },
+  { val: 7, label: 'Juil' }, { val: 8, label: 'Août' }, { val: 9, label: 'Sept' },
+  { val: 10, label: 'Oct' }, { val: 11, label: 'Nov' }, { val: 12, label: 'Déc' }
+];
+const OCC_RANKS_FR = [
+  { val: 1, label: '1er' }, { val: 2, label: '2e' }, { val: 3, label: '3e' },
+  { val: 4, label: '4e' }, { val: -1, label: 'Dernier' }
+];
+
+function buildChipList(containerId, items, groupName) {
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  items.forEach(item => {
+    const wrap = document.createElement('label'); wrap.className = 'filters-chip';
+    const input = document.createElement('input');
+    input.type = 'checkbox'; input.value = item.val; input.id = groupName + '-' + item.val;
+    input.addEventListener('change', applyFilters);
+    const span = document.createElement('span'); span.textContent = item.label;
+    wrap.append(input, span);
+    container.appendChild(wrap);
+  });
+}
+buildChipList('filter-weekday-list', WEEKDAYS_FR, 'filter-weekday');
+buildChipList('filter-month-list', MONTHS_FR, 'filter-month');
+buildChipList('filter-occ-weekday-list', WEEKDAYS_FR, 'filter-occ-weekday');
+buildChipList('filter-occ-month-list', MONTHS_FR, 'filter-occ-month');
+buildChipList('filter-occ-rank-list', OCC_RANKS_FR, 'filter-occ-rank');
+
+function getCheckedValues(containerId) {
+  return Array.from(document.querySelectorAll('#' + containerId + ' input:checked')).map(el => parseInt(el.value, 10));
+}
+function daymonthMode() {
+  return document.querySelector('input[name="filter-daymonth-mode"]:checked').value;
+}
+document.querySelectorAll('input[name="filter-daymonth-mode"]').forEach(radio => {
+  radio.addEventListener('change', () => {
+    document.getElementById('filter-simple-block').style.display = daymonthMode() === 'simple' ? '' : 'none';
+    document.getElementById('filter-occurrence-block').style.display = daymonthMode() === 'occurrence' ? '' : 'none';
+    applyFilters();
+  });
+});
+// Rang (depuis le début / depuis la fin du mois) de l'occurrence du jour de semaine de d dans son mois
+function weekdayRankInMonth(d) {
+  const day = d.getDate();
+  const lastDateOfMonth = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+  return {
+    fromStart: Math.floor((day - 1) / 7) + 1,
+    fromEnd: Math.floor((lastDateOfMonth - day) / 7) + 1 // 1 = dernière occurrence du mois
+  };
+}
+
 function buildThemeCheckList() {
   const counts = {}; THEME_KEYS.forEach(k => counts[k] = 0);
   geojson.features.forEach(f => { if (counts[f.properties.theme] !== undefined) counts[f.properties.theme]++; });
@@ -409,6 +500,11 @@ document.getElementById('btn-check-none').addEventListener('click', () => {
 document.getElementById('btn-reset-filters').addEventListener('click', () => {
   filterSearch.value = ''; filterDateFrom.value = ''; filterDateTo.value = ''; filterFiabilite.value = '';
   themeCheckList.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = true);
+  document.getElementById('filter-mode-simple').checked = true;
+  document.getElementById('filter-simple-block').style.display = '';
+  document.getElementById('filter-occurrence-block').style.display = 'none';
+  ['filter-weekday-list', 'filter-month-list', 'filter-occ-weekday-list', 'filter-occ-month-list', 'filter-occ-rank-list']
+    .forEach(id => document.querySelectorAll('#' + id + ' input[type=checkbox]').forEach(cb => cb.checked = false));
   applyFilters();
 });
 [filterSearch].forEach(el => el.addEventListener('input', applyFilters));
@@ -428,6 +524,30 @@ function featureMatchesFilters(feature) {
     const min = parseInt(filterFiabilite.value, 10);
     const val = parseInt(props.fiabilite, 10);
     if (isNaN(val) || val < min) return false;
+  }
+  if (daymonthMode() === 'simple') {
+    const days = getCheckedValues('filter-weekday-list');
+    const months = getCheckedValues('filter-month-list');
+    if (days.length || months.length) {
+      if (!props.date) return false;
+      const d = new Date(props.date + 'T00:00:00');
+      if (days.length && !days.includes(d.getDay())) return false;
+      if (months.length && !months.includes(d.getMonth() + 1)) return false;
+    }
+  } else {
+    const days = getCheckedValues('filter-occ-weekday-list');
+    const months = getCheckedValues('filter-occ-month-list');
+    const ranks = getCheckedValues('filter-occ-rank-list');
+    if (days.length || months.length || ranks.length) {
+      if (!props.date) return false;
+      const d = new Date(props.date + 'T00:00:00');
+      if (days.length && !days.includes(d.getDay())) return false;
+      if (months.length && !months.includes(d.getMonth() + 1)) return false;
+      if (ranks.length) {
+        const rank = weekdayRankInMonth(d);
+        if (!ranks.some(r => r === -1 ? rank.fromEnd === 1 : rank.fromStart === r)) return false;
+      }
+    }
   }
   return true;
 }
