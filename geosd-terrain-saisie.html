@@ -118,7 +118,7 @@
         travailler sans réseau.</li>
       <li><strong>En fin de tournée</strong> : « Exporter tout » télécharge un fichier regroupant tous
         les points saisis, à transmettre au bureau. Une fois l'intégration confirmée par
-        l'administrateur, « Effacer les saisies en cours » (bouton rouge, taper SUPPRIMER) vide
+        l'administrateur, « Effacer les saisies en cours » (bouton rouge, taper SUP) vide
         l'appareil.</li>
     </ol>
     <div class="modal-actions">
@@ -200,8 +200,8 @@
       Aucune récupération possible après confirmation.
     </p>
     <div class="field">
-      <label for="purge-confirm-input">Tapez SUPPRIMER pour confirmer</label>
-      <input type="text" id="purge-confirm-input" autocomplete="off" placeholder="SUPPRIMER">
+      <label for="purge-confirm-input">Tapez SUP pour confirmer</label>
+      <input type="text" id="purge-confirm-input" autocomplete="off" placeholder="SUP">
     </div>
     <div class="modal-actions">
       <button type="button" id="btn-purge-cancel">Annuler</button>
@@ -779,7 +779,7 @@ document.getElementById('btn-purge').addEventListener('click', () => {
 document.getElementById('btn-purge-cancel').addEventListener('click', () => purgeOverlay.classList.remove('show'));
 purgeOverlay.addEventListener('click', e => { if (e.target === purgeOverlay) purgeOverlay.classList.remove('show'); });
 purgeConfirmInput.addEventListener('input', () => {
-  purgeConfirmBtn.disabled = purgeConfirmInput.value.trim().toUpperCase() !== 'SUPPRIMER';
+  purgeConfirmBtn.disabled = purgeConfirmInput.value.trim().toUpperCase() !== 'SUP';
 });
 purgeConfirmBtn.addEventListener('click', () => {
   geojson.features.filter(f => !f.properties.__ref).forEach(f => {

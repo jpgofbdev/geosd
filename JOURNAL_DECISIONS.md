@@ -66,11 +66,16 @@ arrière par erreur, ou de refaire les mêmes hésitations.
   l'envoi ni la lecture). Un automatisme basé sur une action non confirmée
   aurait pu effacer des points jamais réellement intégrés — le pire risque
   identifié sur ce projet à ce stade.
-- **Purge manuelle avec confirmation écrite** (taper "SUPPRIMER", pas un
-  simple bouton OK/Annuler) plutôt qu'une confirmation faible façon
+- **Purge manuelle avec confirmation écrite** (taper un mot, pas un simple
+  bouton OK/Annuler) plutôt qu'une confirmation faible façon
   `window.confirm()` — cohérent avec la gravité de l'action (irréversible),
   tout en restant un geste volontaire de l'agent, jamais initié par le
-  système.
+  système. Mot de confirmation raccourci de "SUPPRIMER" à **"SUP"**
+  (24/08/2026), sur retour terrain : trop long à taper sur clavier tactile
+  (gants, extérieur). Plusieurs alternatives envisagées (taper le nombre de
+  points affiché, presser-maintenir, case à cocher) — "SUP" retenu par
+  préférence directe, gardant le principe d'une saisie explicite plutôt
+  qu'un geste passif.
 - **Pas de risque de doublon identifié même sans purge régulière** : la
   fusion côté admin (par identifiant) rend l'absence de purge sans
   incidence sur l'intégrité des données — seulement un coût de stockage/

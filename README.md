@@ -362,7 +362,7 @@ déplacer un point, le supprimer et le ressaisir au bon endroit.
    doublon.
 4. **Une fois l'intégration confirmée par l'administrateur**, l'agent peut
    effacer sa tablette via **"Effacer les saisies en cours"** (bouton
-   rouge, tapez `SUPPRIMER` pour confirmer). Purement manuel et volontaire
+   rouge, tapez `SUP` pour confirmer). Purement manuel et volontaire
    — voir ci-dessous pourquoi il n'y a aucune suppression automatique.
 **Pas d'envoi individuel par point.** Une version antérieure proposait un
 envoi immédiat par mail ou partage natif après chaque point. Retirée : le
