@@ -190,7 +190,7 @@ initTerritory(map, updateTerritoryButton);
 document.getElementById('btn-territory').addEventListener('click', () => {
   showTerritoryPicker(map, getSavedTerritory(), updateTerritoryButton);
 });
-addBaseLayerSwitcher(map);
+addBaseLayerSwitcher(map, { includeScan25: true });
 const markersLayer = L.layerGroup().addTo(map);
 
 function setStatus(text, kind) { statusEl.textContent = text; statusEl.className = kind || ''; }

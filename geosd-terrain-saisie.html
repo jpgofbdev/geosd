@@ -261,7 +261,7 @@ initTerritory(map, updateTerritoryButton);
 document.getElementById('btn-territory').addEventListener('click', () => {
   showTerritoryPicker(map, getSavedTerritory(), updateTerritoryButton);
 });
-addBaseLayerSwitcher(map);
+addBaseLayerSwitcher(map, { includeScan25: true });
 const markersLayer = L.layerGroup().addTo(map);
 const positionLayer = L.layerGroup().addTo(map);
 

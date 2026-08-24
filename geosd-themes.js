@@ -2163,7 +2163,63 @@ function ignWmtsLayer(layerName, format) {
     { maxZoom: 19, attribution: '&copy; <a href="https://www.ign.fr/">IGN</a> - Géoplateforme' }
   );
 }
-function addBaseLayerSwitcher(map) {
+/* ---- Fond SCAN25 IGN (authentification HTTP Basic, pas une clé apikey) ----
+   Identifiants fournis par mail (réseau géomatique) — à éditer ici si le
+   couple change. Contrairement à Plan IGN / Orthophoto IGN ci-dessus (WMTS
+   ouvert, sans authentification), le SCAN25 passe par l'endpoint privé de
+   la Géoplateforme et nécessite une authentification HTTP Basic. Un simple
+   <img src="..."> ne peut pas envoyer l'en-tête Authorization requis, d'où
+   le passage par fetch() dans ignScan25Layer() plutôt qu'un L.tileLayer
+   classique. Ces identifiants sont intégrés en clair dans ce fichier —
+   visibles par quiconque consulte le code source de la page, comme tout
+   le reste du code de cette application statique sans serveur.
+   La classe TileLayer personnalisée est définie À L'INTÉRIEUR de la
+   fonction (pas au niveau racine du fichier) : à ce stade du chargement,
+   Leaflet (L) n'existe pas encore — il est chargé dynamiquement plus tard
+   par loadLeaflet(), après que ce fichier a été entièrement exécuté. */
+const SCAN25_USER = 'qfieldofb';
+const SCAN25_PASS = 'qfieldofb';
+function ignScan25Layer() {
+  const Scan25TileLayer = L.TileLayer.extend({
+    createTile: function (coords, done) {
+      const img = document.createElement('img');
+      const url = this.getTileUrl(coords);
+      fetch(url, { headers: { Authorization: 'Basic ' + btoa(SCAN25_USER + ':' + SCAN25_PASS) } })
+        .then(function (res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.blob();
+        })
+        .then(function (blob) {
+          img.src = URL.createObjectURL(blob);
+          done(null, img);
+        })
+        .catch(function (err) {
+          done(err, img);
+        });
+      return img;
+    }
+  });
+  return new Scan25TileLayer(
+    'https://data.geopf.fr/private/wmts/?service=WMTS&version=1.0.0&request=GetTile' +
+    '&LAYER=GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN25TOUR&STYLE=normal&FORMAT=image/jpeg' +
+    '&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}',
+    {
+      maxZoom: 19,
+      // Résolution native du SCAN25 (1:25 000) : au-delà, le serveur WMTS
+      // ne génère pas de tuile à la volée et répond 404 (constaté en test :
+      // toutes les requêtes TILEMATRIX=19 échouaient). maxNativeZoom fait
+      // en sorte que Leaflet arrête de demander de nouvelles tuiles au-delà
+      // de ce niveau et réutilise/agrandit la dernière tuile chargée à la
+      // place — la carte reste utilisable en zoomant plus loin, juste moins
+      // nette. Valeur à ajuster si elle s'avère encore trop haute ou trop
+      // basse à l'usage (vérifiable via GetCapabilities).
+      maxNativeZoom: 16,
+      attribution: '&copy; <a href="https://www.ign.fr/">IGN</a> - Géoplateforme (SCAN25)'
+    }
+  );
+}
+function addBaseLayerSwitcher(map, options) {
+  options = options || {};
   const lyrOSM = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -2171,11 +2227,49 @@ function addBaseLayerSwitcher(map) {
   const lyrIgnPlan = ignWmtsLayer('GEOGRAPHICALGRIDSYSTEMS.PLANIGNV2', 'image/png');
   const lyrIgnOrtho = ignWmtsLayer('ORTHOIMAGERY.ORTHOPHOTOS', 'image/jpeg');
   lyrOSM.addTo(map);
+  const baseLayers = { 'OpenStreetMap': lyrOSM, 'Plan IGN': lyrIgnPlan, 'Orthophoto IGN': lyrIgnOrtho };
+  let lyrScan25 = null;
+  if (options.includeScan25) {
+    lyrScan25 = ignScan25Layer();
+    baseLayers['SCAN25 IGN'] = lyrScan25;
+  }
   const layersControl = L.control.layers(
-    { 'OpenStreetMap': lyrOSM, 'Plan IGN': lyrIgnPlan, 'Orthophoto IGN': lyrIgnOrtho },
+    baseLayers,
     null,
     { position: 'topright', collapsed: false }
   ).addTo(map);
+
+  /* ---- Confirmation ponctuelle avant activation du SCAN25 ----
+     Pas une vraie sécurité (les identifiants restent en clair dans ce
+     fichier, comme documenté plus haut) : juste un mot de passe demandé
+     une fois par appareil avant la première utilisation, pour signaler un
+     accès volontaire plutôt qu'un clic accidentel — geste de courtoisie
+     envers le fournisseur de la donnée, à sa demande. Mémorisé via
+     localStorage : plus jamais redemandé sur cet appareil une fois
+     confirmé. */
+  if (lyrScan25) {
+    const SCAN25_ACK_KEY = 'geosd_scan25_ack';
+    let lastNonScan25Layer = lyrOSM;
+    map.on('baselayerchange', function (e) {
+      if (e.layer !== lyrScan25) {
+        lastNonScan25Layer = e.layer;
+        return;
+      }
+      if (localStorage.getItem(SCAN25_ACK_KEY) === '1') return;
+      const entered = window.prompt('Fond SCAN25 IGN — mot de passe requis (une seule fois sur cet appareil) :');
+      if (entered === SCAN25_PASS) {
+        localStorage.setItem(SCAN25_ACK_KEY, '1');
+        return; // le fond reste actif, rien à défaire
+      }
+      // Mot de passe incorrect ou saisie annulée : revenir au fond précédent.
+      map.removeLayer(lyrScan25);
+      map.addLayer(lastNonScan25Layer);
+      layersControl._update(); // resynchronise l'affichage du sélecteur (méthode interne Leaflet)
+      if (entered !== null) {
+        alert('Mot de passe incorrect — fond SCAN25 non activé.');
+      }
+    });
+  }
 
   /* ============================================================
      SPIKE PMTiles — voir README-spike.md pour le contexte complet.
