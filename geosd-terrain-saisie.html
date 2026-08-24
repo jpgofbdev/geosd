@@ -393,9 +393,19 @@ function attachCommuneAutocomplete(input, wrap) {
   input.addEventListener('input', () => {
     const q = normalizeText(input.value.trim());
     if (!q) { close(); return; }
-    matches = COMMUNES_CVL
-      .filter(nom => normalizeText(nom).includes(q))
-      .slice(0, 8);
+    // Priorité aux communes qui *commencent* par la saisie (usage terrain
+    // habituel) avant celles qui la contiennent seulement au milieu du nom
+    // — sinon, avec le tri alphabétique brut, les 8 suggestions affichées
+    // sont presque toujours des communes en A/B (ex. taper "z" ne remontait
+    // que des "AZAY-...", jamais "BAUZY", pourtant plus pertinent).
+    const starts = [];
+    const contains = [];
+    COMMUNES_CVL.forEach(nom => {
+      const n = normalizeText(nom);
+      if (n.startsWith(q)) starts.push(nom);
+      else if (n.includes(q)) contains.push(nom);
+    });
+    matches = starts.concat(contains).slice(0, 8);
     activeIndex = -1;
     render();
   });
