@@ -321,40 +321,101 @@ Verdict — Fond de carte PMTiles hors-ligne (spike geosdspike)
 
 Date : 21/08/2026 Dépôt du spike : https://github.com/jpgofbdev/geosdspike Question posée : Un fond de carte PMTiles (rendu via Leaflet) peut-il remplacer/compléter les fonds actuels pour un usage hors connexion, sans perturber le reste de l'application ?
 
-Verdict : ça tient, sous ces conditions
+##hors connexion
+# Verdict — Fond de carte PMTiles hors-ligne (spike geosdspike)
 
-Le mécanisme fonctionne de bout en bout — fond de carte, coquille applicative, bibliothèques externes — validé sur desktop et sur Android réel (Samsung S20 FE), y compris à froid (tablette éteinte/onglet fermé, sans réseau au redémarrage).
+**Date :** 21/08/2026
+**Dépôt du spike :** https://github.com/jpgofbdev/geosdspike
+**Question posée :** Un fond de carte PMTiles (rendu via Leaflet) peut-il
+remplacer/compléter les fonds actuels pour un usage hors connexion,
+sans perturber le reste de l'application ?
 
-Ce qui a été validé
-Rendu du fond PMTiles — vectoriel (protomaps-leaflet), avec des règles de style transposées à la main depuis le style MapLibre du prototype offline-map-lab (occupation du sol, eau, cours d'eau permanents/intermittents, routes, libellés).
-Cohabitation avec la couche de marqueurs — clic, popup, formulaire de saisie, tous fonctionnels par-dessus le fond PMTiles.
-Fonctionnement hors connexion réel — architecture Service Worker + IndexedDB (voir "Architecture retenue" ci-dessous), validée en coupure réseau effective, pas seulement onglet resté ouvert.
-Poids/téléchargement sur tablette — ~300 Mo téléchargés et exploités sans souci sur Android réel, avec suivi de progression.
-Fidélité visuelle — rendu jugé proche du prototype MapLibre de référence.
+## Verdict : ça tient, sous ces conditions
 
-Au-delà du périmètre initial, un module de gestion complet a été construit : choix parmi 13 régions, jauge d'espace avec avertissement au-delà de 50% d'occupation estimée, téléchargement piloté avec progression et annulation, purge, affichage de l'âge du fond téléchargé.
+Le mécanisme fonctionne de bout en bout — fond de carte, coquille
+applicative, bibliothèques externes — validé sur desktop et sur
+Android réel (Samsung S20 FE), y compris à froid (tablette
+éteinte/onglet fermé, sans réseau au redémarrage).
 
-Architecture retenue
-Fond de carte : protomaps-leaflet (vectoriel — le format des fichiers .pmtiles disponibles est du MVT, pas du raster). Lecture directe d'un Blob local testée et abandonnée (structurellement non fonctionnelle dans la bibliothèque, quelle que soit la version).
-Hors-ligne : Service Worker interceptant les requêtes réseau (Range pour le fond de carte régional, standard pour la coquille applicative et les bibliothèques externes) et les servant depuis IndexedDB / Cache Storage. pmtiles continue de croire qu'il parle au réseau — aucune modification de son usage normal.
-Bibliothèques externes (Leaflet, protomaps-leaflet) vendorisées dans le dépôt (vendor/) plutôt que tirées d'un CDN, pour éliminer toute dépendance réseau externe même au tout premier chargement sur un nouvel appareil.
-Limitations connues / risques résiduels
-Validation Android partielle : le module complet (coquille + bibliothèques vendorisées) n'a été testé que sur desktop après les derniers ajouts. Seule la brique de base (fond de carte seul) avait été confirmée sur Android réel.
-Mémoire pendant le téléchargement : les ~300 Mo sont accumulés en mémoire JS avant écriture — sans souci observé sur le matériel testé, à surveiller sur des appareils plus anciens/limités.
-Piège des réponses opaques (requêtes cross-origin sans CORS explicite, statut toujours 0 côté Service Worker) — corrigé, mais suffisamment subtil pour mériter une note dans la documentation du dépôt principal à l'intention des futurs mainteneurs de sw-precache.js.
-Versionnement des caches (geosd-shell-v1, geosd-runtime-v1, geosd-pmtiles-offline) fonctionnel mais sans convention documentée pour les futurs mainteneurs (quand bumper la version).
-Périmètre non tranché : seul geosd-terrain-saisie.html a été traité. geosd-terrain-consultation.html n'a pas été évalué — à décider avant intégration si un usage hors-ligne y est pertinent.
-Fichiers concernés (pour intégration)
-geosd-terrain-saisie.html — bouton d'en-tête ajouté
-geosd-themes.js — liste des régions PMTiles, région active mémorisée, candidats CDN étendus aux copies vendorisées
-geosd-offline-map.js — nouveau, module de gestion hors-ligne
-sw-precache.js — nouveau, Service Worker (fond de carte + coquille + bibliothèques)
-vendor/leaflet.css, vendor/leaflet.js, vendor/protomaps-leaflet.js — nouveaux, copies locales vendorisées
-Recommandation
+## Ce qui a été validé
+
+1. **Rendu du fond PMTiles** — vectoriel (`protomaps-leaflet`), avec
+   des règles de style transposées à la main depuis le style MapLibre
+   du prototype `offline-map-lab` (occupation du sol, eau, cours d'eau
+   permanents/intermittents, routes, libellés).
+2. **Cohabitation avec la couche de marqueurs** — clic, popup,
+   formulaire de saisie, tous fonctionnels par-dessus le fond PMTiles.
+3. **Fonctionnement hors connexion réel** — architecture Service
+   Worker + IndexedDB (voir "Architecture retenue" ci-dessous),
+   validée en coupure réseau effective, pas seulement onglet resté
+   ouvert.
+4. **Poids/téléchargement sur tablette** — ~300 Mo téléchargés et
+   exploités sans souci sur Android réel, avec suivi de progression.
+5. **Fidélité visuelle** — rendu jugé proche du prototype MapLibre de
+   référence.
+
+Au-delà du périmètre initial, un module de gestion complet a été
+construit : choix parmi 13 régions, jauge d'espace avec avertissement
+au-delà de 50% d'occupation estimée, téléchargement piloté avec
+progression et annulation, purge, affichage de l'âge du fond
+téléchargé.
+
+## Architecture retenue
+
+- **Fond de carte** : `protomaps-leaflet` (vectoriel — le format des
+  fichiers `.pmtiles` disponibles est du MVT, pas du raster).
+  Lecture directe d'un `Blob` local testée et **abandonnée**
+  (structurellement non fonctionnelle dans la bibliothèque, quelle que
+  soit la version).
+- **Hors-ligne** : **Service Worker** interceptant les requêtes réseau
+  (`Range` pour le fond de carte régional, standard pour la coquille
+  applicative et les bibliothèques externes) et les servant depuis
+  IndexedDB / Cache Storage. `pmtiles` continue de croire qu'il parle
+  au réseau — aucune modification de son usage normal.
+- **Bibliothèques externes** (Leaflet, `protomaps-leaflet`)
+  vendorisées dans le dépôt (`vendor/`) plutôt que tirées d'un CDN, pour
+  éliminer toute dépendance réseau externe même au tout premier
+  chargement sur un nouvel appareil.
+
+## Limitations connues / risques résiduels
+
+- **Validation Android partielle** : le module complet (coquille +
+  bibliothèques vendorisées) n'a été testé que sur desktop après les
+  derniers ajouts. Seule la brique de base (fond de carte seul) avait
+  été confirmée sur Android réel.
+- **Mémoire pendant le téléchargement** : les ~300 Mo sont accumulés
+  en mémoire JS avant écriture — sans souci observé sur le matériel
+  testé, à surveiller sur des appareils plus anciens/limités.
+- **Piège des réponses opaques** (requêtes cross-origin sans CORS
+  explicite, statut toujours 0 côté Service Worker) — corrigé, mais
+  suffisamment subtil pour mériter une note dans la documentation du
+  dépôt principal à l'intention des futurs mainteneurs de
+  `sw-precache.js`.
+- **Versionnement des caches** (`geosd-shell-v1`, `geosd-runtime-v1`,
+  `geosd-pmtiles-offline`) fonctionnel mais sans convention documentée
+  pour les futurs mainteneurs (quand bumper la version).
+- **Périmètre non tranché** : seul `geosd-terrain-saisie.html` a été
+  traité. `geosd-terrain-consultation.html` n'a pas été évalué — à
+  décider avant intégration si un usage hors-ligne y est pertinent.
+
+## Fichiers concernés (pour intégration)
+
+- `geosd-terrain-saisie.html` — bouton d'en-tête ajouté
+- `geosd-themes.js` — liste des régions PMTiles, région active
+  mémorisée, candidats CDN étendus aux copies vendorisées
+- `geosd-offline-map.js` — **nouveau**, module de gestion hors-ligne
+- `sw-precache.js` — **nouveau**, Service Worker (fond de carte +
+  coquille + bibliothèques)
+- `vendor/leaflet.css`, `vendor/leaflet.js`, `vendor/protomaps-leaflet.js`
+  — **nouveaux**, copies locales vendorisées
+
+## Recommandation
 
 Réintégration recommandée, sous réserve de :
-
-Compléter la validation Android sur le module final (post-ajout coquille/vendoring).
-Trancher le périmètre geosd-terrain-consultation.html.
-Documenter le piège des réponses opaques et la convention de versionnement des caches dans la documentation du dépôt principal.
-Passer par une revue de code normale (pull request) plutôt qu'une copie directe des fichiers — voir section suivante.
+1. Compléter la validation Android sur le module final (post-ajout
+   coquille/vendoring).
+2. Trancher le périmètre `geosd-terrain-consultation.html`.
+3. Documenter le piège des réponses opaques et la convention de
+   versionnement des caches dans la documentation du dépôt principal.
+4. Passer par une revue de code normale (pull request) plutôt qu'une
+   copie directe des fichiers — voir section suivante.
