@@ -325,3 +325,23 @@ séance d'intégration importante.
 - Suivi à prévoir sur l'évolution du support Android de la File System
   Access API (statut en cours de développement côté Chromium, sans
   garantie de date — voir JOURNAL_DECISIONS.md pour le détail).
+
+  ## Fond de carte hors-ligne
+
+GeoSD permet de télécharger un fond de carte vectoriel (PMTiles) pour
+un usage sans connexion réseau, y compris à froid (application rouverte
+sans réseau après une coupure complète). Accessible via le bouton
+« Fond hors-ligne » dans l'en-tête de `geosd-terrain-saisie.html`.
+
+- `geosd-offline-map.js` — module de gestion (téléchargement par
+  région, jauge d'espace, purge).
+- `sw-precache.js` — Service Worker : sert le fond de carte régional,
+  l'application elle-même et ses bibliothèques depuis le stockage
+  local quand le réseau est absent.
+- `vendor/` — copies locales de Leaflet et `protomaps-leaflet`
+  (volontairement pas de CDN, pour ne dépendre d'aucun service externe
+  y compris au premier chargement).
+
+Détail de l'exploration et des choix techniques : voir
+`JOURNAL_DECISIONS.md` (entrée du 21/08/2026) et le dépôt de spike
+`geosdspike` (archivé).
