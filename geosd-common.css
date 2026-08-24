@@ -72,6 +72,19 @@
   button.danger{ background:var(--danger); border-color:var(--danger); color:#fff; }
   button.danger:hover{ background:#5e2216; }
   button:disabled{ opacity:.4; cursor:not-allowed; }
+  button.icon-btn{
+    width:30px; height:30px;
+    padding:0;
+    border-radius:50%;
+    font-family:var(--mono);
+    font-size:13px;
+    font-weight:600;
+    line-height:1;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    flex:none;
+  }
 
   #status{
     font-family:var(--mono);

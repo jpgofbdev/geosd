@@ -2395,7 +2395,7 @@ function addBaseLayerSwitcher(map) {
         maxDataZoom: 14,
         attribution: 'PMTiles (spike) — CVL'
       });
-      layersControl.addBaseLayer(lyrPmtiles, 'Fond PMTiles (test)');
+      layersControl.addBaseLayer(lyrPmtiles, 'Fond simple hors ligne');
     } catch (err) {
       console.error('SPIKE PMTiles : échec d’initialisation de la couche.', err);
     }

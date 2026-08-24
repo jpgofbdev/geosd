@@ -67,6 +67,8 @@
   </div>
   <div class="toolbar">
     <span id="status">0 point saisi</span>
+    <button id="btn-info" class="icon-btn" type="button" aria-label="Informations" title="Informations">i</button>
+    <button id="btn-help" class="icon-btn" type="button" aria-label="Mode d'emploi" title="Mode d'emploi">?</button>
     <button id="btn-toggle-filters">Filtres</button>
     <button id="btn-territory">Territoire : —</button>
     <button id="btn-offline-map">Fond hors-ligne</button>
@@ -77,15 +79,52 @@
   </div>
 </header>
 
-<div id="banner" class="banner show">
-  Chaque point saisi reste sur cette tablette (sauvegarde automatique anti-crash) — <strong>rien
-  n'est jamais supprimé automatiquement</strong>. En fin de tournée, utilisez
-  <strong>« Exporter tout »</strong> pour télécharger un fichier à transmettre au bureau (mail,
-  clé USB, dossier partagé), puis <strong>« Effacer les saisies en cours »</strong> une fois
-  l'intégration confirmée par l'administrateur.
-</div>
 <div id="load-error" class="banner" style="background:#f6d6d0;border-color:#c0392b;color:#7b241c;">
   Impossible de charger la bibliothèque cartographique. Vérifiez votre connexion, puis rechargez.
+</div>
+
+<div id="info-overlay" class="overlay">
+  <div class="modal">
+    <h2>Informations</h2>
+    <p style="font-size:13px; line-height:1.6; color:var(--ink);">
+      Chaque point saisi reste sur cette tablette (sauvegarde automatique anti-crash) — <strong>rien
+      n'est jamais supprimé automatiquement</strong>. En fin de tournée, utilisez
+      <strong>« Exporter tout »</strong> pour télécharger un fichier à transmettre au bureau (mail,
+      clé USB, dossier partagé), puis <strong>« Effacer les saisies en cours »</strong> une fois
+      l'intégration confirmée par l'administrateur.
+    </p>
+    <div class="modal-actions">
+      <button type="button" data-close>Fermer</button>
+    </div>
+  </div>
+</div>
+
+<div id="help-overlay" class="overlay">
+  <div class="modal modal-wide">
+    <h2>Mode d'emploi — Saisie terrain</h2>
+    <ol style="font-size:13px; line-height:1.7; color:var(--ink); padding-left:20px; margin:0 0 16px;">
+      <li><strong>Ajouter un point</strong> : cliquer/toucher un emplacement sur la carte, choisir la
+        thématique puis le sous-type, remplir le formulaire et valider. Le point apparaît aussitôt
+        sur la carte et est sauvegardé automatiquement sur l'appareil.</li>
+      <li><strong>Contexte visuel (facultatif)</strong> : « Charger points existants » affiche les
+        points déjà connus (en gris, non modifiables) à partir d'un fichier central copié sur la
+        tablette.</li>
+      <li><strong>Modifier ou supprimer un point saisi</strong> : cliquer dessus, puis « Modifier »
+        dans le popup pour ouvrir le formulaire pré-rempli (la position n'est pas modifiable — pour
+        déplacer un point, le supprimer et le ressaisir), ou « Supprimer ».</li>
+      <li><strong>Filtres</strong> et <strong>Territoire</strong> permettent de restreindre l'affichage
+        et de changer d'emprise de carte sans affecter les points déjà saisis.</li>
+      <li><strong>Fond hors-ligne</strong> : télécharger un fond de carte régional pour continuer à
+        travailler sans réseau.</li>
+      <li><strong>En fin de tournée</strong> : « Exporter tout » télécharge un fichier regroupant tous
+        les points saisis, à transmettre au bureau. Une fois l'intégration confirmée par
+        l'administrateur, « Effacer les saisies en cours » (bouton rouge, taper SUPPRIMER) vide
+        l'appareil.</li>
+    </ol>
+    <div class="modal-actions">
+      <button type="button" data-close>Fermer</button>
+    </div>
+  </div>
 </div>
 
 <div id="map-wrap">
@@ -171,6 +210,22 @@
   </div>
 </div>
 
+<script>
+(function () {
+  function bind(btnId, overlayId) {
+    var btn = document.getElementById(btnId);
+    var overlay = document.getElementById(overlayId);
+    if (!btn || !overlay) return;
+    btn.addEventListener('click', function () { overlay.classList.add('show'); });
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) overlay.classList.remove('show'); });
+    overlay.querySelectorAll('[data-close]').forEach(function (el) {
+      el.addEventListener('click', function () { overlay.classList.remove('show'); });
+    });
+  }
+  bind('btn-info', 'info-overlay');
+  bind('btn-help', 'help-overlay');
+})();
+</script>
 <script src="geosd-themes.js"></script>
 <script src="geosd-offline-map.js"></script>
 <script>

@@ -17,6 +17,8 @@
   </div>
   <div class="toolbar">
     <span id="status">Aucun point chargé</span>
+    <button id="btn-info" class="icon-btn" type="button" aria-label="Informations" title="Informations">i</button>
+    <button id="btn-help" class="icon-btn" type="button" aria-label="Mode d'emploi" title="Mode d'emploi">?</button>
     <button id="btn-toggle-filters">Filtres</button>
     <button id="btn-territory">Territoire : —</button>
     <button id="btn-offline-map">Fond hors-ligne</button>
@@ -26,14 +28,45 @@
   </div>
 </header>
 
-<div id="banner" class="banner show">
-  Version consultation — lecture seule, aucune saisie possible ici (utilisez GeoSD Terrain Saisie
-  pour ajouter des points). Protocole : récupérer le fichier à jour depuis le dossier réseau, puis
-  « Charger un fichier » ici.
-</div>
 <div id="freshness-banner" class="banner"></div>
 <div id="load-error" class="banner" style="background:#f6d6d0;border-color:#c0392b;color:#7b241c;">
   Impossible de charger la bibliothèque cartographique. Vérifiez votre connexion, puis rechargez.
+</div>
+
+<div id="info-overlay" class="overlay">
+  <div class="modal">
+    <h2>Informations</h2>
+    <p style="font-size:13px; line-height:1.6; color:var(--ink);">
+      Version consultation — lecture seule, aucune saisie possible ici (utilisez GeoSD Terrain Saisie
+      pour ajouter des points). Protocole : récupérer le fichier à jour depuis le dossier réseau, puis
+      « Charger un fichier » ici.
+    </p>
+    <div class="modal-actions">
+      <button type="button" data-close>Fermer</button>
+    </div>
+  </div>
+</div>
+
+<div id="help-overlay" class="overlay">
+  <div class="modal modal-wide">
+    <h2>Mode d'emploi — Consultation terrain</h2>
+    <ol style="font-size:13px; line-height:1.7; color:var(--ink); padding-left:20px; margin:0 0 16px;">
+      <li><strong>Charger les points</strong> : « Charger un fichier » pour sélectionner le fichier
+        central (copié au préalable depuis le dossier réseau sur la tablette). Les points connus
+        s'affichent sur la carte, en lecture seule.</li>
+      <li><strong>Fraîcheur du fichier</strong> : un bandeau indique l'âge du fichier chargé, avec une
+        alerte au-delà de 30 jours — pensez à redemander une copie à jour à l'administrateur.</li>
+      <li><strong>Consulter un point</strong> : toucher un marqueur sur la carte pour afficher ses
+        informations dans un popup.</li>
+      <li><strong>Filtres</strong> et <strong>Territoire</strong> permettent de restreindre l'affichage
+        et de changer d'emprise de carte.</li>
+      <li><strong>Fond hors-ligne</strong> : télécharger un fond de carte régional pour continuer à
+        consulter sans réseau.</li>
+    </ol>
+    <div class="modal-actions">
+      <button type="button" data-close>Fermer</button>
+    </div>
+  </div>
 </div>
 
 <div id="map-wrap">
@@ -86,6 +119,22 @@
   </aside>
 </div>
 
+<script>
+(function () {
+  function bind(btnId, overlayId) {
+    var btn = document.getElementById(btnId);
+    var overlay = document.getElementById(overlayId);
+    if (!btn || !overlay) return;
+    btn.addEventListener('click', function () { overlay.classList.add('show'); });
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) overlay.classList.remove('show'); });
+    overlay.querySelectorAll('[data-close]').forEach(function (el) {
+      el.addEventListener('click', function () { overlay.classList.remove('show'); });
+    });
+  }
+  bind('btn-info', 'info-overlay');
+  bind('btn-help', 'help-overlay');
+})();
+</script>
 <script src="geosd-themes.js"></script>
 <script src="geosd-offline-map.js"></script>
 <script>
