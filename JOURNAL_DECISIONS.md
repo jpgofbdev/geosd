@@ -162,6 +162,27 @@ arrière par erreur, ou de refaire les mêmes hésitations.
   dupliquer un sélecteur d'année. Implémentation en JS pur (calcul du rang
   d'occurrence via `Date`), aucune dépendance externe ajoutée.
 
+- **Bandeau jaune d'info remplacé par une popup accessible via un bouton
+  « i » (24/08/2026), sur `geosd-terrain-saisie.html` et
+  `geosd-terrain-consultation.html`.** Le bandeau fixe occupait une part
+  disproportionnée de l'écran sur mobile (retour d'usage direct, capture
+  d'écran à l'appui — Samsung Galaxy S8+). Contenu inchangé, simplement
+  déplacé dans une modale (`.overlay`/`.modal`, réutilise les classes déjà
+  utilisées pour la saisie de point et le fond hors-ligne — aucun nouveau
+  style de modale). Le bandeau de fraîcheur du fichier
+  (`#freshness-banner`, consultation uniquement) reste, lui, affiché en
+  permanence dans l'en-tête : c'est une alerte active et conditionnelle
+  (âge du fichier chargé), pas une information statique, elle doit rester
+  visible sans action de l'agent.
+- **Bouton « ? » ajouté à côté, ouvrant un mode d'emploi propre à chaque
+  page** (même mécanisme de popup). Contenu rédigé spécifiquement pour
+  chacune des deux versions terrain à partir du fonctionnement réel actuel
+  du bouton et non repris du mode d'emploi générique d'`index.html`, qui
+  décrit un workflow antérieur (envoi immédiat par mail/partage) retiré
+  depuis — voir décision "Envoi terrain par point" plus haut.
+  `index.html` n'a volontairement pas été corrigé à cette occasion (hors
+  périmètre de cette demande) ; à revoir séparément.
+
 ## Incidents résolus (pour ne pas les reproduire)
 
 - **`window.MA_CONST` renvoie `undefined` alors que `MA_CONST` fonctionne**
@@ -357,6 +378,33 @@ arrière par erreur, ou de refaire les mêmes hésitations.
 - **Un seul fond régional stocké à la fois, comme avant** — ce
   comportement (remplacement, pas cumul) n'a pas changé, il est juste
   maintenant piloté indifféremment depuis l'une ou l'autre version terrain.
+- **Libellé « Fond PMTiles (test) » renommé en « Fond simple hors ligne »
+  (24/08/2026)**, dans le sélecteur de fonds de carte (`geosd-themes.js`,
+  seul endroit où ce libellé existait). Le nom d'origine, hérité du spike
+  d'exploration, n'avait plus lieu d'exposer à l'agent le terme technique
+  "PMTiles" ni la mention "test" une fois la fonctionnalité en usage
+  courant.
+- **Popups « i »/« ? » passées sous les contrôles Leaflet (zoom,
+  géolocalisation, sélecteur de fonds) au premier essai (24/08/2026),
+  corrigé le jour même.** Les popups (`.overlay`, `z-index:1000`) et les
+  conteneurs de contrôles Leaflet (`.leaflet-top`/`.leaflet-bottom`,
+  `z-index:1000` défini par `leaflet.css`) partageaient le même z-index :
+  à valeur égale, c'est l'ordre d'apparition dans le DOM qui décide, et
+  `#map-wrap` (donc les contrôles) suit les popups dans le HTML des deux
+  pages terrain — les contrôles gagnaient systématiquement. Corrigé en
+  portant `.overlay` à `z-index:2000` dans `geosd-common.css`, réglage
+  global qui profite aussi à la modale de saisie de point et à celle du
+  fond hors-ligne (déjà correctes par chance d'ordre DOM, mais désormais
+  garanties indépendamment de cet ordre).
+- **Boutons de zoom +/- retirés de la carte, `geosd-terrain-saisie.html`
+  et `geosd-terrain-consultation.html` uniquement (24/08/2026)** —
+  `L.map('map', { zoomControl: false })`. Assumé : l'essentiel des agents
+  zoome désormais au doigt (pincement) ou à la molette, fonctions Leaflet
+  natives non affectées par cette option (elle ne masque que les deux
+  boutons). Sur `geosd-terrain-saisie.html`, le contrôle « Ma position »
+  (`topleft`, custom) occupe maintenant seul ce coin, sans changement de
+  code nécessaire de son côté. `geosd-admin.html` (poste desktop) garde
+  ses boutons +/-, non concerné par cette demande.
 
 ## Nom du projet
 

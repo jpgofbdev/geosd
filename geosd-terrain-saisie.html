@@ -253,7 +253,7 @@ let pendingLatLng = null;
 let editingFeature = null;
 const modalTitle = document.querySelector('#overlay h2');
 
-const map = L.map('map');
+const map = L.map('map', { zoomControl: false });
 function updateTerritoryButton(key) {
   document.getElementById('btn-territory').textContent = 'Territoire : ' + territoryLabel(key);
 }

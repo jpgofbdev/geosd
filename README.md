@@ -510,3 +510,22 @@ fond régional reste stocké à la fois (remplacement, pas cumul).
 Détail de l'exploration et des choix techniques : voir
 `JOURNAL_DECISIONS.md` (entrée du 21/08/2026) et le dépôt de spike
 `geosdspike` (archivé).
+
+## Informations et mode d'emploi (versions terrain)
+
+Sur `geosd-terrain-saisie.html` et `geosd-terrain-consultation.html`,
+deux petits boutons ronds dans l'en-tête ouvrent chacun une popup :
+
+- **« i »** — l'information générale sur le fonctionnement de la page
+  (sauvegarde locale, export, etc. pour la saisie ; lecture seule et
+  protocole de mise à jour pour la consultation). Reprend le contenu qui
+  occupait auparavant un bandeau fixe sous l'en-tête, retiré pour libérer
+  de l'espace à l'écran sur mobile.
+- **« ? »** — un mode d'emploi propre à la page affichée (liste des
+  actions disponibles et de leur usage), distinct du mode d'emploi
+  général présenté sur `index.html`.
+
+Sur `geosd-terrain-consultation.html`, le bandeau de fraîcheur du fichier
+chargé (âge, alerte au-delà de 30 jours) reste affiché directement dans
+l'en-tête, sans passer par une popup — c'est une alerte active qui doit
+rester visible sans action de l'agent.
