@@ -153,7 +153,7 @@ page d'accueil de présentation (`index.html`) pour l'hébergement public
 | Fichier | Usage | Où | Écriture |
 |---|---|---|---|
 | `geosd-admin.html` | Intégration du fichier central, fusion des envois terrain, tableau et statistiques | Poste desktop (Chrome/Edge/Opera) | Directe sur disque (File System Access API) |
-| `geosd-terrain-saisie.html` | Saisie de nouveaux points sur le terrain | Tablette Android (ou tout mobile) | En mémoire locale (localStorage) + envoi par mail/partage après chaque point |
+| `geosd-terrain-saisie.html` | Saisie de nouveaux points sur le terrain | Tablette Android (ou tout mobile) | En mémoire locale (localStorage) + export groupé en fin de tournée |
 | `geosd-terrain-consultation.html` | Consultation des points déjà connus, lecture seule | Tablette Android (ou tout mobile) | Aucune — fichier local ou dépôt distant |
  
 Toutes les trois partagent deux fichiers communs à ne jamais dupliquer :
@@ -162,11 +162,20 @@ Toutes les trois partagent deux fichiers communs à ne jamais dupliquer :
 **Tous les fichiers doivent rester dans le même dossier** (ou à la racine
 du même dépôt pour un hébergement web).
  
+**Deux pages de présentation, deux publics.** `index.html` est la page
+publique (GitHub Pages) : elle ne présente que les deux versions terrain
+(saisie, consultation), sans aucune mention ni lien vers l'administration.
+La présentation de l'administration vit dans `index_admin.html`, une page
+séparée, volontairement non liée depuis `index.html` — son URL est à
+transmettre directement aux administrateurs qui intègrent les envois
+terrain, pas à afficher publiquement.
+ 
 ## Fichiers du projet
  
 | Fichier | Rôle | À éditer ? |
 |---|---|---|
-| `index.html` | Page d'accueil / présentation (hébergement GitHub Pages) | Occasionnellement (copie/coordonnées) |
+| `index.html` | Page d'accueil / présentation publique (hébergement GitHub Pages) — ne présente que les 2 versions terrain, aucun lien vers l'administration | Occasionnellement (copie/coordonnées) |
+| `index_admin.html` | Page de présentation de l'administration — **non liée depuis `index.html`**, à transmettre directement aux administrateurs qui intègrent les envois terrain | Occasionnellement (copie/coordonnées) |
 | `geosd-admin.html` | Application desktop administrateur | Non |
 | `geosd-terrain-saisie.html` | Application terrain — saisie | Non |
 | `geosd-terrain-consultation.html` | Application terrain — consultation | Éventuellement, pour `DEPOT_URL` (voir plus bas) |

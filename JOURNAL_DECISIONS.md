@@ -411,6 +411,48 @@ arrière par erreur, ou de refaire les mêmes hésitations.
   code nécessaire de son côté. `geosd-admin.html` (poste desktop) garde
   ses boutons +/-, non concerné par cette demande.
 
+## Séparation présentation publique / présentation admin (24/08/2026)
+
+- **Constat :** `index.html` annonçait "3 versions" et donnait un accès
+  direct (bouton dans le hero + carte dédiée) à `geosd-admin.html`, alors
+  que cette page est censée être publique (hébergement GitHub Pages) et
+  que l'administration n'a pas vocation à être découverte par n'importe
+  qui — seuls les administrateurs qui intègrent les envois terrain doivent
+  y accéder.
+- **Décision :** `index.html` ne présente plus que les 2 versions terrain
+  (saisie, consultation) — carte ADMIN retirée, bouton "Ouvrir
+  l'administration" retiré du hero, nav et titres de section repassés à
+  "2 versions". Toute la présentation de l'administration (fonctionnalités,
+  astuce lecteur réseau mappé, mode d'emploi, démo, lien vers
+  `geosd-admin.html`) déplacée dans une nouvelle page dédiée,
+  `index_admin.html`, construite avec la même identité visuelle
+  qu'`index.html` (cohérence pro pour ce que verront les administrateurs).
+- **`index_admin.html` volontairement non lié depuis `index.html`** — page
+  "non listée" plutôt que protégée par un mécanisme d'accès (cohérent avec
+  le reste du projet : pas d'authentification distante nulle part). Son URL
+  est à transmettre directement, par le canal de son choix, aux
+  administrateurs concernés.
+- **Mode d'emploi de `index.html` réécrit du point de vue de l'agent
+  terrain** (saisir, exporter en fin de tournée), avec une étape finale
+  qui explique que c'est l'administrateur qui intègre les envois et met à
+  jour le fichier central, et qu'il revient à l'agent de recopier
+  périodiquement ce fichier à jour sur son appareil de consultation — sans
+  décrire le détail du travail de l'administrateur (couvert par le mode
+  d'emploi propre à `index_admin.html`).
+- **Corrections de contenu périmé au passage**, repérées en retravaillant
+  ce texte : plusieurs endroits (`index.html`, et une ligne de tableau du
+  présent README) décrivaient encore un envoi immédiat par point (mail ou
+  partage natif) après chaque saisie — fonctionnalité retirée depuis (voir
+  décision "Envoi terrain par point" plus haut), remplacée par l'export
+  groupé en fin de tournée. Reformulé pour refléter le fonctionnement
+  actuel.
+- **Lien retour ajouté sur `geosd-admin.html` (24/08/2026)** : le titre
+  « GeoSD » de l'en-tête pointait vers `index.html` (comme sur les 2
+  versions terrain) ; il pointe désormais vers `index_admin.html`, sa
+  propre page de présentation, plus pertinente pour ce contexte. Un second
+  petit lien « Présentation générale » a été ajouté à côté, vers
+  `index.html`, pour ne pas perdre l'accès à la présentation publique.
+
 ## Nom du projet
 
 Le projet s'est appelé **Geoshar** avant d'être renommé **GeoSD**, pour
