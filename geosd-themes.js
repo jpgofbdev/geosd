@@ -17,11 +17,13 @@ const THEMES = {
     label: "Chasse",
     subtypes: null,
     fields: [
-      { name: "moment", label: "Braconnage", type: "select", required: true, options: ["Jour", "Nuit"] },
+      { name: "braconnage", label: "Braconnage", type: "select", required: false, options: ["oui", "non"] },
+      { name: "journuit", label: "Jour ou nuit", type: "select", required: false, options: ["Jour", "Nuit"] },
       { name: "nb_coups_de_feu", label: "Nombre de coups de feu entendus", type: "number", required: false },
       { name: "type_arme", label: "Type d'arme perçu", type: "select", required: false, options: ["Carabine", "Fusil", "Indéterminé"] },
       { name: "gibier_recherche", label: "Gibier supposé recherché", type: "select", required: false, options: ["Gros", "Petit", "Indéterminé"] },
-      { name: "gibier_retrouve", label: "Gibier retrouvé / emmené", type: "text", required: false },
+      { name: "gibier_retrouve", label: "Gibier retrouvé / emmené", type: "select", required: false, options: ["Sanglier", "CHI", "CEM", "CEF", "CSI", "DAI", "PMA", "Lièvre", "Phaisan", "Perdrix", "Autres", "multiple GG", "multiple PG"] },
+      { name: "type_moyen_prohibe", label: "Type moyen prohibé", type: "text", required: false },
       { name: "vehicule_utilise", label: "Véhicule utilisé", type: "text", required: false },
       { name: "plaque_immatriculation", label: "Plaque d'immatriculation", type: "text", required: false }
     ]
@@ -30,8 +32,8 @@ const THEMES = {
     label: "Pêche",
     subtypes: null,
     fields: [
-      { name: "moment", label: "Braconnage", type: "select", required: true, options: ["Soir", "Nuit"] },
-      { name: "type_milieu", label: "Type de milieu", type: "select", required: true, options: ["Étang", "Rivière", "Loire"] },
+      { name: "braconnage", label: "Braconnage", type: "select", required: false, options: ["oui", "non"] },
+      { name: "type_milieu", label: "Type de milieu", type: "select", required: false, options: ["Étang", "Rivière", "Loire"] },
       { name: "nom_milieu", label: "Nom du milieu", type: "text", required: false },
       { name: "espece_ciblee", label: "Espèce ciblée supposée", type: "text", required: false },
       { name: "espece_retrouvee", label: "Espèce retrouvée", type: "text", required: false },
@@ -45,10 +47,16 @@ const THEMES = {
       pollution: {
         label: "Pollution",
         fields: [
-          { name: "type_pollution", label: "Type de pollution", type: "select", required: true, options: ["Organique", "Chimique", "Hydrocarbure", "Indéterminé"] },
+          { name: "type_pollution", label: "Type de pollution", type: "select", required: false, options: ["Organique", "Chimique", "Hydrocarbure", "Indéterminé"] },
           { name: "coloration", label: "Coloration observée", type: "text", required: false },
           { name: "odeur", label: "Odeur observée", type: "text", required: false },
           { name: "auteur_suppose", label: "Auteur supposé", type: "select", required: false, options: ["Particulier", "Entreprise", "Exploitation agricole"] }
+        ]
+      },
+      continuite: {
+        label: "Continuité écologique",
+        fields: [
+          { name: "code_roe", label: "Code ROE obstacle", type: "text", required: false }
         ]
       }
     }
@@ -87,8 +95,8 @@ const THEMES = {
    thématique par getFieldsFor() ci-dessous. */
 // ==COMMON_FIELDS_START==
 const COMMON_FIELDS = [
-  { name: "commune", label: "Commune", type: "text", required: true },
-  { name: "date", label: "Date", type: "date", required: true },
+  { name: "commune", label: "Commune", type: "text", required: false },
+  { name: "date", label: "Date", type: "date", required: false },
   { name: "heure", label: "Heure", type: "time", required: false },
   { name: "auteur_signalement", label: "Auteur signalement", type: "text", required: false },
   { name: "auteur_faits", label: "Auteur faits", type: "text", required: false },

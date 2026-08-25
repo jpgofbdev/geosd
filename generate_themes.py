@@ -68,11 +68,24 @@ def build_field(row):
     return field
 
 
+def sniff_delimiter(sample):
+    """Détecte automatiquement le délimiteur du CSV (virgule ou point-virgule
+    — Excel en locale française exporte souvent en point-virgule). Retombe
+    sur la virgule si la détection échoue."""
+    try:
+        return csv.Sniffer().sniff(sample, delimiters=",;").delimiter
+    except csv.Error:
+        return ","
+
+
 def load_themes(csv_path):
     themes = {}
     common_fields = []
     with csv_path.open(encoding="utf-8-sig", newline="") as f:
-        reader = csv.DictReader(f)
+        sample = f.read(4096)
+        f.seek(0)
+        delimiter = sniff_delimiter(sample)
+        reader = csv.DictReader(f, delimiter=delimiter)
         for row in reader:
             tkey = row["theme_key"].strip()
             if not tkey:
@@ -160,7 +173,10 @@ def to_js_object(themes):
 
 def load_communes(csv_path):
     with csv_path.open(encoding="utf-8-sig", newline="") as f:
-        reader = csv.DictReader(f)
+        sample = f.read(4096)
+        f.seek(0)
+        delimiter = sniff_delimiter(sample)
+        reader = csv.DictReader(f, delimiter=delimiter)
         if "nom_commune" not in (reader.fieldnames or []):
             sys.exit(
                 f"Colonne 'nom_commune' introuvable dans {csv_path} "
