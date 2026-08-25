@@ -23,14 +23,7 @@ const THEMES = {
       { name: "gibier_recherche", label: "Gibier supposé recherché", type: "select", required: false, options: ["Gros", "Petit", "Indéterminé"] },
       { name: "gibier_retrouve", label: "Gibier retrouvé / emmené", type: "text", required: false },
       { name: "vehicule_utilise", label: "Véhicule utilisé", type: "text", required: false },
-      { name: "plaque_immatriculation", label: "Plaque d'immatriculation", type: "text", required: false },
-      { name: "commune", label: "Commune", type: "text", required: true },
-      { name: "date", label: "Date", type: "date", required: true },
-      { name: "heure", label: "Heure", type: "time", required: false },
-      { name: "auteur_signalement", label: "Auteur signalement", type: "text", required: false },
-      { name: "auteur_faits", label: "Auteur faits", type: "text", required: false },
-      { name: "commentaire", label: "Commentaire", type: "text", required: false },
-      { name: "fiabilite", label: "Fiabilité", type: "select", required: false, options: ["1", "2", "3", "4", "5"] }
+      { name: "plaque_immatriculation", label: "Plaque d'immatriculation", type: "text", required: false }
     ]
   },
   peche: {
@@ -43,14 +36,7 @@ const THEMES = {
       { name: "espece_ciblee", label: "Espèce ciblée supposée", type: "text", required: false },
       { name: "espece_retrouvee", label: "Espèce retrouvée", type: "text", required: false },
       { name: "vehicule_utilise", label: "Véhicule utilisé", type: "text", required: false },
-      { name: "plaque_immatriculation", label: "Plaque d'immatriculation", type: "text", required: false },
-      { name: "commune", label: "Commune", type: "text", required: true },
-      { name: "date", label: "Date", type: "date", required: true },
-      { name: "heure", label: "Heure", type: "time", required: false },
-      { name: "auteur_signalement", label: "Auteur signalement", type: "text", required: false },
-      { name: "auteur_faits", label: "Auteur faits", type: "text", required: false },
-      { name: "commentaire", label: "Commentaire", type: "text", required: false },
-      { name: "fiabilite", label: "Fiabilité", type: "select", required: false, options: ["1", "2", "3", "4", "5"] }
+      { name: "plaque_immatriculation", label: "Plaque d'immatriculation", type: "text", required: false }
     ]
   },
   eau: {
@@ -62,14 +48,7 @@ const THEMES = {
           { name: "type_pollution", label: "Type de pollution", type: "select", required: true, options: ["Organique", "Chimique", "Hydrocarbure", "Indéterminé"] },
           { name: "coloration", label: "Coloration observée", type: "text", required: false },
           { name: "odeur", label: "Odeur observée", type: "text", required: false },
-          { name: "auteur_suppose", label: "Auteur supposé", type: "select", required: false, options: ["Particulier", "Entreprise", "Exploitation agricole"] },
-          { name: "commune", label: "Commune", type: "text", required: true },
-          { name: "date", label: "Date", type: "date", required: true },
-          { name: "heure", label: "Heure", type: "time", required: false },
-          { name: "auteur_signalement", label: "Auteur signalement", type: "text", required: false },
-          { name: "auteur_faits", label: "Auteur faits", type: "text", required: false },
-          { name: "commentaire", label: "Commentaire", type: "text", required: false },
-          { name: "fiabilite", label: "Fiabilité", type: "select", required: false, options: ["1", "2", "3", "4", "5"] }
+          { name: "auteur_suppose", label: "Auteur supposé", type: "select", required: false, options: ["Particulier", "Entreprise", "Exploitation agricole"] }
         ]
       }
     }
@@ -77,70 +56,47 @@ const THEMES = {
   phytosanitaires: {
     label: "Phytosanitaires",
     subtypes: null,
-    fields: [
-      { name: "commune", label: "Commune", type: "text", required: true },
-      { name: "date", label: "Date", type: "date", required: true },
-      { name: "heure", label: "Heure", type: "time", required: false },
-      { name: "auteur_signalement", label: "Auteur signalement", type: "text", required: false },
-      { name: "auteur_faits", label: "Auteur faits", type: "text", required: false },
-      { name: "commentaire", label: "Commentaire", type: "text", required: false },
-      { name: "fiabilite", label: "Fiabilité", type: "select", required: false, options: ["1", "2", "3", "4", "5"] }
-    ]
+    fields: []
   },
   vtm: {
     label: "VTM",
     subtypes: null,
-    fields: [
-      { name: "commune", label: "Commune", type: "text", required: true },
-      { name: "date", label: "Date", type: "date", required: true },
-      { name: "heure", label: "Heure", type: "time", required: false },
-      { name: "auteur_signalement", label: "Auteur signalement", type: "text", required: false },
-      { name: "auteur_faits", label: "Auteur faits", type: "text", required: false },
-      { name: "commentaire", label: "Commentaire", type: "text", required: false },
-      { name: "fiabilite", label: "Fiabilité", type: "select", required: false, options: ["1", "2", "3", "4", "5"] }
-    ]
+    fields: []
   },
   fsc: {
     label: "FSC",
     subtypes: null,
-    fields: [
-      { name: "commune", label: "Commune", type: "text", required: true },
-      { name: "date", label: "Date", type: "date", required: true },
-      { name: "heure", label: "Heure", type: "time", required: false },
-      { name: "auteur_signalement", label: "Auteur signalement", type: "text", required: false },
-      { name: "auteur_faits", label: "Auteur faits", type: "text", required: false },
-      { name: "commentaire", label: "Commentaire", type: "text", required: false },
-      { name: "fiabilite", label: "Fiabilité", type: "select", required: false, options: ["1", "2", "3", "4", "5"] }
-    ]
+    fields: []
   },
   habitat_especes: {
     label: "Habitat / espèces protégées",
     subtypes: null,
-    fields: [
-      { name: "commune", label: "Commune", type: "text", required: true },
-      { name: "date", label: "Date", type: "date", required: true },
-      { name: "heure", label: "Heure", type: "time", required: false },
-      { name: "auteur_signalement", label: "Auteur signalement", type: "text", required: false },
-      { name: "auteur_faits", label: "Auteur faits", type: "text", required: false },
-      { name: "commentaire", label: "Commentaire", type: "text", required: false },
-      { name: "fiabilite", label: "Fiabilité", type: "select", required: false, options: ["1", "2", "3", "4", "5"] }
-    ]
+    fields: []
   },
   cueillette: {
     label: "Cueillette",
     subtypes: null,
-    fields: [
-      { name: "commune", label: "Commune", type: "text", required: true },
-      { name: "date", label: "Date", type: "date", required: true },
-      { name: "heure", label: "Heure", type: "time", required: false },
-      { name: "auteur_signalement", label: "Auteur signalement", type: "text", required: false },
-      { name: "auteur_faits", label: "Auteur faits", type: "text", required: false },
-      { name: "commentaire", label: "Commentaire", type: "text", required: false },
-      { name: "fiabilite", label: "Fiabilité", type: "select", required: false, options: ["1", "2", "3", "4", "5"] }
-    ]
+    fields: []
   }
 };
 // ==THEMES_END==
+
+/* ⚠️ NE PAS ÉDITER LE BLOC COMMON_FIELDS À LA MAIN : régénéré par
+   generate_themes.py à partir des lignes theme_key="commun" du CSV.
+   Ces champs sont ajoutés automatiquement à la fin des champs de chaque
+   thématique par getFieldsFor() ci-dessous. */
+// ==COMMON_FIELDS_START==
+const COMMON_FIELDS = [
+  { name: "commune", label: "Commune", type: "text", required: true },
+  { name: "date", label: "Date", type: "date", required: true },
+  { name: "heure", label: "Heure", type: "time", required: false },
+  { name: "auteur_signalement", label: "Auteur signalement", type: "text", required: false },
+  { name: "auteur_faits", label: "Auteur faits", type: "text", required: false },
+  { name: "agent_sd", label: "Agent SD créateur du point GeoSD", type: "text", required: false },
+  { name: "commentaire", label: "Commentaire", type: "text", required: false },
+  { name: "fiabilite", label: "Fiabilité", type: "select", required: false, options: ["1", "2", "3", "4", "5"] }
+];
+// ==COMMON_FIELDS_END==
 
 /* ---- Communes (Centre-Val de Loire) pour la saisie prédictive du champ
    "commune" (datalist HTML, texte libre conservé — pas une contrainte de
@@ -2030,15 +1986,22 @@ function themeColor(themeKey) {
   return THEME_COLOR_PALETTE[i >= 0 ? i % THEME_COLOR_PALETTE.length : 0];
 }
 
-/* ---- Résolution des champs à afficher selon thématique / sous-type ---- */
+/* ---- Résolution des champs à afficher selon thématique / sous-type ----
+   Les champs spécifiques à la thématique (ou au sous-type) viennent
+   d'abord, suivis des champs communs (COMMON_FIELDS : commune, date,
+   heure, auteurs, agent SD, commentaire, fiabilité) — mêmes champs pour
+   toutes les thématiques, définis une seule fois dans le CSV. */
 function getFieldsFor(themeKey, subtypeKey) {
   const theme = THEMES[themeKey];
   if (!theme) return [];
+  let specific;
   if (theme.subtypes) {
     const sub = theme.subtypes[subtypeKey];
-    return sub ? sub.fields : [];
+    specific = sub ? sub.fields : [];
+  } else {
+    specific = theme.fields || [];
   }
-  return theme.fields || [];
+  return specific.concat(COMMON_FIELDS);
 }
 
 function escapeHtml(str) {

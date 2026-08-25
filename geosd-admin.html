@@ -785,20 +785,14 @@ const tableOverlay = document.getElementById('table-overlay');
 const tableSortSelect = document.getElementById('table-sort');
 
 function getCommonFieldNames() {
-  const fieldSets = THEME_KEYS.map(key => {
-    const theme = THEMES[key];
-    const names = new Set();
-    if (theme.subtypes) {
-      Object.values(theme.subtypes).forEach(sub => sub.fields.forEach(f => names.add(f.name)));
-    } else {
-      (theme.fields || []).forEach(f => names.add(f.name));
-    }
-    return names;
-  });
-  if (!fieldSets.length) return [];
-  return [...fieldSets[0]].filter(name => fieldSets.every(set => set.has(name)));
+  // Champs communs à toutes les thématiques : définis une seule fois dans
+  // le CSV (theme_key="commun") et ajoutés à chaque formulaire par
+  // getFieldsFor() — plus besoin de les déduire par intersection.
+  return COMMON_FIELDS.map(f => f.name);
 }
 function getFieldLabel(name) {
+  const common = COMMON_FIELDS.find(f => f.name === name);
+  if (common) return common.label;
   for (const key of THEME_KEYS) {
     const theme = THEMES[key];
     const fieldLists = theme.subtypes ? Object.values(theme.subtypes).map(s => s.fields) : [theme.fields || []];

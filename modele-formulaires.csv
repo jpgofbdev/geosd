@@ -1,4 +1,12 @@
-﻿theme_key,theme_label,subtype_key,subtype_label,field_name,field_label,field_type,required,options
+theme_key,theme_label,subtype_key,subtype_label,field_name,field_label,field_type,required,options
+commun,Tous thèmes,,,commune,Commune,text,oui,
+commun,Tous thèmes,,,date,Date,date,oui,
+commun,Tous thèmes,,,heure,Heure,time,non,
+commun,Tous thèmes,,,auteur_signalement,Auteur signalement,text,non,
+commun,Tous thèmes,,,auteur_faits,Auteur faits,text,non,
+commun,Tous thèmes,,,agent_sd,Agent SD créateur du point GeoSD,text,non,
+commun,Tous thèmes,,,commentaire,Commentaire,text,non,
+commun,Tous thèmes,,,fiabilite,Fiabilité,select,non,"1,2,3,4,5"
 chasse,Chasse,,,moment,Braconnage,select,oui,"Jour,Nuit"
 chasse,Chasse,,,nb_coups_de_feu,Nombre de coups de feu entendus,number,non,
 chasse,Chasse,,,type_arme,Type d'arme perçu,select,non,"Carabine,Fusil,Indéterminé"
@@ -6,13 +14,6 @@ chasse,Chasse,,,gibier_recherche,Gibier supposé recherché,select,non,"Gros,Pet
 chasse,Chasse,,,gibier_retrouve,Gibier retrouvé / emmené,text,non,
 chasse,Chasse,,,vehicule_utilise,Véhicule utilisé,text,non,
 chasse,Chasse,,,plaque_immatriculation,Plaque d'immatriculation,text,non,
-chasse,Chasse,,,commune,Commune,text,oui,
-chasse,Chasse,,,date,Date,date,oui,
-chasse,Chasse,,,heure,Heure,time,non,
-chasse,Chasse,,,auteur_signalement,Auteur signalement,text,non,
-chasse,Chasse,,,auteur_faits,Auteur faits,text,non,
-chasse,Chasse,,,commentaire,Commentaire,text,non,
-chasse,Chasse,,,fiabilite,Fiabilité,select,non,"1,2,3,4,5"
 peche,Pêche,,,moment,Braconnage,select,oui,"Soir,Nuit"
 peche,Pêche,,,type_milieu,Type de milieu,select,oui,"Étang,Rivière,Loire"
 peche,Pêche,,,nom_milieu,Nom du milieu,text,non,
@@ -20,56 +21,12 @@ peche,Pêche,,,espece_ciblee,Espèce ciblée supposée,text,non,
 peche,Pêche,,,espece_retrouvee,Espèce retrouvée,text,non,
 peche,Pêche,,,vehicule_utilise,Véhicule utilisé,text,non,
 peche,Pêche,,,plaque_immatriculation,Plaque d'immatriculation,text,non,
-peche,Pêche,,,commune,Commune,text,oui,
-peche,Pêche,,,date,Date,date,oui,
-peche,Pêche,,,heure,Heure,time,non,
-peche,Pêche,,,auteur_signalement,Auteur signalement,text,non,
-peche,Pêche,,,auteur_faits,Auteur faits,text,non,
-peche,Pêche,,,commentaire,Commentaire,text,non,
-peche,Pêche,,,fiabilite,Fiabilité,select,non,"1,2,3,4,5"
 eau,Eau,pollution,Pollution,type_pollution,Type de pollution,select,oui,"Organique,Chimique,Hydrocarbure,Indéterminé"
 eau,Eau,pollution,Pollution,coloration,Coloration observée,text,non,
 eau,Eau,pollution,Pollution,odeur,Odeur observée,text,non,
 eau,Eau,pollution,Pollution,auteur_suppose,Auteur supposé,select,non,"Particulier,Entreprise,Exploitation agricole"
-eau,Eau,pollution,Pollution,commune,Commune,text,oui,
-eau,Eau,pollution,Pollution,date,Date,date,oui,
-eau,Eau,pollution,Pollution,heure,Heure,time,non,
-eau,Eau,pollution,Pollution,auteur_signalement,Auteur signalement,text,non,
-eau,Eau,pollution,Pollution,auteur_faits,Auteur faits,text,non,
-eau,Eau,pollution,Pollution,commentaire,Commentaire,text,non,
-eau,Eau,pollution,Pollution,fiabilite,Fiabilité,select,non,"1,2,3,4,5"
-phytosanitaires,Phytosanitaires,,,commune,Commune,text,oui,
-phytosanitaires,Phytosanitaires,,,date,Date,date,oui,
-phytosanitaires,Phytosanitaires,,,heure,Heure,time,non,
-phytosanitaires,Phytosanitaires,,,auteur_signalement,Auteur signalement,text,non,
-phytosanitaires,Phytosanitaires,,,auteur_faits,Auteur faits,text,non,
-phytosanitaires,Phytosanitaires,,,commentaire,Commentaire,text,non,
-phytosanitaires,Phytosanitaires,,,fiabilite,Fiabilité,select,non,"1,2,3,4,5"
-vtm,VTM,,,commune,Commune,text,oui,
-vtm,VTM,,,date,Date,date,oui,
-vtm,VTM,,,heure,Heure,time,non,
-vtm,VTM,,,auteur_signalement,Auteur signalement,text,non,
-vtm,VTM,,,auteur_faits,Auteur faits,text,non,
-vtm,VTM,,,commentaire,Commentaire,text,non,
-vtm,VTM,,,fiabilite,Fiabilité,select,non,"1,2,3,4,5"
-fsc,FSC,,,commune,Commune,text,oui,
-fsc,FSC,,,date,Date,date,oui,
-fsc,FSC,,,heure,Heure,time,non,
-fsc,FSC,,,auteur_signalement,Auteur signalement,text,non,
-fsc,FSC,,,auteur_faits,Auteur faits,text,non,
-fsc,FSC,,,commentaire,Commentaire,text,non,
-fsc,FSC,,,fiabilite,Fiabilité,select,non,"1,2,3,4,5"
-habitat_especes,Habitat / espèces protégées,,,commune,Commune,text,oui,
-habitat_especes,Habitat / espèces protégées,,,date,Date,date,oui,
-habitat_especes,Habitat / espèces protégées,,,heure,Heure,time,non,
-habitat_especes,Habitat / espèces protégées,,,auteur_signalement,Auteur signalement,text,non,
-habitat_especes,Habitat / espèces protégées,,,auteur_faits,Auteur faits,text,non,
-habitat_especes,Habitat / espèces protégées,,,commentaire,Commentaire,text,non,
-habitat_especes,Habitat / espèces protégées,,,fiabilite,Fiabilité,select,non,"1,2,3,4,5"
-cueillette,Cueillette,,,commune,Commune,text,oui,
-cueillette,Cueillette,,,date,Date,date,oui,
-cueillette,Cueillette,,,heure,Heure,time,non,
-cueillette,Cueillette,,,auteur_signalement,Auteur signalement,text,non,
-cueillette,Cueillette,,,auteur_faits,Auteur faits,text,non,
-cueillette,Cueillette,,,commentaire,Commentaire,text,non,
-cueillette,Cueillette,,,fiabilite,Fiabilité,select,non,"1,2,3,4,5"
+phytosanitaires,Phytosanitaires,,,,,,,
+vtm,VTM,,,,,,,
+fsc,FSC,,,,,,,
+habitat_especes,Habitat / espèces protégées,,,,,,,
+cueillette,Cueillette,,,,,,,

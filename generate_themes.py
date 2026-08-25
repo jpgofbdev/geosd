@@ -15,6 +15,14 @@ field_type, required, options
 - subtype_key / subtype_label restent vides si la thématique n'a pas de sous-type.
 - options : valeurs séparées par des virgules, uniquement pour field_type=select.
 - required : "oui" ou "non".
+- Champs communs à toutes les thématiques (date, commune, fiabilité, etc.) :
+  une seule fois, avec theme_key = "commun" (theme_label libre, ex. "Tous
+  thèmes"). Ces lignes ne créent pas de thématique dans le sélecteur ; elles
+  alimentent COMMON_FIELDS, ajouté automatiquement à la fin des champs de
+  chaque thématique (dans getFieldsFor(), voir geosd-themes.js).
+- Thématique sans aucun champ spécifique (que des champs communs) : ajouter
+  une seule ligne avec theme_key/theme_label renseignés et field_name vide,
+  pour que la thématique reste enregistrée (ex. "vtm,VTM,,,,,,,").
 """
 import csv
 import json
@@ -26,6 +34,13 @@ CSV_PATH = Path("modele-formulaires.csv")
 JS_PATH = Path("geosd-themes.js")
 START_MARKER = "// ==THEMES_START=="
 END_MARKER = "// ==THEMES_END=="
+
+# Thématique spéciale : champs communs à toutes les thématiques (date,
+# commune, fiabilité, etc.), ajoutés une seule fois dans le CSV puis
+# reportés automatiquement dans chaque formulaire par getFieldsFor().
+COMMON_THEME_KEY = "commun"
+COMMON_FIELDS_START = "// ==COMMON_FIELDS_START=="
+COMMON_FIELDS_END = "// ==COMMON_FIELDS_END=="
 
 # Liste des communes (Centre-Val de Loire) pour la saisie prédictive du
 # champ "commune". CSV à une seule colonne : nom_commune (en MAJUSCULES,
@@ -55,19 +70,33 @@ def build_field(row):
 
 def load_themes(csv_path):
     themes = {}
+    common_fields = []
     with csv_path.open(encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f)
         for row in reader:
             tkey = row["theme_key"].strip()
             if not tkey:
                 continue
+            fname = row["field_name"].strip()
+
+            if tkey == COMMON_THEME_KEY:
+                if fname:
+                    common_fields.append(build_field(row))
+                continue
+
             tlabel = row["theme_label"].strip()
             skey = row["subtype_key"].strip()
             slabel = row["subtype_label"].strip()
-            field = build_field(row)
 
+            # setdefault avant le "continue" ci-dessous : une thématique sans
+            # aucun champ spécifique (ligne field_name vide) doit quand même
+            # apparaître dans THEMES.
             theme = themes.setdefault(tkey, {"label": tlabel, "subtypes": None, "fields": []})
 
+            if not fname:
+                continue
+
+            field = build_field(row)
             if skey:
                 if theme["subtypes"] is None:
                     theme["subtypes"] = {}
@@ -75,28 +104,36 @@ def load_themes(csv_path):
                 sub["fields"].append(field)
             else:
                 theme["fields"].append(field)
-    return themes
+    return themes, common_fields
+
+
+def field_js(f, indent):
+    pad = " " * indent
+    parts = [
+        f'name: "{f["name"]}"',
+        f'label: "{f["label"]}"',
+        f'type: "{f["type"]}"',
+        f'required: {"true" if f["required"] else "false"}',
+    ]
+    if "options" in f:
+        opts = ", ".join(json.dumps(o, ensure_ascii=False) for o in f["options"])
+        parts.append(f"options: [{opts}]")
+    return pad + "{ " + ", ".join(parts) + " }"
+
+
+def fields_js(fields, indent):
+    pad = " " * indent
+    if not fields:
+        return pad + "[]"
+    lines = ",\n".join(field_js(f, indent + 2) for f in fields)
+    return pad + "[\n" + lines + "\n" + pad + "]"
+
+
+def to_js_common_fields(fields):
+    return "const COMMON_FIELDS = " + fields_js(fields, 0).strip() + ";"
 
 
 def to_js_object(themes):
-    def field_js(f, indent):
-        pad = " " * indent
-        parts = [
-            f'name: "{f["name"]}"',
-            f'label: "{f["label"]}"',
-            f'type: "{f["type"]}"',
-            f'required: {"true" if f["required"] else "false"}',
-        ]
-        if "options" in f:
-            opts = ", ".join(json.dumps(o, ensure_ascii=False) for o in f["options"])
-            parts.append(f"options: [{opts}]")
-        return pad + "{ " + ", ".join(parts) + " }"
-
-    def fields_js(fields, indent):
-        pad = " " * indent
-        lines = ",\n".join(field_js(f, indent + 2) for f in fields)
-        return pad + "[\n" + lines + "\n" + pad + "]"
-
     lines = ["const THEMES = {"]
     theme_keys = list(themes.keys())
     for ti, tkey in enumerate(theme_keys):
@@ -158,12 +195,16 @@ def main():
     if not JS_PATH.exists():
         sys.exit(f"Fichier introuvable : {JS_PATH}")
 
-    themes = load_themes(CSV_PATH)
+    themes, common_fields = load_themes(CSV_PATH)
     js_block = to_js_object(themes)
 
     js = JS_PATH.read_text(encoding="utf-8")
     js = replace_block(js, START_MARKER, END_MARKER, js_block)
     print(f"OK — {len(themes)} thématique(s) écrites dans {JS_PATH} (partagé par les 3 versions)")
+
+    common_block = to_js_common_fields(common_fields)
+    js = replace_block(js, COMMON_FIELDS_START, COMMON_FIELDS_END, common_block)
+    print(f"OK — {len(common_fields)} champ(s) commun(s) écrits dans {JS_PATH} (ajoutés à chaque thématique)")
 
     if COMMUNES_CSV_PATH.exists():
         communes = load_communes(COMMUNES_CSV_PATH)
