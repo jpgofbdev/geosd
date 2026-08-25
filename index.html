@@ -150,6 +150,19 @@
     .hero h1{ font-size:32px; }
   }
 
+  @media (max-width:480px){
+    .hero{ padding:32px 0 40px; }
+    .scatter-frame{ max-width:190px; }
+    .hero h1{ font-size:26px; }
+
+    header.site{ padding:14px 0; }
+    header.site .wrap{ flex-wrap:wrap; row-gap:8px; }
+    nav.site-nav{
+      width:100%; display:flex; justify-content:space-between; gap:4px;
+    }
+    nav.site-nav a{ margin-left:0; font-size:11.5px; }
+  }
+
   @media (prefers-reduced-motion:no-preference){
     .scatter-frame circle.pulse{ animation:pulse 2.6s ease-in-out infinite; }
     @keyframes pulse{
@@ -194,6 +207,17 @@
             <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#c9c2ae" stroke-width="1" opacity="0.5"/>
           </pattern>
         </defs>
+        <!-- Fond de plan symbolique : parcelles, cours d'eau, chemin —
+             simple évocation de carte, sous la grille et les points. -->
+        <rect width="320" height="320" fill="#f0efe4"/>
+        <polygon points="0,0 130,18 96,120 0,95" fill="#e5e3d2"/>
+        <polygon points="150,0 320,0 320,70 190,110" fill="#e3ede8"/>
+        <polygon points="0,150 120,130 145,320 0,320" fill="#e8ecdf"/>
+        <polygon points="230,190 320,170 320,320 210,320" fill="#e5e3d2"/>
+        <path d="M -10,60 C 60,90 90,150 70,210 C 50,270 100,290 140,330"
+              fill="none" stroke="#9fb8c2" stroke-width="7" stroke-linecap="round" opacity="0.55"/>
+        <path d="M 40,320 C 90,260 150,240 210,260 C 260,276 300,260 330,220"
+              fill="none" stroke="#b9ab86" stroke-width="2.5" stroke-dasharray="1 9" stroke-linecap="round" opacity="0.7"/>
         <rect width="320" height="320" fill="url(#grid)"/>
         <line x1="0" y1="160" x2="320" y2="160" stroke="#c9c2ae" stroke-width="1"/>
         <line x1="160" y1="0" x2="160" y2="320" stroke="#c9c2ae" stroke-width="1"/>
