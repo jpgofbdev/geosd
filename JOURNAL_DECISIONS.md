@@ -452,86 +452,37 @@ arrière par erreur, ou de refaire les mêmes hésitations.
   propre page de présentation, plus pertinente pour ce contexte. Un second
   petit lien « Présentation générale » a été ajouté à côté, vers
   `index.html`, pour ne pas perdre l'accès à la présentation publique.
-## Fond SCAN25 IGN (24/08/2026)
 
-- **Endpoint privé, distinct des fonds IGN existants.** Plan IGN et
-  Orthophoto IGN utilisent le WMTS ouvert (`data.geopf.fr/wmts`, sans clé).
-  Le SCAN25 (`GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN25TOUR`) n'est disponible
-  que sur l'endpoint privé (`data.geopf.fr/private/wmts`), nécessitant une
-  authentification.
-- **Authentification HTTP Basic, pas un `apikey` — corrigé après échec en
-  test.** Premier essai avec un paramètre `apikey=` dans l'URL (calqué sur
-  le code fourni par l'utilisateur) : échec systématique en 401, y compris
-  sur `GetCapabilities` seul, confirmant que la clé n'était pas acceptée
-  sous cette forme. Diagnostic fait via une page de test isolée
-  (`test-scan25.html`, hors périmètre de l'application, supprimée après
-  usage) : un bouton ouvrait une requête `GetCapabilities` en navigation
-  directe, ce qui a révélé — une fois le mail d'origine IGN relu
-  attentivement — qu'il s'agissait en réalité d'un couple login/mot de
-  passe (« qfieldofb » / « qfieldofb » d'après le mail, à confirmer si un
-  jour ça échoue), pas d'une clé API. Un `<img src="...">` classique ne
-  pouvant pas envoyer d'en-tête `Authorization`, `ignScan25Layer()`
-  récupère chaque tuile via `fetch()` avec un en-tête `Basic`, convertit la
-  réponse en `Blob`, puis l'affecte à `img.src` via `URL.createObjectURL`
-  — nécessite une classe `L.TileLayer` personnalisée (`createTile`
-  redéfini).
-- **Classe `L.TileLayer` étendue définie à l'intérieur de
-  `ignScan25Layer()`, pas au niveau racine du fichier.** `geosd-themes.js`
-  s'exécute avant que Leaflet (`L`) soit chargé (Leaflet est inséré
-  dynamiquement plus tard par `loadLeaflet()`) — une définition de classe
-  au niveau racine référençant `L.TileLayer.extend` aurait fait échouer le
-  chargement de tout le fichier (`ReferenceError`). En la plaçant dans le
-  corps de la fonction, elle n'est évaluée qu'au moment de l'appel, une
-  fois Leaflet disponible.
-- **Ajouté sur `geosd-terrain-saisie.html` et `geosd-terrain-consultation.html`
-  uniquement, pas sur `geosd-admin.html`** — demande explicitement limitée
-  aux 2 versions terrain. `addBaseLayerSwitcher` (fonction partagée par les
-  3 applications dans `geosd-themes.js`) a reçu un second paramètre
-  optionnel `{ includeScan25: true }` plutôt que d'ajouter le fond
-  systématiquement, pour ne pas modifier `geosd-admin.html` par effet de
-  bord d'une fonction commune.
-- **Endpoint privé, distinct des fonds IGN existants.** Plan IGN et
-  Orthophoto IGN utilisent le WMTS ouvert (`data.geopf.fr/wmts`, sans clé).
-  Le SCAN25 (`GEOGRAPHICALGRIDSYSTEMS.MAPS.SCAN25TOUR`) n'est disponible
-  que sur l'endpoint privé (`data.geopf.fr/private/wmts`), nécessitant une
-  authentification (voir décision juste au-dessus : HTTP Basic, pas un
-  `apikey`).
-- **Exposition des identifiants assumée, pas contournable ici.** Comme
-  tout le reste du code de cette application statique sans serveur, le
-  couple login/mot de passe est visible par quiconque consulte le code
-  source de la page — cohérent avec l'architecture générale du projet
-  (aucun secret serveur nulle part), mais à garder en tête si ces
-  identifiants ont une portée qui dépasse ce cas d'usage (ex. accès
-  partagé avec d'autres services).
-- **Confirmation ponctuelle avant activation du SCAN25, une fois par
-  appareil (24/08/2026).** Demande explicite de l'utilisateur : « rassurer
-  un peu le fournisseur » — pas une vraie sécurité (les identifiants
-  restent en clair dans le fichier, décision ci-dessus, donc quiconque
-  inspecte le code les a de toute façon), simplement un mot de passe
-  demandé au moment où l'agent bascule sur ce fond pour la première fois,
-  pour distinguer un choix volontaire d'un clic accidentel. Mémorisé via
-  `localStorage` (clé `geosd_scan25_ack`) : plus jamais redemandé sur cet
-  appareil une fois confirmé — par appareil, pas par session, pour ne pas
-  gêner un agent qui rouvre l'application chaque jour. Écouteur sur
-  l'événement Leaflet `baselayerchange` : en cas de mot de passe incorrect
-  ou de saisie annulée, le fond précédent est restauré et l'affichage du
-  sélecteur de calques est resynchronisé via un appel direct à
-  `layersControl._update()` — méthode interne de Leaflet, pas documentée
-  publiquement, mais nécessaire ici car la resynchronisation automatique
-  du contrôle ne se déclenche pas correctement pour des changements de
-  couche faits par code plutôt que par clic direct sur le radio-bouton.
-- **404 systématiques au zoom profond (24/08/2026), pas liés au mot de
-  passe.** Constaté en test réel après correction de l'authentification :
-  toutes les tuiles à `TILEMATRIX=19` échouaient en 404 (le mot de passe
-  fonctionnait déjà — sinon l'erreur aurait été 401). Cause : le SCAN25
-  (1:25 000) a une résolution native bien inférieure au zoom 19 autorisé
-  par erreur (calqué sur Plan IGN/Orthophoto, qui montent effectivement
-  plus haut) ; au-delà, le serveur WMTS ne génère pas de tuile à la volée.
-  Corrigé par `maxNativeZoom: 16` sur la couche (valeur de départ,
-  vérifiable/à ajuster via `GetCapabilities` si encore trop haute ou trop
-  basse à l'usage) — Leaflet arrête de demander de nouvelles tuiles
-  au-delà de ce niveau et agrandit la dernière tuile chargée à la place, la
-  carte reste utilisable en zoomant plus loin, juste moins nette.
+## Sélecteur de fond de carte replié par défaut (25/08/2026)
+
+Le contrôle Leaflet natif de choix du fond de carte (`addBaseLayerSwitcher`,
+`geosd-themes.js`) restait ouvert en permanence (`collapsed:false`) dans
+les 3 versions : sur mobile, la liste des fonds (OSM, Plan IGN, Orthophoto
+IGN, SCAN25) occupait une bande fixe de l'écran, réduisant d'autant la
+zone de carte utile pour la saisie/consultation sur le terrain.
+
+- **Décision :** `collapsed:true` par défaut désormais — le sélecteur se
+  réduit à un petit bouton (« 🗺️ Fond de carte ▾ »), qui s'ouvre en liste
+  au tap puis se referme (comportement natif du contrôle Leaflet, pas de
+  code réécrit). `addBaseLayerSwitcher` accepte un paramètre
+  `options.collapsed` pour forcer l'autre comportement au cas par cas.
+- **`geosd-admin.html` fait exception** (`collapsed:false` passé
+  explicitement) : poste desktop, écran large, pas la même contrainte
+  d'espace que sur tablette — le sélecteur reste ouvert comme avant.
+- **Icône du bouton replié : texte, pas l'image sprite Leaflet par
+  défaut** (`images/layers.png`, chargée en relatif depuis
+  `vendor/leaflet.css`). Ce fichier n'existe pas dans `vendor/images/` de
+  ce projet (jamais copié, le sélecteur étant jusqu'ici toujours affiché
+  ouvert) — l'utiliser tel quel aurait affiché une icône cassée. Un
+  libellé CSS (`::after{content:"🗺️ Fond de carte ▾"}`) évite d'avoir à
+  ajouter ce fichier image, cohérent avec le choix déjà fait ailleurs
+  dans le projet de ne pas dépendre d'assets superflus.
+- **Alternative écartée : un vrai `<select>` HTML** plutôt que le contrôle
+  Leaflet replié. Aurait demandé de réécrire la logique de bascule de
+  fond (et son accroche avec la confirmation SCAN25, `map.on('baselayerchange', ...)`)
+  en dehors de l'API native `L.control.layers` — plus de code à
+  maintenir pour un gain d'ergonomie marginal par rapport au repliage
+  natif, qui répond déjà au problème (place à l'écran).
 
 ## Nom du projet
 

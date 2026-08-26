@@ -113,7 +113,7 @@
     display:none;
     align-items:center;
     justify-content:center;
-    z-index:2000;
+    z-index:1000;
   }
   .overlay.show{ display:flex; }
   .modal{
@@ -262,6 +262,24 @@
   }
   .leaflet-control-layers-list{ font-size:13px; }
   .leaflet-control-layers label{ margin:3px 0; }
+
+  /* ---- bouton du sélecteur replié (menu déroulant, mobile) ----
+     Remplace l'icône sprite Leaflet par défaut (image bitmap, absente de
+     vendor/images/ dans ce projet) par un libellé texte — pas de requête
+     réseau, pas de dépendance CDN supplémentaire. Ne s'applique qu'à
+     l'état replié : une fois ouvert (.leaflet-control-layers-expanded),
+     la liste reprend le style ci-dessus, inchangé. */
+  .leaflet-control-layers:not(.leaflet-control-layers-expanded) .leaflet-control-layers-toggle{
+    background-image:none;
+    width:auto; height:auto;
+    line-height:1.2;
+    padding:9px 12px;
+    font-family:var(--sans); font-size:13px; font-weight:600;
+    color:var(--ink); white-space:nowrap;
+  }
+  .leaflet-control-layers:not(.leaflet-control-layers-expanded) .leaflet-control-layers-toggle::after{
+    content:"🗺️ Fond de carte ▾";
+  }
 
   /* ---- panneau statistiques ---- */
   .modal-wide{ width:min(920px, 95vw); }

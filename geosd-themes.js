@@ -2296,10 +2296,18 @@ function addBaseLayerSwitcher(map, options) {
     lyrScan25 = ignScan25Layer();
     baseLayers['SCAN25 IGN'] = lyrScan25;
   }
+  /* ---- Repliage du sélecteur de fonds (menu déroulant) ----
+     `collapsed:true` par défaut : le contrôle Leaflet natif se réduit à
+     un petit bouton, qui s'ouvre en liste au tap/clic puis se referme
+     ensuite (comportement natif Leaflet) — libère l'espace occupé en
+     permanence par la liste sur mobile (saisie/consultation). Un appel
+     peut forcer `collapsed:false` (ex. poste admin, écran large) via
+     `options.collapsed`. */
+  const collapsed = options.collapsed !== undefined ? options.collapsed : true;
   const layersControl = L.control.layers(
     baseLayers,
     null,
-    { position: 'topright', collapsed: false }
+    { position: 'topright', collapsed: collapsed }
   ).addTo(map);
 
   /* ---- Confirmation ponctuelle avant activation du SCAN25 ----
