@@ -1,10 +1,10 @@
 ﻿theme_key;theme_label;subtype_key;subtype_label;field_name;field_label;ordre;field_type;required;options
-commun;Tous thèmes;;;commune;Commune;10;text;non;
-commun;Tous thèmes;;;date;Date;20;date;non;
-commun;Tous thèmes;;;heure;Heure;30;time;non;
+commun;Tous thèmes;;;commune;Commune;10;text;oui;
+commun;Tous thèmes;;;date;Date;20;date;oui;
+commun;Tous thèmes;;;heure;Heure;30;time;oui;
 commun;Tous thèmes;;;auteur_signalement;Auteur signalement;40;text;non;
 commun;Tous thèmes;;;auteur_faits;Auteur faits;50;text;non;
-commun;Tous thèmes;;;agent_sd;Agent SD créateur du point GeoSD;60;text;non;
+commun;Tous thèmes;;;agent_sd;Agent SD créateur du point GeoSD;60;text;oui;
 commun;Tous thèmes;;;commentaire;Commentaire;70;text;non;
 commun;Tous thèmes;;;fiabilite;Fiabilité;80;select;non;1,2,3,4,5
 chasse;Chasse;;;braconnage;Braconnage;10;select;non;oui,non

@@ -95,12 +95,12 @@ const THEMES = {
    thématique par getFieldsFor() ci-dessous. */
 // ==COMMON_FIELDS_START==
 const COMMON_FIELDS = [
-  { name: "commune", label: "Commune", type: "text", required: false },
-  { name: "date", label: "Date", type: "date", required: false },
-  { name: "heure", label: "Heure", type: "time", required: false },
+  { name: "commune", label: "Commune", type: "text", required: true },
+  { name: "date", label: "Date", type: "date", required: true },
+  { name: "heure", label: "Heure", type: "time", required: true },
   { name: "auteur_signalement", label: "Auteur signalement", type: "text", required: false },
   { name: "auteur_faits", label: "Auteur faits", type: "text", required: false },
-  { name: "agent_sd", label: "Agent SD créateur du point GeoSD", type: "text", required: false },
+  { name: "agent_sd", label: "Agent SD créateur du point GeoSD", type: "text", required: true },
   { name: "commentaire", label: "Commentaire", type: "text", required: false },
   { name: "fiabilite", label: "Fiabilité", type: "select", required: false, options: ["1", "2", "3", "4", "5"] }
 ];
@@ -2087,10 +2087,10 @@ function themeColor(themeKey) {
 }
 
 /* ---- Résolution des champs à afficher selon thématique / sous-type ----
-   Les champs spécifiques à la thématique (ou au sous-type) viennent
-   d'abord, suivis des champs communs (COMMON_FIELDS : commune, date,
-   heure, auteurs, agent SD, commentaire, fiabilité) — mêmes champs pour
-   toutes les thématiques, définis une seule fois dans le CSV. */
+   Les champs communs (COMMON_FIELDS : commune, date, heure, auteurs,
+   agent SD, commentaire, fiabilité — mêmes champs pour toutes les
+   thématiques, définis une seule fois dans le CSV) viennent d'abord,
+   suivis des champs spécifiques à la thématique (ou au sous-type). */
 function getFieldsFor(themeKey, subtypeKey) {
   const theme = THEMES[themeKey];
   if (!theme) return [];
@@ -2101,7 +2101,7 @@ function getFieldsFor(themeKey, subtypeKey) {
   } else {
     specific = theme.fields || [];
   }
-  return specific.concat(COMMON_FIELDS);
+  return COMMON_FIELDS.concat(specific);
 }
 
 function escapeHtml(str) {
