@@ -66,7 +66,7 @@
 <header>
   <div class="brand">
     <span class="mark">TERRAIN</span>
-    <h1><a href="index.html">GeoSD</a></h1>
+    <h1><a href="index.html" aria-label="Retour à l'accueil GeoSD">GeoSD</a></h1>
   </div>
   <div class="toolbar">
     <span id="status">0 point saisi</span>
@@ -92,10 +92,9 @@
     <p style="font-size:13px; line-height:1.6; color:var(--ink);">
       Chaque point saisi reste sur cette tablette (sauvegarde automatique anti-crash) — <strong>rien
       n'est jamais supprimé automatiquement</strong>. En fin de tournée, utilisez
-      <strong>« Exporter tout »</strong> : l'appareil propose le partage direct du fichier (mail, Drive…)
-      si l'appareil le permet, sinon il est téléchargé et un guide explique comment le joindre
-      manuellement. Puis <strong>« Effacer les saisies en cours »</strong> une fois l'intégration
-      confirmée par l'administrateur.
+      <strong>« Exporter tout »</strong> pour télécharger un fichier à transmettre au bureau (mail,
+      clé USB, dossier partagé), puis <strong>« Effacer les saisies en cours »</strong> une fois
+      l'intégration confirmée par l'administrateur.
     </p>
     <div class="modal-actions">
       <button type="button" data-close>Fermer</button>
@@ -120,11 +119,10 @@
         et de changer d'emprise de carte sans affecter les points déjà saisis.</li>
       <li><strong>Fond hors-ligne</strong> : télécharger un fond de carte régional pour continuer à
         travailler sans réseau.</li>
-      <li><strong>En fin de tournée</strong> : « Exporter tout » regroupe tous les points saisis dans un
-        fichier. L'appareil propose d'abord le partage direct (choix de l'appli — mail, Drive, etc.) ;
-        si ce n'est pas possible, le fichier est téléchargé et un guide s'affiche pour l'attacher
-        manuellement à un mail. Une fois l'intégration confirmée par l'administrateur, « Effacer les
-        saisies en cours » (bouton rouge, taper SUP) vide l'appareil.</li>
+      <li><strong>En fin de tournée</strong> : « Exporter tout » télécharge un fichier regroupant tous
+        les points saisis, à transmettre au bureau. Une fois l'intégration confirmée par
+        l'administrateur, « Effacer les saisies en cours » (bouton rouge, taper SUP) vide
+        l'appareil.</li>
     </ol>
     <div class="modal-actions">
       <button type="button" data-close>Fermer</button>
@@ -194,39 +192,6 @@
   </div>
 </div>
 
-<!-- Guide d'export manuel : affiché quand le partage natif est indisponible
-     ou échoue — le fichier a quand même été téléchargé juste avant. -->
-<div class="overlay" id="export-guide-overlay">
-  <div class="modal modal-wide">
-    <h2>Fichier téléchargé — à transmettre au bureau</h2>
-    <p style="font-size:13px; line-height:1.6; color:var(--ink); margin:0 0 12px;">
-      Le partage direct n'est pas disponible sur cet appareil/navigateur. Le fichier
-      <strong id="export-guide-filename"></strong> a été téléchargé — voici comment le
-      joindre à un mail :
-    </p>
-    <p style="font-size:13px; line-height:1.6; color:var(--danger); font-weight:600; margin:0 0 12px; padding:10px 12px; border:1px solid var(--danger); border-radius:6px;">
-      ⚠ Si Android affiche une notification « Ouvrir avec » proposant une application
-      de cartographie (QField, IGN Cartes…), <u>ignorez-la et fermez-la sans rien choisir</u>.
-      Ces applications ne servent à rien ici — le fichier reste bien dans vos
-      Téléchargements, suivez plutôt les étapes ci-dessous.
-    </p>
-    <ol style="font-size:13px; line-height:1.7; color:var(--ink); padding-left:20px; margin:0 0 16px;">
-      <li>Ouvrir l'application <strong>Mail</strong> (ou Gmail, Outlook…) et démarrer un nouveau message.</li>
-      <li>Toucher l'icône <strong>trombone / pièce jointe</strong>.</li>
-      <li>Choisir <strong>« Fichiers »</strong> (ou « Téléchargements » / « Downloads ») dans la liste des emplacements.</li>
-      <li>Sélectionner le fichier <strong id="export-guide-filename-2"></strong> (le plus récent en haut de la liste).</li>
-      <li>Ajouter le destinataire (l'administrateur au bureau) et envoyer.</li>
-    </ol>
-    <p style="font-size:12px; line-height:1.5; color:var(--ink); opacity:.75; margin:0 0 16px;">
-      Une clé USB ou un dossier partagé fonctionnent aussi — le fichier reste dans
-      « Téléchargements » jusqu'à ce que vous l'en sortiez.
-    </p>
-    <div class="modal-actions">
-      <button type="button" data-close>Fermer</button>
-    </div>
-  </div>
-</div>
-
 <!-- Modale de purge : suppression définitive des points de l'appareil -->
 <div class="overlay" id="purge-overlay">
   <div class="modal">
@@ -262,18 +227,6 @@
   }
   bind('btn-info', 'info-overlay');
   bind('btn-help', 'help-overlay');
-
-  // export-guide-overlay n'a pas de bouton déclencheur (ouverte depuis le
-  // handler d'export) : seule la fermeture est câblée ici.
-  var exportGuideOverlay = document.getElementById('export-guide-overlay');
-  if (exportGuideOverlay) {
-    exportGuideOverlay.addEventListener('click', function (e) {
-      if (e.target === exportGuideOverlay) exportGuideOverlay.classList.remove('show');
-    });
-    exportGuideOverlay.querySelectorAll('[data-close]').forEach(function (el) {
-      el.addEventListener('click', function () { exportGuideOverlay.classList.remove('show'); });
-    });
-  }
 })();
 </script>
 <script src="geosd-themes.js"></script>
@@ -786,76 +739,22 @@ document.getElementById('input-load-reference').addEventListener('change', async
   e.target.value = '';
 });
 
-/* ---- Export groupé (fin de tournée) ----
-   Un seul geste ("Exporter tout"), comme décidé précédemment. Tentative de
-   partage natif (Web Share API niveau 2, avec fichier) en priorité — plus
-   rapide quand disponible, choix de l'appli (mail, Drive, etc.) directement
-   depuis la feuille de partage du système. Repli automatique et silencieux
-   sur le téléchargement classique + guide manuel explicite dès que le
-   partage est indisponible, refusé par l'OS, ou échoue pour une raison
-   autre qu'une annulation volontaire de l'agent. Aucune régression : le
-   filet de sécurité (téléchargement) reste toujours accessible. */
+/* ---- Export groupé de secours ---- */
 function fieldFeatureCollection() {
   return { type: 'FeatureCollection', features: geojson.features.filter(f => !f.properties.__ref) };
 }
 function downloadGeojson(collection, filename) {
-  // Type MIME volontairement générique (et non 'application/geo+json') :
-  // ce dernier fait matcher la notification "Ouvrir avec" d'Android avec
-  // des applis SIG installées (QField, IGN Cartes...), qui n'ont rien à
-  // faire ici puisque le but est de joindre le fichier à un mail, pas de
-  // l'ouvrir dans une appli cartographique. L'extension .geojson est
-  // conservée (nécessaire pour l'intégration côté bureau).
-  const blob = new Blob([JSON.stringify(collection, null, 2)], { type: 'application/octet-stream' });
+  const blob = new Blob([JSON.stringify(collection, null, 2)], { type: 'application/geo+json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = filename;
   document.body.appendChild(a); a.click(); a.remove();
   URL.revokeObjectURL(url);
-  return blob;
 }
-function showExportGuide(filename) {
-  document.getElementById('export-guide-filename').textContent = filename;
-  document.getElementById('export-guide-filename-2').textContent = filename;
-  document.getElementById('export-guide-overlay').classList.add('show');
-}
-document.getElementById('btn-export-all').addEventListener('click', async () => {
+document.getElementById('btn-export-all').addEventListener('click', () => {
   const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
-  const filename = `geosd_terrain_${stamp}.geojson`;
-  const collection = fieldFeatureCollection();
-  const jsonText = JSON.stringify(collection, null, 2);
-
-  let file = null;
-  try {
-    file = new File([jsonText], filename, { type: 'application/geo+json' });
-  } catch (err) { /* File non supporté (très ancien navigateur) : file reste null */ }
-
-  const canTryShare = file && navigator.share && navigator.canShare && navigator.canShare({ files: [file] });
-
-  if (canTryShare) {
-    try {
-      await navigator.share({
-        files: [file],
-        title: filename,
-        text: 'Points GeoSD saisis sur le terrain'
-      });
-      setStatus('Export partagé', 'ok');
-      return;
-    } catch (err) {
-      if (err && err.name === 'AbortError') {
-        // L'agent a annulé volontairement la feuille de partage (choix
-        // d'utiliser un autre moyen) : pas d'échec, pas de téléchargement
-        // forcé en plus — il peut recliquer "Exporter tout" à tout moment.
-        setStatus('Partage annulé', '');
-        return;
-      }
-      // Échec réel du partage (refusé par l'OS, app cible indisponible...) :
-      // repli sur le téléchargement + guide, sans faire perdre l'export à l'agent.
-    }
-  }
-
-  downloadGeojson(collection, filename);
+  downloadGeojson(fieldFeatureCollection(), `geosd_terrain_${stamp}.geojson`);
   setStatus('Export téléchargé', 'ok');
-  showExportGuide(filename);
 });
 
 document.getElementById('btn-send-dismiss').addEventListener('click', () => sendPanel.classList.remove('show'));

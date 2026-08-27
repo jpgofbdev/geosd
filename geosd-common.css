@@ -304,5 +304,16 @@
   .row-actions .row-del:hover{ background:#5e2216; }
   #data-table th, #data-table td{ text-align:left; }
   #data-table td.num-col{ text-align:right; font-family:var(--mono); }
-  .brand a{ color:var(--ink); text-decoration:none; }
-  .brand a:hover{ color:var(--accent); }
+  .brand a{
+    color:var(--ink);
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+  }
+  .brand a::before{
+    content:"←";
+    color:var(--accent);
+    font-size:0.8em;
+  }
+  .brand a:hover{ color:var(--accent); text-decoration:underline; }
