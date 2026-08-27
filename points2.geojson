@@ -1,123 +1,1283 @@
 {
   "type": "FeatureCollection",
+  "updated_at": "2026-08-27T12:55:12Z",
   "features": [
     {
       "type": "Feature",
-      "id": "19820ed0-74fa-40ff-b43d-a01cb491e436",
+      "id": "46541cbe-be18-42cb-8906-120426b69804",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          2.0928955078125004,
-          48.44815082421627
+          1.76821,
+          48.114937
         ]
       },
       "properties": {
+        "commune": "MOREE",
+        "date": "2026-05-13",
+        "heure": "13:35",
+        "auteur_signalement": "Riverain",
+        "auteur_faits": "Personne non identifiée à l'issue du contrôle",
+        "agent_sd": "Mme Aziz",
+        "commentaire": "",
+        "fiabilite": "1",
+        "theme": "habitat_especes"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8dc8c33c-6f21-491c-8914-18d86507b691",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.28488,
+          47.709148
+        ]
+      },
+      "properties": {
+        "commune": "PINTHIERES",
+        "date": "2026-03-22",
+        "heure": "10:50",
+        "auteur_signalement": "Agent OFB en tournée",
+        "auteur_faits": "",
+        "agent_sd": "M. Robineau",
+        "commentaire": "Filet non déclaré retrouvé en berge.",
+        "fiabilite": "3",
+        "theme": "peche",
+        "braconnage": "oui",
+        "type_milieu": "Étang",
+        "nom_milieu": "Étang des Bruyères",
+        "espece_ciblee": "Brochet",
+        "espece_retrouvee": "",
+        "vehicule_utilise": "Tracteur agricole",
+        "plaque_immatriculation": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "50d15d29-6276-443e-878a-8d1b8618d727",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.804191,
+          47.922313
+        ]
+      },
+      "properties": {
+        "commune": "REVERCOURT",
+        "date": "2026-07-18",
+        "heure": "21:10",
+        "auteur_signalement": "",
+        "auteur_faits": "Identité relevée, transmise au parquet",
+        "agent_sd": "Mme Aziz",
+        "commentaire": "Zone de traitement proche d'un cours d'eau, distance à vérifier.",
+        "fiabilite": "5",
+        "theme": "phytosanitaires"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "50c9b8a9-f011-49e2-9336-222d41a4a04e",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.546208,
+          48.141543
+        ]
+      },
+      "properties": {
+        "commune": "SAINT HILAIRE LA GRAVELLE",
+        "date": "2026-03-10",
+        "heure": "16:00",
+        "auteur_signalement": "Maire de la commune",
+        "auteur_faits": "",
+        "agent_sd": "M. Chartier",
+        "commentaire": "Odeur suspecte signalée par un riverain, prélèvement à prévoir.",
+        "fiabilite": "1",
+        "theme": "eau",
+        "subtype": "pollution",
+        "type_pollution": "Indéterminé",
+        "coloration": "Eau laiteuse",
+        "odeur": "Légère odeur d'œuf pourri",
+        "auteur_suppose": "Particulier"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "98d50b00-c9c2-4587-bc8e-844f74ccb135",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.640536,
+          47.874965
+        ]
+      },
+      "properties": {
+        "commune": "CHATRES SUR CHER",
+        "date": "2026-05-22",
+        "heure": "03:40",
+        "auteur_signalement": "Promeneur",
+        "auteur_faits": "",
+        "agent_sd": "Mme Aziz",
+        "commentaire": "Battue signalée hors période autorisée par un riverain.",
+        "fiabilite": "5",
+        "theme": "chasse",
+        "braconnage": "oui",
+        "journuit": "Nuit",
+        "nb_coups_de_feu": "0",
+        "type_arme": "Indéterminé",
+        "gibier_recherche": "Indéterminé",
+        "gibier_retrouve": "CSI",
+        "type_moyen_prohibe": "Autourmachine",
+        "vehicule_utilise": "Voiture berline noire",
+        "plaque_immatriculation": "DQ-833-PA"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "b2c9f054-33e4-409e-a630-80fff6992c27",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.595577,
+          48.217722
+        ]
+      },
+      "properties": {
+        "commune": "TOURY",
+        "date": "2026-02-25",
+        "heure": "10:45",
+        "auteur_signalement": "",
+        "auteur_faits": "Identité relevée, transmise au parquet",
+        "agent_sd": "M. Lefèvre",
+        "commentaire": "Filet non déclaré retrouvé en berge.",
+        "fiabilite": "4",
+        "theme": "peche",
+        "braconnage": "non",
+        "type_milieu": "Rivière",
+        "nom_milieu": "Étang des Bruyères",
+        "espece_ciblee": "Sandre",
+        "espece_retrouvee": "",
+        "vehicule_utilise": "Fourgon utilitaire",
+        "plaque_immatriculation": "AH-248-DX"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "086adc76-9e99-4627-b419-826c460498ad",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.249096,
+          47.959194
+        ]
+      },
+      "properties": {
+        "commune": "OUZOUER SOUS BELLEGARDE",
+        "date": "2026-01-29",
+        "heure": "09:30",
+        "auteur_signalement": "Promeneur",
+        "auteur_faits": "Personne non identifiée à l'issue du contrôle",
+        "agent_sd": "M. Chartier",
+        "commentaire": "Signalement FSC lors d'une tournée de routine, aucun élément particulier à ce stade.",
+        "fiabilite": "2",
+        "theme": "fsc"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "5da86309-7a65-4fae-836a-e2028b990305",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.676109,
+          48.066873
+        ]
+      },
+      "properties": {
+        "commune": "SAINT ROCH",
+        "date": "2026-03-06",
+        "heure": "18:50",
+        "auteur_signalement": "Fédération de chasse",
+        "auteur_faits": "",
+        "agent_sd": "Mme Aziz",
+        "commentaire": "Contrôle de routine, situation conforme à la réglementation.",
+        "fiabilite": "4",
+        "theme": "chasse",
+        "braconnage": "oui",
+        "journuit": "Jour",
+        "nb_coups_de_feu": "6",
+        "type_arme": "Carabine",
+        "gibier_recherche": "Gros",
+        "gibier_retrouve": "Phaisan",
+        "type_moyen_prohibe": "",
+        "vehicule_utilise": "Camionnette blanche",
+        "plaque_immatriculation": "SK-245-MF"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "1a94aa0c-d938-4caa-82ea-ea6d19e0cb1d",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.966614,
+          48.170506
+        ]
+      },
+      "properties": {
+        "commune": "LUANT",
+        "date": "2026-04-12",
+        "heure": "06:35",
+        "auteur_signalement": "",
+        "auteur_faits": "Identité relevée, transmise au parquet",
+        "agent_sd": "Mme Aziz",
+        "commentaire": "Contrôle de routine sur un chemin autorisé, rien à signaler.",
+        "fiabilite": "",
+        "theme": "vtm"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9eb60faf-cf6a-487d-87e9-4f933513f76e",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.249108,
+          47.780986
+        ]
+      },
+      "properties": {
+        "commune": "COULOMBS",
+        "date": "2026-06-27",
+        "heure": "07:10",
+        "auteur_signalement": "Signalement anonyme",
+        "auteur_faits": "",
+        "agent_sd": "M. Robineau",
+        "commentaire": "Épandage constaté en bordure de zone de captage.",
+        "fiabilite": "1",
+        "theme": "phytosanitaires"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "de322ea7-fd13-4aa9-a577-e54366e13676",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.832576,
+          48.30878
+        ]
+      },
+      "properties": {
+        "commune": "SELLES SAINT DENIS",
+        "date": "2026-02-13",
+        "heure": "15:05",
+        "auteur_signalement": "Promeneur",
+        "auteur_faits": "",
+        "agent_sd": "M. Lefèvre",
+        "commentaire": "Rejet visible en aval d'une exploitation agricole.",
+        "fiabilite": "1",
         "theme": "eau",
         "subtype": "pollution",
         "type_pollution": "Organique",
+        "coloration": "Eau trouble brunâtre",
+        "odeur": "Odeur d'hydrocarbure",
+        "auteur_suppose": "Exploitation agricole"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "b209365b-aa6c-4d0c-b2ff-3653f482ead9",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.373571,
+          47.918065
+        ]
+      },
+      "properties": {
+        "commune": "TERMINIERS",
+        "date": "2026-05-04",
+        "heure": "08:40",
+        "auteur_signalement": "",
+        "auteur_faits": "Suspect non localisé",
+        "agent_sd": "M. Chartier",
+        "commentaire": "Signalement d'un usager, obstacle non référencé jusqu'ici.",
+        "fiabilite": "3",
+        "theme": "eau",
+        "subtype": "continuite",
+        "code_roe": "ROE94601"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "96d121c7-cc88-4125-a336-1318e415f626",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.246988,
+          48.332704
+        ]
+      },
+      "properties": {
+        "commune": "GAULT DU PERCHE",
+        "date": "2026-06-12",
+        "heure": "07:55",
+        "auteur_signalement": "",
+        "auteur_faits": "Identité relevée, transmise au parquet",
+        "agent_sd": "M. Lefèvre",
+        "commentaire": "Véhicule à moteur circulant hors chemin autorisé, dégâts visibles sur prairie humide.",
+        "fiabilite": "4",
+        "theme": "vtm"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8ddf21c7-92c8-4014-a7dc-6c9ee811a913",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.698632,
+          47.566455
+        ]
+      },
+      "properties": {
+        "commune": "FRANCILLON",
+        "date": "2026-06-02",
+        "heure": "15:00",
+        "auteur_signalement": "Promeneur",
+        "auteur_faits": "Identité relevée, transmise au parquet",
+        "agent_sd": "Mme Aziz",
+        "commentaire": "Filet non déclaré retrouvé en berge.",
+        "fiabilite": "2",
+        "theme": "peche",
+        "braconnage": "oui",
+        "type_milieu": "Rivière",
+        "nom_milieu": "Canal d'Orléans",
+        "espece_ciblee": "Carpe",
+        "espece_retrouvee": "Perche",
+        "vehicule_utilise": "Camionnette blanche",
+        "plaque_immatriculation": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "f76bb4fc-4b8d-447d-969e-0423d0cc55e8",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.056003,
+          48.249902
+        ]
+      },
+      "properties": {
+        "commune": "COUFFY",
+        "date": "2026-06-22",
+        "heure": "11:20",
+        "auteur_signalement": "",
+        "auteur_faits": "Inconnu",
+        "agent_sd": "Mme Dubreuil",
+        "commentaire": "Vente informelle constatée en bord de route, origine à vérifier.",
+        "fiabilite": "4",
+        "theme": "cueillette"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8df8c228-5f3e-453f-a637-648fb23f4a5e",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.903707,
+          47.497156
+        ]
+      },
+      "properties": {
+        "commune": "CORANCEZ",
+        "date": "2026-04-23",
+        "heure": "12:05",
+        "auteur_signalement": "Exploitant agricole voisin",
+        "auteur_faits": "Suspect non localisé",
+        "agent_sd": "Mme Aziz",
+        "commentaire": "",
+        "fiabilite": "2",
+        "theme": "fsc"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "90cf1cb3-eca1-4358-96fe-a1960bd3d860",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.101897,
+          48.045389
+        ]
+      },
+      "properties": {
+        "commune": "FUSSY",
+        "date": "2026-03-16",
+        "heure": "08:10",
+        "auteur_signalement": "Agent OFB en tournée",
+        "auteur_faits": "Inconnu",
+        "agent_sd": "M. Lefèvre",
+        "commentaire": "",
+        "fiabilite": "4",
+        "theme": "habitat_especes"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "a6c56a67-2090-4e06-b080-97bb234ce64b",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.617177,
+          47.778542
+        ]
+      },
+      "properties": {
+        "commune": "VILLEBOUT",
+        "date": "2026-02-10",
+        "heure": "09:10",
+        "auteur_signalement": "Maire de la commune",
+        "auteur_faits": "Personne non identifiée à l'issue du contrôle",
+        "agent_sd": "Mme Aziz",
+        "commentaire": "Véhicule à moteur circulant hors chemin autorisé, dégâts visibles sur prairie humide.",
+        "fiabilite": "1",
+        "theme": "vtm"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "43beae40-144a-425c-a565-86b766f4cac5",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.996062,
+          47.962054
+        ]
+      },
+      "properties": {
+        "commune": "SAINT MAURICE SUR FESSARD",
+        "date": "2026-03-16",
+        "heure": "16:35",
+        "auteur_signalement": "Agent OFB en tournée",
+        "auteur_faits": "",
+        "agent_sd": "Mme Dubreuil",
+        "commentaire": "Contrôle de routine, situation conforme à la réglementation.",
+        "fiabilite": "4",
+        "theme": "chasse",
+        "braconnage": "oui",
+        "journuit": "Jour",
+        "nb_coups_de_feu": "1",
+        "type_arme": "Indéterminé",
+        "gibier_recherche": "Indéterminé",
+        "gibier_retrouve": "Lièvre",
+        "type_moyen_prohibe": "Autres",
+        "vehicule_utilise": "Voiture berline noire",
+        "plaque_immatriculation": "JE-809-MM"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "34da6977-9e97-43f8-8674-9dd5f564e53e",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.138076,
+          47.916932
+        ]
+      },
+      "properties": {
+        "commune": "BAILLEAU ARMENONVILLE",
+        "date": "2026-05-14",
+        "heure": "12:30",
+        "auteur_signalement": "Riverain",
+        "auteur_faits": "Suspect non localisé",
+        "agent_sd": "M. Lefèvre",
+        "commentaire": "Battue signalée hors période autorisée par un riverain.",
+        "fiabilite": "3",
+        "theme": "chasse",
+        "braconnage": "oui",
+        "journuit": "Jour",
+        "nb_coups_de_feu": "3",
+        "type_arme": "Indéterminé",
+        "gibier_recherche": "Gros",
+        "gibier_retrouve": "Perdrix",
+        "type_moyen_prohibe": "",
+        "vehicule_utilise": "Fourgon utilitaire",
+        "plaque_immatriculation": "GK-263-YV"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "151a23ac-9d98-4a5b-8c4a-5b72a1bdd550",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.197366,
+          47.994652
+        ]
+      },
+      "properties": {
+        "commune": "COUETRON AU PERCHE",
+        "date": "2026-01-31",
+        "heure": "17:40",
+        "auteur_signalement": "Fédération de chasse",
+        "auteur_faits": "",
+        "agent_sd": "Mme Aziz",
+        "commentaire": "Pêcheur sans carte de pêche visible, parti avant contrôle.",
+        "fiabilite": "1",
+        "theme": "peche",
+        "braconnage": "oui",
+        "type_milieu": "Étang",
+        "nom_milieu": "Étang des Bruyères",
+        "espece_ciblee": "Black-bass",
+        "espece_retrouvee": "Carpe",
+        "vehicule_utilise": "Quad",
+        "plaque_immatriculation": "TP-770-SA"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7b6a6d3d-3f08-4f89-bcad-816a8a450493",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.536626,
+          47.755895
+        ]
+      },
+      "properties": {
+        "commune": "MARCE SUR ESVES",
+        "date": "2026-02-18",
+        "heure": "08:30",
+        "auteur_signalement": "Promeneur",
+        "auteur_faits": "Personne non identifiée à l'issue du contrôle",
+        "agent_sd": "Mme Aziz",
+        "commentaire": "Odeur de produit phytosanitaire signalée par un promeneur.",
+        "fiabilite": "2",
+        "theme": "phytosanitaires"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ffe5fe57-8283-4730-b5ce-0ec7cef5a103",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.58936,
+          48.123597
+        ]
+      },
+      "properties": {
+        "commune": "CRUCEY VILLAGES",
+        "date": "2026-02-11",
+        "heure": "15:20",
+        "auteur_signalement": "",
+        "auteur_faits": "Personne non identifiée à l'issue du contrôle",
+        "agent_sd": "Mme Dubreuil",
+        "commentaire": "Filet non déclaré retrouvé en berge.",
+        "fiabilite": "1",
+        "theme": "peche",
+        "braconnage": "non",
+        "type_milieu": "Loire",
+        "nom_milieu": "Étang des Bruyères",
+        "espece_ciblee": "Gardon",
+        "espece_retrouvee": "",
+        "vehicule_utilise": "4x4 gris",
+        "plaque_immatriculation": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "d5943810-a626-478d-8b53-ae3bf02f408f",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.087486,
+          48.096543
+        ]
+      },
+      "properties": {
+        "commune": "MEZIERES LEZ CLERY",
+        "date": "2026-03-01",
+        "heure": "14:25",
+        "auteur_signalement": "Maire de la commune",
+        "auteur_faits": "Suspect non localisé",
+        "agent_sd": "M. Robineau",
+        "commentaire": "Contrôle de routine, matériel conforme.",
+        "fiabilite": "4",
+        "theme": "peche",
+        "braconnage": "non",
+        "type_milieu": "Étang",
+        "nom_milieu": "Étang de la Vallée",
+        "espece_ciblee": "Gardon",
+        "espece_retrouvee": "Sandre",
+        "vehicule_utilise": "Voiture berline noire",
+        "plaque_immatriculation": "BF-620-WY"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "5ac7d082-c08d-4e4a-aa13-5c66a9e2c4ab",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.935174,
+          47.950605
+        ]
+      },
+      "properties": {
+        "commune": "BUZANCAIS",
+        "date": "2026-02-06",
+        "heure": "09:20",
+        "auteur_signalement": "Fédération de chasse",
+        "auteur_faits": "Suspect non localisé",
+        "agent_sd": "M. Robineau",
+        "commentaire": "Rejet visible en aval d'une exploitation agricole.",
+        "fiabilite": "3",
+        "theme": "eau",
+        "subtype": "pollution",
+        "type_pollution": "Hydrocarbure",
+        "coloration": "Léger film irisé en surface",
+        "odeur": "Aucune odeur particulière",
+        "auteur_suppose": "Exploitation agricole"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8a25246c-6ee9-4c93-91ea-7f541fbf1267",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.619454,
+          47.54279
+        ]
+      },
+      "properties": {
+        "commune": "SAINT DENIS DE JOUHET",
+        "date": "2026-02-09",
+        "heure": "16:10",
+        "auteur_signalement": "",
+        "auteur_faits": "",
+        "agent_sd": "M. Chartier",
+        "commentaire": "Épandage constaté en bordure de zone de captage.",
+        "fiabilite": "5",
+        "theme": "phytosanitaires"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9208263b-f0cf-4a9c-9d96-c9110958289b",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.754169,
+          48.135445
+        ]
+      },
+      "properties": {
+        "commune": "MARCAY",
+        "date": "2026-06-19",
+        "heure": "21:05",
+        "auteur_signalement": "",
+        "auteur_faits": "",
+        "agent_sd": "Mme Dubreuil",
+        "commentaire": "",
+        "fiabilite": "4",
+        "theme": "cueillette"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9602fc7c-1bf7-4fd5-81cc-63851e8313dc",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.074237,
+          48.325079
+        ]
+      },
+      "properties": {
+        "commune": "BLANDAINVILLE",
+        "date": "2026-04-01",
+        "heure": "22:05",
+        "auteur_signalement": "Fédération de chasse",
+        "auteur_faits": "",
+        "agent_sd": "M. Robineau",
+        "commentaire": "Traces de passage de véhicule tout-terrain dans une parcelle interdite.",
+        "fiabilite": "3",
+        "theme": "chasse",
+        "braconnage": "oui",
+        "journuit": "Nuit",
+        "nb_coups_de_feu": "6",
+        "type_arme": "Carabine",
+        "gibier_recherche": "Gros",
+        "gibier_retrouve": "CEF",
+        "type_moyen_prohibe": "Véhicule",
+        "vehicule_utilise": "Camionnette blanche",
+        "plaque_immatriculation": "XQ-517-NW"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "546d2de1-2008-4487-9efc-227ebbca343a",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.120042,
+          47.461356
+        ]
+      },
+      "properties": {
+        "commune": "ADON",
+        "date": "2026-05-08",
+        "heure": "19:50",
+        "auteur_signalement": "Fédération de pêche",
+        "auteur_faits": "",
+        "agent_sd": "M. Robineau",
+        "commentaire": "Cueillette en quantité importante repérée sur zone réglementée.",
+        "fiabilite": "1",
+        "theme": "cueillette"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "08648345-d52f-446c-bb79-2b80ce713a72",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.090165,
+          48.143391
+        ]
+      },
+      "properties": {
+        "commune": "RIGNY USSE",
+        "date": "2026-05-14",
+        "heure": "18:50",
+        "auteur_signalement": "Agent OFB en tournée",
+        "auteur_faits": "",
+        "agent_sd": "Mme Dubreuil",
+        "commentaire": "Zone de traitement proche d'un cours d'eau, distance à vérifier.",
+        "fiabilite": "2",
+        "theme": "phytosanitaires"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "8f276400-3c30-41e4-ade0-2fcdd0a4b949",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.130911,
+          48.120826
+        ]
+      },
+      "properties": {
+        "commune": "CINAIS",
+        "date": "2026-06-18",
+        "heure": "16:25",
+        "auteur_signalement": "Fédération de pêche",
+        "auteur_faits": "Suspect non localisé",
+        "agent_sd": "M. Chartier",
+        "commentaire": "Signalement d'un usager, obstacle non référencé jusqu'ici.",
+        "fiabilite": "",
+        "theme": "eau",
+        "subtype": "continuite",
+        "code_roe": "ROE34282"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "f355811b-22b8-433e-8a78-f153710ff9ff",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.252582,
+          48.108999
+        ]
+      },
+      "properties": {
+        "commune": "LINIEZ",
+        "date": "2026-06-30",
+        "heure": "12:20",
+        "auteur_signalement": "Exploitant agricole voisin",
+        "auteur_faits": "",
+        "agent_sd": "M. Lefèvre",
+        "commentaire": "Traces d'ornières profondes en zone protégée après passage répété.",
+        "fiabilite": "2",
+        "theme": "vtm"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "5f4d2a6b-d5dd-40df-8f65-9a65424d7374",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.061035,
+          48.198869
+        ]
+      },
+      "properties": {
+        "commune": "PREFONTAINES",
+        "date": "2026-03-12",
+        "heure": "15:00",
+        "auteur_signalement": "Agent OFB en tournée",
+        "auteur_faits": "Inconnu",
+        "agent_sd": "Mme Aziz",
+        "commentaire": "Contrôle de routine sur un chemin autorisé, rien à signaler.",
+        "fiabilite": "",
+        "theme": "vtm"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "c2617dbb-3892-4bb4-bf0b-936e0ef280fa",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.635859,
+          48.161142
+        ]
+      },
+      "properties": {
+        "commune": "LIEGE",
+        "date": "2026-07-19",
+        "heure": "15:20",
+        "auteur_signalement": "Maire de la commune",
+        "auteur_faits": "Suspect non localisé",
+        "agent_sd": "M. Chartier",
+        "commentaire": "Filet non déclaré retrouvé en berge.",
+        "fiabilite": "3",
+        "theme": "peche",
+        "braconnage": "oui",
+        "type_milieu": "Rivière",
+        "nom_milieu": "Canal d'Orléans",
+        "espece_ciblee": "Silure",
+        "espece_retrouvee": "Brochet",
+        "vehicule_utilise": "Fourgon utilitaire",
+        "plaque_immatriculation": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "152f66e5-3655-4fbd-a82b-6c8f398f3870",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.061589,
+          47.543174
+        ]
+      },
+      "properties": {
+        "commune": "COURCELLES LE ROI",
+        "date": "2026-07-12",
+        "heure": "10:45",
+        "auteur_signalement": "",
+        "auteur_faits": "Suspect non localisé",
+        "agent_sd": "Mme Dubreuil",
+        "commentaire": "Vente informelle constatée en bord de route, origine à vérifier.",
+        "fiabilite": "3",
+        "theme": "cueillette"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "3f4956bf-4ab6-4df6-ba44-445c95f4a47c",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.819994,
+          48.00912
+        ]
+      },
+      "properties": {
+        "commune": "SIDIAILLES",
+        "date": "2026-06-08",
+        "heure": "03:55",
+        "auteur_signalement": "Fédération de chasse",
+        "auteur_faits": "Identité relevée, transmise au parquet",
+        "agent_sd": "M. Chartier",
+        "commentaire": "Coups de feu entendus en lisière de forêt, pas de témoin visuel direct.",
+        "fiabilite": "5",
+        "theme": "chasse",
+        "braconnage": "oui",
+        "journuit": "Nuit",
+        "nb_coups_de_feu": "3",
+        "type_arme": "Fusil",
+        "gibier_recherche": "Gros",
+        "gibier_retrouve": "CEF",
+        "type_moyen_prohibe": "",
+        "vehicule_utilise": "",
+        "plaque_immatriculation": "KL-114-CL"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "7aabece8-6fca-46e0-9eca-dcaa0376ca15",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.044974,
+          47.689815
+        ]
+      },
+      "properties": {
+        "commune": "COURS LES BARRES",
+        "date": "2026-02-25",
+        "heure": "09:35",
+        "auteur_signalement": "",
+        "auteur_faits": "Identité relevée, transmise au parquet",
+        "agent_sd": "Mme Aziz",
+        "commentaire": "",
+        "fiabilite": "5",
+        "theme": "habitat_especes"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "bd3686f7-0933-4f93-b2b0-4ec4c2fbe918",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.038539,
+          47.776944
+        ]
+      },
+      "properties": {
+        "commune": "ROSNAY",
+        "date": "2026-07-05",
+        "heure": "11:00",
+        "auteur_signalement": "Fédération de chasse",
+        "auteur_faits": "",
+        "agent_sd": "M. Robineau",
+        "commentaire": "Coloration anormale signalée, origine non déterminée à ce stade.",
+        "fiabilite": "5",
+        "theme": "eau",
+        "subtype": "pollution",
+        "type_pollution": "Indéterminé",
         "coloration": "",
         "odeur": "",
-        "auteur_suppose": "",
-        "commune": "sdf",
-        "date": "2026-08-14",
-        "heure": "",
-        "auteur_signalement": "",
-        "auteur_faits": "",
-        "commentaire": "",
-        "fiabilite": ""
+        "auteur_suppose": "Entreprise"
       }
     },
     {
       "type": "Feature",
-      "id": "c2e76451-6300-4516-be07-418958628d72",
+      "id": "de2a3072-d858-4b73-898a-d6f568e6e02b",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          1.4941406250000002,
-          48.115133377959005
+          1.629784,
+          48.035205
         ]
       },
       "properties": {
+        "commune": "MENOUX",
+        "date": "2026-05-20",
+        "heure": "14:10",
+        "auteur_signalement": "Agent OFB en tournée",
+        "auteur_faits": "Inconnu",
+        "agent_sd": "M. Robineau",
+        "commentaire": "Filet non déclaré retrouvé en berge.",
+        "fiabilite": "3",
+        "theme": "peche",
+        "braconnage": "non",
+        "type_milieu": "Étang",
+        "nom_milieu": "La Loire à Sully-sur-Loire",
+        "espece_ciblee": "Gardon",
+        "espece_retrouvee": "Silure",
+        "vehicule_utilise": "4x4 gris",
+        "plaque_immatriculation": "MA-462-VW"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "fcd5459a-e409-4e5b-825b-0331b2eb205d",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.048455,
+          47.850247
+        ]
+      },
+      "properties": {
+        "commune": "CRUCHERAY",
+        "date": "2026-03-01",
+        "heure": "08:40",
+        "auteur_signalement": "",
+        "auteur_faits": "",
+        "agent_sd": "M. Robineau",
+        "commentaire": "Traces de passage de véhicule tout-terrain dans une parcelle interdite.",
+        "fiabilite": "1",
         "theme": "chasse",
-        "moment": "Jour",
-        "nb_coups_de_feu": "",
-        "type_arme": "",
-        "gibier_recherche": "",
-        "gibier_retrouve": "",
+        "braconnage": "oui",
+        "journuit": "Jour",
+        "nb_coups_de_feu": "4",
+        "type_arme": "Fusil",
+        "gibier_recherche": "Petit",
+        "gibier_retrouve": "Autres",
+        "type_moyen_prohibe": "Autourmachine",
+        "vehicule_utilise": "Voiture berline noire",
+        "plaque_immatriculation": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "2e974e81-3791-4a30-922e-2a45a4fb63e1",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.930956,
+          47.93971
+        ]
+      },
+      "properties": {
+        "commune": "NERET",
+        "date": "2026-03-20",
+        "heure": "03:35",
+        "auteur_signalement": "Signalement anonyme",
+        "auteur_faits": "Suspect non localisé",
+        "agent_sd": "Mme Aziz",
+        "commentaire": "Contrôle de routine, situation conforme à la réglementation.",
+        "fiabilite": "3",
+        "theme": "chasse",
+        "braconnage": "oui",
+        "journuit": "Nuit",
+        "nb_coups_de_feu": "5",
+        "type_arme": "Indéterminé",
+        "gibier_recherche": "Gros",
+        "gibier_retrouve": "CEM",
+        "type_moyen_prohibe": "",
+        "vehicule_utilise": "Fourgon utilitaire",
+        "plaque_immatriculation": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "78597bed-4cb7-49b7-bf9f-a6d2fa2ec2b1",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.387699,
+          48.012009
+        ]
+      },
+      "properties": {
+        "commune": "BELHOMERT GUEHOUVILLE",
+        "date": "2026-03-23",
+        "heure": "10:00",
+        "auteur_signalement": "Agent OFB en tournée",
+        "auteur_faits": "Personne non identifiée à l'issue du contrôle",
+        "agent_sd": "M. Chartier",
+        "commentaire": "Point relevé à la demande d'un partenaire institutionnel.",
+        "fiabilite": "1",
+        "theme": "fsc"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ee62ac2c-af42-462c-9e95-6967dc77791c",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.659998,
+          48.006095
+        ]
+      },
+      "properties": {
+        "commune": "BELHOMERT GUEHOUVILLE",
+        "date": "2026-07-06",
+        "heure": "10:10",
+        "auteur_signalement": "Riverain",
+        "auteur_faits": "Inconnu",
+        "agent_sd": "M. Chartier",
+        "commentaire": "Zone de traitement proche d'un cours d'eau, distance à vérifier.",
+        "fiabilite": "",
+        "theme": "phytosanitaires"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "cd70ce9b-c321-4333-8df1-8f05cf427b49",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.509579,
+          47.675941
+        ]
+      },
+      "properties": {
+        "commune": "SAINT PIERRE LES BOIS",
+        "date": "2026-03-15",
+        "heure": "01:30",
+        "auteur_signalement": "Riverain",
+        "auteur_faits": "Suspect non localisé",
+        "agent_sd": "Mme Dubreuil",
+        "commentaire": "Contrôle de routine, situation conforme à la réglementation.",
+        "fiabilite": "4",
+        "theme": "chasse",
+        "braconnage": "oui",
+        "journuit": "Nuit",
+        "nb_coups_de_feu": "4",
+        "type_arme": "Indéterminé",
+        "gibier_recherche": "Indéterminé",
+        "gibier_retrouve": "CHI",
+        "type_moyen_prohibe": "Piegeage",
+        "vehicule_utilise": "Fourgon utilitaire",
+        "plaque_immatriculation": "QK-686-NS"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "89129cce-766d-4da2-8774-09ce7abfb409",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.222281,
+          47.960294
+        ]
+      },
+      "properties": {
+        "commune": "MAREUIL SUR CHER",
+        "date": "2026-02-15",
+        "heure": "11:15",
+        "auteur_signalement": "Signalement anonyme",
+        "auteur_faits": "",
+        "agent_sd": "Mme Aziz",
+        "commentaire": "Nid repéré en zone de travaux prévus, à signaler au maître d'ouvrage.",
+        "fiabilite": "3",
+        "theme": "habitat_especes"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "9ef7d6b4-6c62-41f1-bd61-44d795085a50",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.979156,
+          48.166142
+        ]
+      },
+      "properties": {
+        "commune": "PERRUSSON",
+        "date": "2026-03-22",
+        "heure": "14:30",
+        "auteur_signalement": "Riverain",
+        "auteur_faits": "",
+        "agent_sd": "M. Robineau",
+        "commentaire": "Point relevé à la demande d'un partenaire institutionnel.",
+        "fiabilite": "1",
+        "theme": "fsc"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "18507ab8-ed4e-46d8-85e8-e6ca2700d3ed",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.911396,
+          48.188056
+        ]
+      },
+      "properties": {
+        "commune": "DONNERY",
+        "date": "2026-04-30",
+        "heure": "12:25",
+        "auteur_signalement": "Fédération de chasse",
+        "auteur_faits": "Suspect non localisé",
+        "agent_sd": "M. Robineau",
+        "commentaire": "Ouvrage ancien, franchissabilité piscicole à évaluer.",
+        "fiabilite": "1",
+        "theme": "eau",
+        "subtype": "continuite",
+        "code_roe": "ROE12853"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "894e73c8-1163-4ac9-8f4f-978762d3698b",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.012239,
+          47.721933
+        ]
+      },
+      "properties": {
+        "commune": "OUARVILLE",
+        "date": "2026-03-07",
+        "heure": "08:00",
+        "auteur_signalement": "Promeneur",
+        "auteur_faits": "Identité relevée, transmise au parquet",
+        "agent_sd": "M. Lefèvre",
+        "commentaire": "",
+        "fiabilite": "",
+        "theme": "chasse",
+        "braconnage": "non",
+        "journuit": "Jour",
+        "nb_coups_de_feu": "3",
+        "type_arme": "Carabine",
+        "gibier_recherche": "Gros",
+        "gibier_retrouve": "Autres",
+        "type_moyen_prohibe": "Véhicule",
         "vehicule_utilise": "",
-        "plaque_immatriculation": "",
-        "commune": "sd",
-        "date": "2026-08-16",
-        "heure": "01:59",
-        "auteur_signalement": "",
-        "auteur_faits": "",
-        "commentaire": "",
-        "fiabilite": ""
+        "plaque_immatriculation": ""
       }
     },
     {
       "type": "Feature",
-      "id": "62106e4d-3a78-4cfc-b246-c1b8aa9989a2",
+      "id": "ae7d85ed-cc6c-4ffb-8008-542564ca1871",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          2.4060058593750004,
-          48.07294057939112
+          1.855483,
+          48.18574
         ]
       },
       "properties": {
-        "theme": "cueillette",
-        "commune": "fd",
-        "date": "2026-08-01",
-        "heure": "",
-        "auteur_signalement": "",
-        "auteur_faits": "",
-        "commentaire": "",
-        "fiabilite": ""
+        "commune": "VILLEFRANCHE SUR CHER",
+        "date": "2026-03-31",
+        "heure": "17:30",
+        "auteur_signalement": "Promeneur",
+        "auteur_faits": "Suspect non localisé",
+        "agent_sd": "Mme Dubreuil",
+        "commentaire": "Rejet visible en aval d'une exploitation agricole.",
+        "fiabilite": "4",
+        "theme": "eau",
+        "subtype": "pollution",
+        "type_pollution": "Indéterminé",
+        "coloration": "Eau laiteuse",
+        "odeur": "Légère odeur d'œuf pourri",
+        "auteur_suppose": "Entreprise"
       }
     },
     {
       "type": "Feature",
-      "id": "a6490fc1-0dd9-44bb-9c51-ac308759e11c",
+      "id": "0338a489-aeba-4667-96cd-4a1d284233b0",
       "geometry": {
         "type": "Point",
         "coordinates": [
-          1.2579345703125002,
-          47.54909624120264
+          2.35455,
+          48.137321
         ]
       },
       "properties": {
-        "theme": "habitat_especes",
-        "commune": "sfd",
-        "date": "2026-08-02",
-        "heure": "",
-        "auteur_signalement": "",
-        "auteur_faits": "",
-        "commentaire": "",
-        "fiabilite": ""
-      }
-    },
-    {
-      "type": "Feature",
-      "id": "8f5098d5-e519-4e14-adc7-7cae4b038308",
-      "geometry": {
-        "type": "Point",
-        "coordinates": [
-          2.3648071289062504,
-          47.68979783203422
-        ]
-      },
-      "properties": {
-        "theme": "fsc",
-        "commune": "sdfdsf",
-        "date": "2026-08-08",
-        "heure": "",
-        "auteur_signalement": "",
-        "auteur_faits": "",
-        "commentaire": "",
-        "fiabilite": ""
+        "commune": "CHAPELLE SUR AVEYRON",
+        "date": "2026-03-27",
+        "heure": "10:20",
+        "auteur_signalement": "Exploitant agricole voisin",
+        "auteur_faits": "Suspect non localisé",
+        "agent_sd": "Mme Aziz",
+        "commentaire": "Signalement FSC lors d'une tournée de routine, aucun élément particulier à ce stade.",
+        "fiabilite": "2",
+        "theme": "fsc"
       }
     }
-  ],
-  "updated_at": "2026-08-12T22:01:01.022Z"
+  ]
 }
