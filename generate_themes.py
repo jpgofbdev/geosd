@@ -10,11 +10,19 @@ Usage : python3 generate_themes.py
 
 Le CSV doit avoir une ligne par champ, colonnes :
 theme_key, theme_label, subtype_key, subtype_label, field_name, field_label,
-field_type, required, options
+ordre, field_type, required, options
 
 - subtype_key / subtype_label restent vides si la thématique n'a pas de sous-type.
 - options : valeurs séparées par des virgules, uniquement pour field_type=select.
 - required : "oui" ou "non".
+- ordre : nombre entier optionnel qui fixe la position du champ dans le
+  formulaire, à l'intérieur de son groupe (une thématique, un sous-type, ou
+  les champs communs). Plus petit = affiché en premier. Les champs sans
+  valeur (ou toutes vides dans un groupe) gardent l'ordre des lignes du CSV,
+  comme avant — la colonne est donc facultative, y ajouter des valeurs ne
+  casse rien. Conseil : espacer les valeurs (10, 20, 30...) pour pouvoir
+  insérer un champ entre deux sans renuméroter tout le groupe. En cas
+  d'égalité entre deux champs, l'ordre des lignes dans le CSV décide.
 - Champs communs à toutes les thématiques (date, commune, fiabilité, etc.) :
   une seule fois, avec theme_key = "commun" (theme_label libre, ex. "Tous
   thèmes"). Ces lignes ne créent pas de thématique dans le sélecteur ; elles
@@ -55,6 +63,18 @@ def bool_fr(value):
     return value.strip().lower() in ("oui", "true", "1", "yes")
 
 
+def parse_ordre(value):
+    """Renvoie l'entier de la colonne 'ordre', ou None si absente/vide/non
+    numérique (dans ce dernier cas, la ligne retombe sur l'ordre du CSV)."""
+    value = (value or "").strip()
+    if not value:
+        return None
+    try:
+        return int(value)
+    except ValueError:
+        return None
+
+
 def build_field(row):
     field = {
         "name": row["field_name"].strip(),
@@ -66,6 +86,14 @@ def build_field(row):
         opts = [o.strip() for o in row["options"].split(",") if o.strip()]
         field["options"] = opts
     return field
+
+
+def sort_group(entries):
+    """Trie une liste de (position_csv, ordre_ou_None, field) : la valeur
+    'ordre' explicite prime, sinon on retombe sur la position d'origine dans
+    le CSV — comportement inchangé si la colonne est vide partout."""
+    entries.sort(key=lambda e: (e[1] if e[1] is not None else e[0], e[0]))
+    return [field for _pos, _ordre, field in entries]
 
 
 def sniff_delimiter(sample):
@@ -80,21 +108,22 @@ def sniff_delimiter(sample):
 
 def load_themes(csv_path):
     themes = {}
-    common_fields = []
+    common_entries = []  # (position, ordre, field)
     with csv_path.open(encoding="utf-8-sig", newline="") as f:
         sample = f.read(4096)
         f.seek(0)
         delimiter = sniff_delimiter(sample)
         reader = csv.DictReader(f, delimiter=delimiter)
-        for row in reader:
+        for position, row in enumerate(reader):
             tkey = row["theme_key"].strip()
             if not tkey:
                 continue
             fname = row["field_name"].strip()
+            ordre = parse_ordre(row.get("ordre", ""))
 
             if tkey == COMMON_THEME_KEY:
                 if fname:
-                    common_fields.append(build_field(row))
+                    common_entries.append((position, ordre, build_field(row)))
                 continue
 
             tlabel = row["theme_label"].strip()
@@ -114,9 +143,19 @@ def load_themes(csv_path):
                 if theme["subtypes"] is None:
                     theme["subtypes"] = {}
                 sub = theme["subtypes"].setdefault(skey, {"label": slabel, "fields": []})
-                sub["fields"].append(field)
+                sub.setdefault("_entries", []).append((position, ordre, field))
             else:
-                theme["fields"].append(field)
+                theme.setdefault("_entries", []).append((position, ordre, field))
+
+    # Tri final de chaque groupe (thématique sans sous-type, chaque
+    # sous-type, champs communs) selon la colonne "ordre".
+    for theme in themes.values():
+        if "_entries" in theme:
+            theme["fields"] = sort_group(theme.pop("_entries"))
+        if theme["subtypes"]:
+            for sub in theme["subtypes"].values():
+                sub["fields"] = sort_group(sub.pop("_entries", []))
+    common_fields = sort_group(common_entries)
     return themes, common_fields
 
 
