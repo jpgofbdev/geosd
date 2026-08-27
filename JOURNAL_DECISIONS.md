@@ -484,8 +484,130 @@ zone de carte utile pour la saisie/consultation sur le terrain.
   maintenir pour un gain d'ergonomie marginal par rapport au repliage
   natif, qui répond déjà au problème (place à l'écran).
 
+## Ordre des champs dans les formulaires (27/08/2026)
+
+- **Constat de départ :** l'ordre des champs affichés dans un formulaire
+  (Chasse, Pêche...) était implicitement celui des lignes du CSV pour ce
+  `theme_key` — fonctionnel, mais fragile : un tri accidentel des lignes
+  dans Excel, ou un ajout de champ en fin de fichier plutôt qu'au bon
+  endroit, changeait l'ordre du formulaire sans qu'on l'ait décidé.
+- **Décision : colonne `ordre` ajoutée au CSV**, entier optionnel, comparé
+  uniquement **à l'intérieur d'un même groupe** (une thématique, un
+  sous-type, ou les champs communs) — jamais entre groupes différents.
+  Deux champs de groupes différents peuvent porter la même valeur sans
+  conflit ; c'est une source de confusion rencontrée dès le premier essai
+  (deux `10` dans le CSV, perçus à tort comme une erreur).
+- **Rétrocompatible par construction :** un groupe sans aucune valeur
+  `ordre` garde l'ordre des lignes du CSV, comme avant — la colonne ne
+  casse rien tant qu'elle n'est pas remplie. Convention recommandée :
+  espacer les valeurs (10, 20, 30...) pour permettre l'insertion d'un
+  champ entre deux sans renumérotation complète du groupe.
+- **Départage à égalité (ou valeurs manquantes mêlées à des valeurs
+  renseignées dans un même groupe) :** l'ordre des lignes du CSV décide,
+  comportement documenté plutôt que la première tentative d'implémentation
+  qui aurait pu produire un tri instable selon la version de Python.
+- **Champs communs toujours affichés en premier, décision explicite
+  distincte de la colonne `ordre`.** Avant ce jour, `getFieldsFor()`
+  (`geosd-themes.js`) plaçait systématiquement les champs communs
+  (commune, date, heure, auteurs, agent SD, commentaire, fiabilité)
+  **après** les champs spécifiques de la thématique
+  (`specific.concat(COMMON_FIELDS)`), sans lien avec la position du bloc
+  `commun` dans le CSV — un point qui a généré une deuxième confusion
+  (déplacer les lignes `commun` dans le fichier n'avait aucun effet sur
+  l'affichage). Inversé en `COMMON_FIELDS.concat(specific)` : les champs
+  communs apparaissent maintenant avant les champs spécifiques, pour
+  toutes les thématiques, sans exception à gérer ligne par ligne. Choix
+  simple retenu plutôt qu'un tri global mêlant communs et spécifiques
+  selon `ordre` (aurait demandé de fusionner les deux listes de champs
+  avant tri, pour un besoin exprimé qui ne demandait qu'un ordre binaire
+  commun-avant-spécifique).
+- **`required` de plusieurs champs communs passé à `oui`** (commune,
+  date, heure, agent SD) à l'occasion de cette modification — demandé par
+  l'ajustement direct du CSV, pas une décision de l'assistant.
+
+## Jeu de données de démonstration (27/08/2026)
+
+- **Constat :** `index.html` et `index_admin.html` référençaient déjà
+  `points2.geojson` dans une section "Démonstration" avec un lien de
+  téléchargement (`<a href="points2.geojson" download>`) et un texte
+  expliquant comment le charger dans chaque version — mécanisme déjà en
+  place, documenté dans le README (tableau des fichiers), mais le fichier
+  lui-même n'existait pas encore sur le dépôt.
+- **Aucune modification de `index.html`/`index_admin.html` nécessaire.**
+  Le lien `download` déclenche déjà le téléchargement natif du
+  navigateur, qui dépose le fichier dans le dossier "Téléchargements"
+  standard de l'appareil — exactement l'emplacement "naturel" recherché
+  pour ne pas dérouter un agent peu à l'aise avec la gestion de fichiers,
+  sans code supplémentaire à écrire.
+- **Générateur dédié (`generate_demo_points.py`) plutôt qu'un fichier
+  écrit à la main** — cohérent avec le reste du projet (CSV + script
+  Python comme source de vérité, jamais de données éditées directement).
+  Graine aléatoire fixée (`random.seed(2026)`) pour un résultat
+  reproductible d'une exécution à l'autre.
+- **50 points, répartis dans le rectangle `TERRITOIRES.loiret`** de
+  `geosd-themes.js` (même emprise que celle utilisée par le sélecteur de
+  territoire de l'application — pas de nouvelle donnée géographique à
+  maintenir en parallèle) et sur la période janvier-juillet 2026.
+- **Répartition par thématique choisie pour éprouver les statistiques**
+  admin (histogramme mensuel, filtres), pas uniforme : chasse 10, pêche
+  8, eau/pollution 5, eau/continuité 3, phytosanitaires 6, VTM 5, FSC 5,
+  habitat/espèces protégées 4, cueillette 4 — au moins un point par
+  thématique (dont les deux sous-types d'Eau), volume suffisant pour un
+  rendu parlant sans surcharger le fichier.
+- **Champs obligatoires toujours renseignés, champs optionnels parfois
+  vides** (taux de vide indépendant par champ, ~10-15%) — pour que la
+  démonstration montre aussi comment l'application gère des données
+  incomplètes, plutôt qu'un jeu de données artificiellement complet.
+
 ## Nom du projet
 
 Le projet s'est appelé **Geoshar** avant d'être renommé **GeoSD**, pour
 mieux correspondre à l'usage par un service départemental. Tous les
 fichiers, titres et clés de stockage local ont été alignés en conséquence.
+
+## Lien retour vers l'accueil rendu visible sans survol (27/08/2026)
+
+- **Constat :** le titre « GeoSD » dans l'en-tête des 3 versions
+  (`.brand a`, `geosd-common.css`) est un lien retour — vers `index.html`
+  en saisie et consultation, vers `index_admin.html` en administration —
+  mais rien ne le distinguait visuellement d'un texte simple avant le
+  survol de la souris (`.brand a:hover`). Problématique sur tablette
+  (saisie, consultation) : pas de survol possible au doigt, donc aucun
+  moyen de deviner que le lien existe.
+- **Correctif :** ajout d'une flèche « ← » permanente devant « GeoSD »,
+  en couleur `--accent`, via `.brand a::before` dans `geosd-common.css` —
+  aucune modification de balisage HTML nécessaire, visible d'emblée sans
+  interaction. S'applique identiquement aux 3 versions puisque le
+  composant `.brand` est partagé (un seul fichier à modifier).
+- **`aria-label` ajouté sur les 3 liens** (`index.html`,
+  `geosd-terrain-saisie.html`, `geosd-terrain-consultation.html`,
+  `geosd-admin.html`) : « Retour à l'accueil GeoSD » en saisie/
+  consultation, « Retour à la présentation de l'administration » en
+  admin — cohérent avec les boutons « i »/« ? » qui en avaient déjà.
+- **Alternative écartée :** un style de bouton complet (fond, bordure)
+  autour du lien, pour un rapprochement encore plus fort avec les autres
+  boutons de l'en-tête. Écarté pour rester sobre visuellement à côté du
+  badge `.mark` (« TERRAIN », « CONSULT. »...) déjà présent au même
+  endroit — la flèche seule suffit à signaler l'affordance sans surcharger
+  l'en-tête.
+
+## Documents de présentation générés (27/08/2026)
+
+- **Trois documents de présentation ajoutés au projet**, à la demande du
+  porteur de projet, pour appuyer une présentation à la hiérarchie et aux
+  services départementaux : `GeoSD_Note_de_presentation.docx` (détaillée,
+  structurée en 6 parties : atouts, sécurité, frugalité maintenance,
+  frugalité ressources, simplicité de déploiement, limites),
+  `GeoSD_Plaquette.pdf` (condensé une page, sans la partie limites),
+  `GeoSD_Presentation.pptx` (support de présentation orale, 9 diapositives,
+  incluant une diapositive dédiée au choix d'architecture « données
+  toujours en local ou sur le réseau interne, jamais sur un cloud »).
+- **Liés depuis le pied de page de `index.html`**, en chemin relatif — à
+  placer dans le même dossier que les fichiers de l'application pour que
+  les liens fonctionnent une fois hébergé.
+- **Contenu aligné sur l'état du projet au 27/08/2026**, notamment
+  l'extension du sélecteur de territoire aux 96 départements
+  métropolitains (voir plus haut) — à mettre à jour si le périmètre ou
+  l'architecture évoluent encore, ces documents n'étant pas régénérés
+  automatiquement à partir du code.
+

@@ -1,145 +1,3 @@
-
-/
-GeoSD
-GeoSD
-
-
-
-
-
-
-
-Récents
-Comportement de l'application en mode hors connexion
-il y a 18 heures
-Saisie prédictive des communes en Centre-Val de Loire
-il y a 3 jours
-SIG minimaliste avec saisie de points thématiques
-il y a 3 jours
-Gestion du projet
-il y a 6 jours
-Optimiser le déploiement de code vers GitHub
-13 août
-Instructions
-Application GeoSD pour un service départemental — 3 versions HTML autonomes, voir README.md pour le détail Toujours répondre en français. Après toute modification de modele-formulaires.csv, régénérer via python3 generate_themes.py et vérifier la syntaxe JS avant de livrer. Ne jamais ajouter de dépendance CDN externe sans en discuter d'abord (on a déjà eu des problèmes avec Leaflet). Suppression de points sans confirmation (choix assumé). Voir README.md pour l'architecture complète.
-
-Contexte
-5 % de la capacité du projet utilisée
-Mode de recherche
-
-geosd-terrain-saisie.html
-737 lignes
-
-html
-
-
-
-
-geosd-offline-map.js
-283 lignes
-
-js
-
-
-
-
-sw-precache.js
-219 lignes
-
-js
-
-
-
-
-geosd-themes.js
-2 404 lignes
-
-js
-
-
-
-
-generate_themes.py
-181 lignes
-
-py
-
-
-
-
-JOURNAL_DECISIONS.md
-318 lignes
-
-md
-
-
-
-
-README.md
-328 lignes
-
-md
-
-
-
-
-geosd-common.css
-266 lignes
-
-css
-
-
-
-
-index.html
-348 lignes
-
-html
-
-
-
-
-geosd-tokens.css
-28 lignes
-
-css
-
-
-
-
-geosd-terrain-consultation.html
-284 lignes
-
-html
-
-
-
-
-geosd-admin.html
-792 lignes
-
-html
-
-
-
-
-modeleformulaires.csv
-csv
-
-
-
-
-commune_majusucle_CVL.csv
-csv
-
-
-
-Programmé
-Configurez des tâches récurrentes pour ce projet.
-
-README.md
-
-
 # GeoSD — SIG minimaliste à 3 versions
  
 Application de saisie de points géolocalisés par thématique, sans compte
@@ -176,52 +34,63 @@ terrain, pas à afficher publiquement.
 |---|---|---|
 | `index.html` | Page d'accueil / présentation publique (hébergement GitHub Pages) — ne présente que les 2 versions terrain, aucun lien vers l'administration | Occasionnellement (copie/coordonnées) |
 | `index_admin.html` | Page de présentation de l'administration — **non liée depuis `index.html`**, à transmettre directement aux administrateurs qui intègrent les envois terrain | Occasionnellement (copie/coordonnées) |
+| `GeoSD_Note_de_presentation.docx` | Note de présentation détaillée (atouts, sécurité, frugalité, limites) — liée depuis le pied de page de `index.html` | Occasionnellement |
+| `GeoSD_Plaquette.pdf` | Version courte une page de la note ci-dessus, format « argumentaire flash » — liée depuis le pied de page de `index.html` | Occasionnellement |
+| `GeoSD_Presentation.pptx` | Support de présentation générale (9 diapositives), incluant une diapositive dédiée au choix d'hébergement des données en local/réseau | Occasionnellement |
 | `geosd-admin.html` | Application desktop administrateur | Non |
 | `geosd-terrain-saisie.html` | Application terrain — saisie | Non |
 | `geosd-terrain-consultation.html` | Application terrain — consultation | Éventuellement, pour `DEPOT_URL` (voir plus bas) |
 | `geosd-tokens.css` | Couleurs et polices (charte graphique) — **seul fichier à éditer pour un changement de style** | Oui, si évolution de charte |
 | `geosd-common.css` | Mise en page et composants communs aux 3 versions (importe `geosd-tokens.css`) | Non |
 | `geosd-themes.js` | Config. des thématiques et des territoires (généré/édité) — **ne pas éditer le bloc THEMES à la main** | Oui, pour `TERRITOIRES` (voir plus bas) |
-| `modele-formulaires.csv` | Modèle de champs par thématique — **source de vérité** | **Oui**, c'est le fichier à modifier |
+| `modele-formulaires.csv` | Modèle de champs par thématique + champs communs (`theme_key=commun`) — **source de vérité** | **Oui**, c'est le fichier à modifier |
 | `generate_themes.py` | Régénère le bloc THEMES de `geosd-themes.js` à partir du CSV | Non |
 | `points2.geojson` | Jeu de données de démonstration (aucune vraie donnée) | Non |
 | `*.geojson` (données réelles) | Données saisies | Non manuellement |
-| `JOURNAL_DECISIONS.md` | Historique des arbitrages et de leur raison d'être | Ajouter une entrée si nouvelle décision structurante |
+| `JOURNAL_DECISIONS.md` | Historique des arbitrages et de leur raison d'être — **fichier actuellement manquant du dossier de travail, à reconstituer/reverser** | Ajouter une entrée si nouvelle décision structurante |
  
-## Sélecteur de territoire (une instance pour les 6 services de la région)
- 
+## Sélecteur de territoire (couverture France métropolitaine)
+
 GeoSD est pensé ici pour être **hébergé une seule fois** (ex. sur GitHub
-Pages) et utilisé par les 6 services départementaux de la région Centre-Val
-de Loire — chacun avec ses propres fichiers de données, mais la même
-application.
- 
+Pages) et utilisé par n'importe quel service départemental de métropole —
+chacun avec ses propres fichiers de données, mais la même application.
+
 **À la première ouverture** (sur un poste ou un appareil donné), un
-sélecteur demande de choisir son service départemental dans une liste. La
-carte s'ouvre alors automatiquement sur le territoire correspondant. Ce
-choix est **mémorisé sur l'appareil** (pas de compte, juste
-`localStorage`) — il ne sera plus redemandé ensuite.
- 
+sélecteur demande de choisir son département dans une liste (les **96
+départements métropolitains**, triés alphabétiquement). La carte s'ouvre
+alors automatiquement sur le territoire correspondant. Ce choix est
+**mémorisé sur l'appareil** (pas de compte, juste `localStorage`) — il ne
+sera plus redemandé ensuite.
+
 - **Changer de territoire** : bouton **"Territoire : ..."** dans l'en-tête,
   à tout moment, dans les 3 applications.
 - **"Passer"** : ouvre une vue France entière, sans mémoriser de choix — le
   sélecteur réapparaîtra à la prochaine ouverture.
-**Ajouter un 7ᵉ territoire (ou modifier une emprise existante) :** éditer
-l'objet `TERRITOIRES` en haut de `geosd-themes.js` — une seule ligne par
-territoire, format :
+**Ajouter un territoire hors métropole (ou modifier une emprise
+existante) :** éditer l'objet `TERRITOIRES` en haut de `geosd-themes.js` —
+une ligne par territoire, format :
 ```js
-loiret: { label: "Loiret (45)", bounds: [[47.55, 1.50], [48.20, 2.95]] }
+loiret: { label: "Loiret (45)", bounds: [[47.44, 1.47], [48.38, 3.17]] }
 ```
 Le rectangle est `[[lat_sud, lng_ouest], [lat_nord, lng_est]]`. Comme pour
 les thématiques, **un seul fichier à modifier, les 3 applications suivent
-automatiquement**. Les emprises actuelles sont approximatives — à ajuster
-visuellement si besoin en testant la page.
- 
+automatiquement**.
+
+**Origine des emprises (25/08/2026) :** calculées à partir des contours
+officiels IGN/INSEE (dépôt public `gregoiredavid/france-geojson`), avec une
+marge d'environ 2 km ajoutée autour de chaque département — pas des
+approximations dessinées à la main comme au tout début du projet (voir
+JOURNAL_DECISIONS.md). Les clés des 6 départements du Centre-Val de Loire
+d'origine (`cher`, `eureetloir`, `indre`, `indreetloire`, `loiretcher`,
+`loiret`) sont inchangées : un agent ayant déjà choisi son territoire ne
+perd pas son réglage mémorisé après mise à jour du fichier.
+
 **Choix volontairement écarté :** une carte cliquable pour choisir le
-territoire. Un menu déroulant suffit largement pour 6 (voire quelques
-dizaines) de territoires nommés, et évite d'avoir à maintenir de vrais
-contours géographiques (fichier de frontières administratives) dans le
-projet — plus simple à faire évoluer.
- 
+territoire. Un menu déroulant reste praticable même à 96 entrées (triées
+alphabétiquement), et évite d'avoir à maintenir de vrais contours
+géographiques (fichier de frontières administratives) dans le projet —
+plus simple à faire évoluer.
+
 ## Charte graphique
  
 Toutes les couleurs et polices des 3 applications **et** de `index.html`
@@ -252,6 +121,11 @@ présente l'outil et pointe vers les 3 versions et le fichier de démo.
 - **Tous les fichiers à la racine du même dépôt/branche publiée**
   (`index.html`, les 3 `.html`, `geosd-common.css`, `geosd-themes.js`,
   `points2.geojson`) — les liens entre eux sont en chemin relatif.
+- **Documents de présentation optionnels** (`GeoSD_Note_de_presentation.docx`,
+  `GeoSD_Plaquette.pdf`, `GeoSD_Presentation.pptx`) : à placer dans ce même
+  dossier si vous voulez que les liens du pied de page de `index.html`
+  fonctionnent — sinon les retirer du pied de page ou les héberger ailleurs
+  et adapter les chemins.
 - **Aucune vraie donnée ne doit jamais être commitée** dans ce dépôt —
   seul `points2.geojson` (démonstration fictive) doit s'y trouver. Les
   fichiers `.geojson` réels des services restent en local/réseau, jamais
@@ -265,6 +139,47 @@ présente l'outil et pointe vers les 3 versions et le fichier de démo.
 - Pied de page de `index.html` : coordonnées de contact plutôt qu'un lien
   vers le dépôt (le dépôt n'est pas destiné à être mis en avant comme
   "code source" public consultable).
+
+## Page d'accueil (index.html) — ergonomie mobile
+
+Retouches faites sur retour d'usage mobile (25/08/2026, capture d'écran à
+l'appui — Samsung Galaxy S8+, 360 px de large) :
+
+- **Navigation d'en-tête qui se chevauchait sous 480 px.** Les 4 liens
+  (Fonctionnalités, Les 2 versions, Mode d'emploi, Démo) tentaient de
+  tenir sur la même ligne que le logo « SIG GeoSD » et se superposaient.
+  Sous 480 px, l'en-tête passe désormais sur deux lignes : le logo seul en
+  haut, les 4 liens répartis en pleine largeur juste en dessous
+  (`flex-wrap` + `justify-content:space-between` sur `nav.site-nav`).
+- **Schéma de points (illustration SVG du hero) trop grand sur mobile**,
+  poussant le titre hors de l'écran visible sans défiler. Largeur max
+  ramenée de 340 px à 190 px sous 480 px, avec un padding vertical du
+  hero réduit d'autant.
+- **Fond de plan symbolique ajouté sous la grille de points**, pour mieux
+  évoquer l'aspect cartographique du schéma : quelques aplats de couleur
+  façon parcelles, une rivière sinueuse et un chemin en pointillés, en
+  tons très proches du fond pour ne pas concurrencer les points colorés.
+  Toujours en SVG pur intégré au fichier — aucune image externe, cohérent
+  avec le choix de n'ajouter aucune dépendance CDN supplémentaire.
+
+## Navigation — lien retour vers l'accueil
+
+Le titre **« GeoSD »** dans l'en-tête des 3 versions est un lien retour
+(`.brand a`, `geosd-common.css`) — vers `index.html` en saisie et
+consultation, vers `index_admin.html` en administration. Jusqu'ici, rien
+ne le distinguait visuellement d'un simple texte avant le survol de la
+souris — repéré comme problématique sur tablette (saisie, consultation),
+où il n'y a pas de survol au doigt : le lien existait mais personne ne
+pouvait deviner qu'il était cliquable.
+
+**Correctif (27/08/2026) :** une flèche « ← » précède désormais le mot
+« GeoSD » en permanence (couleur `--accent`, ajoutée en CSS via
+`.brand a::before`, aucune modification de balisage nécessaire) — visible
+sans interaction, à l'identique sur les 3 versions puisque le composant
+est partagé. Un `aria-label` explicite a également été ajouté sur chacun
+des 3 liens (`Retour à l'accueil GeoSD` en saisie/consultation, `Retour à
+la présentation de l'administration` en admin).
+
 ## Modifier le modèle de champs (thématiques communes aux 3 versions)
  
 **Encodage du CSV (accents dans Excel) :** `modele-formulaires.csv` doit
@@ -275,15 +190,38 @@ virgules)"** dans la liste des formats — pas "CSV (délimité par des
 virgules)" tout court, qui retire le BOM et fait réapparaître le problème.
 Le script `generate_themes.py` gère les deux cas (avec ou sans BOM) sans
 réglage particulier de votre part.
- 
+
+**Délimiteur virgule ou point-virgule, détecté automatiquement
+(25/08/2026) :** Excel/Google Sheets en locale française réenregistrent
+parfois le CSV avec des points-virgules plutôt que des virgules (le
+séparateur décimal étant la virgule dans cette locale). `generate_themes.py`
+détecte le délimiteur utilisé à l'ouverture du fichier — aucun réglage à
+faire de votre côté, les deux formats sont acceptés indifféremment.
+
+**Champs communs à toutes les thématiques** (commune, date, heure, auteur
+signalement, auteur faits, agent SD créateur du point, commentaire,
+fiabilité) : à saisir **une seule fois** dans le CSV, avec
+`theme_key = commun` (n'importe quel `theme_label`, ex. "Tous thèmes").
+Ces lignes n'apparaissent pas comme thématique dans le sélecteur — elles
+alimentent un bloc `COMMON_FIELDS` dans `geosd-themes.js`, ajouté
+automatiquement à la fin du formulaire de **chaque** thématique. Plus
+besoin de dupliquer ces 8 champs dans les lignes de chacune des 8
+thématiques.
+
+**Thématique sans aucun champ spécifique** (ex. Phytosanitaires, VTM —
+seuls les champs communs s'appliquent) : ajouter une seule ligne avec
+`theme_key`/`theme_label` renseignés et le reste des colonnes vide, pour
+que la thématique reste enregistrée dans le sélecteur (ex.
+`vtm,VTM,,,,,,,`) — sinon elle disparaîtrait faute de ligne dans le CSV.
  
 1. Éditer `modele-formulaires.csv` (Excel, Google Sheets, VS Code...).
 2. Dans un terminal, se placer dans le dossier du projet, puis :
    ```
    python3 generate_themes.py
    ```
-3. Vérifier le message `OK — N thématique(s) écrites dans geosd-themes.js
-   (partagé par les 3 versions)`.
+3. Vérifier les messages `OK — N thématique(s) écrites`, `OK — N champ(s)
+   commun(s) écrits` et, si le fichier de communes est présent, `OK — N
+   commune(s) écrites` dans `geosd-themes.js` (partagé par les 3 versions).
 4. Recharger les pages ouvertes dans le navigateur — **un seul lancement du
    script met à jour les 3 applications**, plus besoin de le faire 3 fois.
 ## Filtres de la carte (geosd-admin.html et geosd-terrain-consultation.html)
@@ -315,9 +253,10 @@ Volontairement absent de `geosd-terrain-consultation.html` et
 ## Tableau de données (geosd-admin.html)
  
 Bouton **"Tableau"** dans l'en-tête : liste tous les points avec leurs
-valeurs complètes — thématique, sous-type, les 7 champs communs (commune,
-date, heure, auteur signalement, auteur faits, commentaire, fiabilité,
-détectés automatiquement), une colonne "Détails spécifiques" pour les
+valeurs complètes — thématique, sous-type, les 8 champs communs (commune,
+date, heure, auteur signalement, auteur faits, agent SD créateur du point,
+commentaire, fiabilité — issus du bloc `COMMON_FIELDS`, voir "Modifier le
+modèle de champs" plus haut), une colonne "Détails spécifiques" pour les
 champs propres à chaque thématique, et les coordonnées. **Respecte les
 filtres actifs** (contrairement aux statistiques, qui affichent toujours
 tout) — utile pour croiser une recherche/filtre avec un export ciblé.
@@ -480,14 +419,16 @@ séance d'intégration importante.
  
 - Champs spécifiques restants pour Phytosanitaires, VTM, FSC,
   Habitat/espèces protégées, Cueillette.
-- Sous-type "Eau > RCE" à définir.
+- Champ `type_moyen_prohibe` (Chasse) : déclaré en `field_type=text` dans
+  le CSV alors que des options (`Véhicule,Piegeage,...`) sont renseignées à
+  côté — ces options sont actuellement ignorées (champ texte libre), un
+  champ `text` n'utilisant pas la colonne `options`. À clarifier : passer
+  en `select` si une liste fermée est voulue, ou retirer les options du CSV
+  si le texte libre est le choix assumé.
 - PWA installable pour les 2 versions terrain (manifeste + mise en cache
   hors-ligne) — évoqué, pas encore implémenté. Rendrait l'icône d'écran
   d'accueil réellement fonctionnelle sans réseau, pas juste un raccourci
   vers une page à recharger.
-- Emprises exactes des 6 territoires (`TERRITOIRES` dans
-  `geosd-themes.js`) à vérifier/ajuster — actuellement des approximations
-  de départ, pas des contours officiels.
 - Suivi à prévoir sur l'évolution du support Android de la File System
   Access API (statut en cours de développement côté Chromium, sans
   garantie de date — voir JOURNAL_DECISIONS.md pour le détail).
