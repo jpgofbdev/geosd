@@ -204,6 +204,12 @@
       <strong id="export-guide-filename"></strong> a été téléchargé — voici comment le
       joindre à un mail :
     </p>
+    <p style="font-size:13px; line-height:1.6; color:var(--danger); font-weight:600; margin:0 0 12px; padding:10px 12px; border:1px solid var(--danger); border-radius:6px;">
+      ⚠ Si Android affiche une notification « Ouvrir avec » proposant une application
+      de cartographie (QField, IGN Cartes…), <u>ignorez-la et fermez-la sans rien choisir</u>.
+      Ces applications ne servent à rien ici — le fichier reste bien dans vos
+      Téléchargements, suivez plutôt les étapes ci-dessous.
+    </p>
     <ol style="font-size:13px; line-height:1.7; color:var(--ink); padding-left:20px; margin:0 0 16px;">
       <li>Ouvrir l'application <strong>Mail</strong> (ou Gmail, Outlook…) et démarrer un nouveau message.</li>
       <li>Toucher l'icône <strong>trombone / pièce jointe</strong>.</li>
@@ -793,7 +799,13 @@ function fieldFeatureCollection() {
   return { type: 'FeatureCollection', features: geojson.features.filter(f => !f.properties.__ref) };
 }
 function downloadGeojson(collection, filename) {
-  const blob = new Blob([JSON.stringify(collection, null, 2)], { type: 'application/geo+json' });
+  // Type MIME volontairement générique (et non 'application/geo+json') :
+  // ce dernier fait matcher la notification "Ouvrir avec" d'Android avec
+  // des applis SIG installées (QField, IGN Cartes...), qui n'ont rien à
+  // faire ici puisque le but est de joindre le fichier à un mail, pas de
+  // l'ouvrir dans une appli cartographique. L'extension .geojson est
+  // conservée (nécessaire pour l'intégration côté bureau).
+  const blob = new Blob([JSON.stringify(collection, null, 2)], { type: 'application/octet-stream' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url; a.download = filename;
