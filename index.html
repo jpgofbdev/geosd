@@ -100,6 +100,8 @@
     background:var(--panel); border:1px solid var(--line); border-radius:8px;
     padding:24px 22px; display:flex; flex-direction:column; gap:14px;
   }
+  .version-card .head{ display:flex; align-items:center; gap:12px; }
+  .version-card .head img{ width:40px; height:40px; border-radius:8px; flex:none; }
   .version-card .mark{
     align-self:flex-start; font-family:var(--mono); font-size:11px; letter-spacing:.08em;
     border:1px solid var(--accent); color:var(--accent); padding:2px 6px; border-radius:2px;
@@ -114,6 +116,13 @@
     font-size:12px; background:#e3ede8; border-left:3px solid var(--accent);
     padding:8px 10px; border-radius:3px; color:var(--accent-dark); margin:0;
   }
+
+  /* ---- principe de fonctionnement (schéma) ---- */
+  .how-it-works{
+    margin-top:22px; background:var(--panel); border:1px solid var(--line); border-radius:8px;
+    padding:20px 18px 14px;
+  }
+  .how-it-works svg{ display:block; width:100%; height:auto; max-width:680px; margin:0 auto; }
 
   /* ---- mode d'emploi ---- */
   .steps{ counter-reset:step; display:flex; flex-direction:column; gap:0; }
@@ -284,7 +293,10 @@
     <div class="version-grid">
 
       <div class="version-card">
-        <span class="mark">TERRAIN</span>
+        <div class="head">
+          <img src="icon-saisie-192.png" alt="Icône de l'application Saisie terrain">
+          <span class="mark">TERRAIN</span>
+        </div>
         <h4>Saisie terrain</h4>
         <p>Saisie de nouveaux points en mobilité. Sauvegarde automatique sur l'appareil, export groupé en fin de tournée pour transmettre au bureau.</p>
         <p class="req">Tout navigateur récent — mobile ou tablette</p>
@@ -292,7 +304,10 @@
       </div>
 
       <div class="version-card">
-        <span class="mark">CONSULT.</span>
+        <div class="head">
+          <img src="icon-consultation-192.png" alt="Icône de l'application Consultation terrain">
+          <span class="mark">CONSULT.</span>
+        </div>
         <h4>Consultation terrain</h4>
         <p>Lecture seule des points déjà connus, pour situer une intervention sans risque de modification accidentelle.</p>
         <p class="req">Tout navigateur récent — mobile ou tablette</p>
@@ -300,6 +315,47 @@
       </div>
 
     </div>
+
+    <div class="how-it-works">
+      <svg viewBox="0 0 680 516" role="img" aria-labelledby="hiw-title hiw-desc">
+        <title id="hiw-title">Principe de fonctionnement de GeoSD</title>
+        <desc id="hiw-desc">Le fichier central est hébergé sur le serveur réseau du SD. L'administrateur l'intègre depuis son PC. Chaque agent de terrain, depuis un PC ou un mobile, envoie ses nouveaux points en saisie et reçoit le fichier à jour en consultation.</desc>
+        <defs>
+          <marker id="hiw-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="var(--ink-soft)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+
+        <line x1="340" y1="96" x2="340" y2="220" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#hiw-arrow)"/>
+        <text x="356" y="158" text-anchor="start" dominant-baseline="central" font-family="var(--mono)" font-size="11.5" fill="var(--ink-soft)">Intégration</text>
+
+        <path d="M 250 276 L 210 348" fill="none" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#hiw-arrow)"/>
+        <path d="M 430 276 L 470 348" fill="none" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#hiw-arrow)"/>
+        <path d="M 100 348 L 100 68 L 228 68" fill="none" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#hiw-arrow)"/>
+        <path d="M 580 348 L 580 68 L 452 68" fill="none" stroke="var(--ink-soft)" stroke-width="1.5" marker-end="url(#hiw-arrow)"/>
+
+        <rect x="230" y="40" width="220" height="56" rx="8" fill="var(--paper)" stroke="var(--line)"/>
+        <text x="340" y="60" text-anchor="middle" dominant-baseline="central" font-family="var(--sans)" font-size="14" font-weight="600" fill="var(--ink)">Administrateur</text>
+        <text x="340" y="80" text-anchor="middle" dominant-baseline="central" font-family="var(--sans)" font-size="12" fill="var(--ink-soft)">Fichier sur PC</text>
+
+        <rect x="200" y="220" width="280" height="56" rx="8" fill="#e3ede8" stroke="var(--accent)"/>
+        <text x="340" y="240" text-anchor="middle" dominant-baseline="central" font-family="var(--sans)" font-size="14" font-weight="600" fill="var(--accent-dark)">Fichier central</text>
+        <text x="340" y="260" text-anchor="middle" dominant-baseline="central" font-family="var(--sans)" font-size="12" fill="var(--accent-dark)">Fichier sur serveur réseau du SD</text>
+
+        <rect x="45" y="420" width="220" height="56" rx="8" fill="var(--paper)" stroke="var(--line)"/>
+        <text x="155" y="440" text-anchor="middle" dominant-baseline="central" font-family="var(--sans)" font-size="14" font-weight="600" fill="var(--ink)">Agent 1 — terrain</text>
+        <text x="155" y="460" text-anchor="middle" dominant-baseline="central" font-family="var(--sans)" font-size="12" fill="var(--ink-soft)">Fichier sur PC ou mobile</text>
+        <image href="icon-saisie-192.png" x="64" y="348" width="72" height="72"/>
+        <image href="icon-consultation-192.png" x="174" y="348" width="72" height="72"/>
+
+        <rect x="415" y="420" width="220" height="56" rx="8" fill="var(--paper)" stroke="var(--line)"/>
+        <text x="525" y="440" text-anchor="middle" dominant-baseline="central" font-family="var(--sans)" font-size="14" font-weight="600" fill="var(--ink)">Agent 2 — terrain</text>
+        <text x="525" y="460" text-anchor="middle" dominant-baseline="central" font-family="var(--sans)" font-size="12" fill="var(--ink-soft)">Fichier sur PC ou mobile</text>
+        <image href="icon-consultation-192.png" x="434" y="348" width="72" height="72"/>
+        <image href="icon-saisie-192.png" x="544" y="348" width="72" height="72"/>
+      </svg>
+    </div>
+
   </div>
 </section>
 
