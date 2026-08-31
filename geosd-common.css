@@ -135,6 +135,32 @@
     color:var(--ink-soft);
     margin:0 0 16px;
   }
+  .shortcut-tip{
+    margin:0 0 16px;
+    background:#e3ede8;
+    border-left:3px solid var(--accent);
+    border-radius:3px;
+    padding:10px 12px;
+  }
+  .shortcut-tip summary{
+    cursor:pointer;
+    font-size:12.5px;
+    font-weight:600;
+    color:var(--accent-dark);
+    list-style:none;
+  }
+  .shortcut-tip summary::-webkit-details-marker{ display:none; }
+  .shortcut-tip summary::before{ content:"📲 "; }
+  .shortcut-tip .steps-mini{
+    margin:8px 0 0;
+    padding-left:18px;
+    font-size:12px;
+    color:var(--accent-dark);
+    line-height:1.5;
+  }
+  .shortcut-tip .steps-mini li{ margin-bottom:4px; }
+  .shortcut-tip .steps-mini li:last-child{ margin-bottom:0; }
+
   .field{ margin-bottom:14px; }
   .field label{
     display:block;

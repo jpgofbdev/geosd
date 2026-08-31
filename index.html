@@ -56,6 +56,26 @@
   .hero p.lede{ font-size:16.5px; color:var(--ink-soft); max-width:52ch; margin:0 0 28px; }
   .hero-ctas{ display:flex; gap:10px; flex-wrap:wrap; }
 
+  /* ---- astuce raccourci mobile ---- */
+  .shortcut-tip{
+    margin-top:16px; max-width:52ch;
+    background:#e3ede8; border-left:3px solid var(--accent);
+    border-radius:3px; padding:11px 14px;
+  }
+  .shortcut-tip > p{
+    margin:0; font-size:13px; color:var(--accent-dark); line-height:1.5;
+  }
+  .shortcut-tip summary{
+    cursor:pointer; font-size:12.5px; font-weight:600; color:var(--accent-dark);
+    margin-top:6px; list-style:none;
+  }
+  .shortcut-tip summary::-webkit-details-marker{ display:none; }
+  .shortcut-tip summary::before{ content:"▸ "; }
+  .shortcut-tip[open] summary::before{ content:"▾ "; }
+  .shortcut-tip .steps-mini{ margin:8px 0 0; padding-left:18px; font-size:12.5px; color:var(--accent-dark); }
+  .shortcut-tip .steps-mini li{ margin-bottom:4px; }
+  .shortcut-tip .steps-mini li:last-child{ margin-bottom:0; }
+
   .scatter-frame{
     aspect-ratio:1/1; border:1px solid var(--line); border-radius:8px; background:var(--panel);
     position:relative; overflow:hidden;
@@ -211,6 +231,13 @@
         <a class="btn primary" href="geosd-terrain-saisie.html">Saisie terrain</a>
         <a class="btn" href="geosd-terrain-consultation.html">Consultation terrain</a>
       </div>
+      <details class="shortcut-tip">
+        <summary>📲 Sur mobile ou tablette : on vous recommande vivement d'ajouter ces deux pages à votre écran d'accueil — accès direct en un tap, sans repasser par un navigateur</summary>
+        <ul class="steps-mini">
+          <li><strong>Android (Chrome)</strong> : ouvrir la page, menu ⋮ (en haut à droite) → « Ajouter à l'écran d'accueil ».</li>
+          <li><strong>iPhone / iPad (Safari)</strong> : ouvrir la page, bouton Partager (⬆️) → « Sur l'écran d'accueil ».</li>
+        </ul>
+      </details>
     </div>
     <div class="scatter-frame" aria-hidden="true">
       <svg viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
