@@ -106,14 +106,19 @@
   }
   .banner.show{ display:block; }
 
-  /* ---- modale de saisie ---- */
+  /* ---- modale de saisie ----
+     z-index volontairement au-dessus de tout le reste de l'appli (contrôles
+     Leaflet inclus, qui montent à 1000 en z-index natif) — sinon, à z-index
+     égal, l'ordre DOM tranche et un contrôle de carte ajouté après le
+     popup dans la page (bouton localisation, menu fond hors-ligne) peut
+     passer visuellement devant. Voir JOURNAL_DECISIONS.md. */
   .overlay{
     position:fixed; inset:0;
     background:rgba(22,50,58,.35);
     display:none;
     align-items:center;
     justify-content:center;
-    z-index:1000;
+    z-index:1200;
   }
   .overlay.show{ display:flex; }
   .modal{

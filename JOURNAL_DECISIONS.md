@@ -611,3 +611,25 @@ fichiers, titres et clés de stockage local ont été alignés en conséquence.
   l'architecture évoluent encore, ces documents n'étant pas régénérés
   automatiquement à partir du code.
 
+## Recommandation de raccourci mobile + correctif z-index des popups (31/08/2026)
+
+- **Encart « ajouter à l'écran d'accueil »** ajouté sur `index.html` (sous
+  les boutons du hero, visible sans défiler) et dans la popup
+  « Informations » des deux versions terrain (pour les agents qui arrivent
+  directement sur une version sans passer par l'accueil). Instructions
+  Android (Chrome) et iOS (Safari) repliées dans un `<details>` natif —
+  pas de JS supplémentaire. Style partagé `.shortcut-tip` centralisé dans
+  `geosd-common.css` pour éviter la duplication entre les deux pages
+  terrain.
+- **Bug révélé à cette occasion : les popups (`.overlay`, z-index 1000)
+  pouvaient passer sous les contrôles Leaflet** (bouton « Ma position »,
+  menu « Fond hors-ligne » une fois ouvert) qui utilisent aussi
+  `z-index:1000` en natif (`.leaflet-top`/`.leaflet-bottom` dans
+  `leaflet.css`). À z-index égal, l'ordre de résolution suit l'ordre DOM
+  — et `#map-wrap` (donc les contrôles Leaflet) est placé après les
+  popups `info-overlay`/`help-overlay` dans le HTML, qui perdaient donc
+  l'arbitrage. **Corrigé en montant `.overlay` à `z-index:1200`**, au-dessus
+  de tout le reste de l'appli (y compris `.send-panel` à 1100) — plus
+  robuste qu'un réordonnancement du DOM, qui aurait pu se refaire défaire
+  au prochain ajout de contrôle carte.
+
