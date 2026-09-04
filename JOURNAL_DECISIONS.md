@@ -611,6 +611,68 @@ fichiers, titres et clés de stockage local ont été alignés en conséquence.
   l'architecture évoluent encore, ces documents n'étant pas régénérés
   automatiquement à partir du code.
 
+## Partage natif réintroduit pour l'export groupé (04/09/2026)
+
+- **Constat :** retour terrain que le flux « Exporter tout » restait trop
+  compliqué — précisément le fait de devoir joindre le fichier téléchargé
+  manuellement dans une appli mail, plusieurs étapes distinctes (télécharger,
+  retrouver le fichier, composer, joindre).
+- **`navigator.share` reconsidéré, mais pour un usage différent de celui déjà
+  écarté.** Le rejet initial (voir plus haut, « Envoi terrain par point »)
+  visait l'envoi immédiat point par point, où la fiabilité dépendait trop des
+  applications installées à chaque saisie répétée. Ici, un seul partage en
+  fin de tournée sur un fichier déjà constitué : usage ponctuel, risque
+  d'échec bien moindre, et surtout — contrairement à `mailto` — le fichier
+  est **réellement joint**, sans limite de protocole à contourner.
+- **Mécanisme retenu :** au clic sur « Exporter tout », tentative de
+  `navigator.share` avec le fichier en pièce jointe (`navigator.canShare`
+  vérifié au préalable). Repli automatique et silencieux sur le
+  téléchargement classique si l'API n'est pas supportée, si `canShare`
+  refuse les fichiers, ou en cas d'échec réel du partage. Une annulation par
+  l'agent (`AbortError`) n'est pas traitée comme une erreur ni ne déclenche
+  de téléchargement de repli — l'agent a explicitement renoncé au geste.
+- **Le téléchargement classique reste donc en place**, comme filet de
+  sécurité pour les appareils/navigateurs sans partage de fichiers — aucune
+  régression pour l'existant, cohérent avec le principe déjà établi de ne
+  jamais retirer un mécanisme fonctionnel sans repli équivalent.
+- **Aucune nouvelle dépendance externe** : `navigator.share`/`canShare` sont
+  des API natives du navigateur, pas de bibliothèque tierce.
+- Textes d'aide (« Informations », « Mode d'emploi ») mis à jour en
+  conséquence dans `geosd-terrain-saisie.html`.
+
+### Fichier partagé en `.txt` plutôt qu'en `.geojson` (04/09/2026)
+
+- **Constat terrain (Samsung S20 FE, Chrome) :** le partage natif ne se
+  déclenchait jamais — `canShare()` renvoyait `false` sans qu'aucun message
+  n'en explique la raison (repli silencieux vers le téléchargement
+  classique). Diagnostic ajouté au passage : le statut affiche désormais
+  précisément pourquoi le partage n'a pas eu lieu (contexte non sécurisé,
+  API absente, fichier non partageable, ou échec/annulation).
+- **Cause probable :** `navigator.share()` en JS n'autorise le partage de
+  fichiers que pour une liste fermée d'extensions (`.csv`, `.txt`, `.pdf`,
+  images, etc., pour des raisons de sécurité côté Chrome/Android) —
+  `.geojson` n'en fait très probablement pas partie. Cette restriction est
+  propre à l'API JS ; elle ne s'applique pas au partage natif invoqué
+  autrement (ex. « Partager » depuis le gestionnaire de fichiers Android sur
+  un fichier déjà téléchargé).
+- **Solution retenue : renommer uniquement le fichier utilisé pour le
+  partage en `.txt`** (MIME `text/plain`), contenu JSON/GeoJSON strictement
+  inchangé. Alternative écartée : empaqueter en `.zip`, qui aurait demandé
+  soit une dépendance externe (type JSZip, explicitement à éviter sans
+  discussion), soit fabriquer à la main un conteneur ZIP valide (en-têtes,
+  CRC32, répertoire central) pour un gain nul ici — aucun besoin de
+  compression sur des fichiers de points aussi petits. `.txt` est plus
+  simple, sans nouveau code de format, et cohérent avec l'esprit du projet
+  (CSV plutôt que xlsx, SVG fait main plutôt que lib de graphique).
+- **Le repli en téléchargement classique garde l'extension `.geojson`** —
+  cette restriction ne le concerne pas, et l'extension reste utile pour une
+  ouverture directe par un outil SIG en cas de transmission manuelle.
+- **Côté admin (`geosd-admin.html`) :** l'import « Intégrer un envoi
+  terrain » (`input-merge-field`) accepte désormais aussi `.txt` en plus de
+  `.geojson`/`.json` — aucun changement de logique de lecture nécessaire,
+  la fusion se fait déjà par `file.text()` + `JSON.parse()`, indépendamment
+  de l'extension.
+
 ## Recommandation de raccourci mobile + correctif z-index des popups (31/08/2026)
 
 - **Encart « ajouter à l'écran d'accueil »** ajouté sur `index.html` (sous
