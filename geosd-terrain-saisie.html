@@ -93,10 +93,11 @@
       Chaque point saisi reste sur cette tablette (sauvegarde automatique anti-crash) — <strong>rien
       n'est jamais supprimé automatiquement</strong>. En fin de tournée, utilisez
       <strong>« Exporter tout »</strong> : sur la plupart des appareils, cela ouvre directement le
-      menu de partage avec le fichier déjà joint (mail, WhatsApp, Bluetooth...) — sinon le fichier est
-      simplement téléchargé, à transmettre au bureau (mail, clé USB, dossier partagé). Une fois
-      l'intégration confirmée par l'administrateur, utilisez <strong>« Effacer les saisies en
-      cours »</strong>.
+      menu de partage avec un fichier <code>.txt</code> déjà joint (mail, WhatsApp, Bluetooth...) —
+      son contenu est celui des points saisis, à ne pas modifier. Si le partage n'est pas disponible,
+      un fichier <code>.geojson</code> est simplement téléchargé, à transmettre au bureau (mail, clé
+      USB, dossier partagé). Une fois l'intégration confirmée par l'administrateur, utilisez
+      <strong>« Effacer les saisies en cours »</strong>.
     </p>
     <details class="shortcut-tip">
       <summary>On vous recommande d'ajouter cette page à votre écran d'accueil — accès direct en un tap</summary>
@@ -130,10 +131,11 @@
         travailler sans réseau.</li>
       <li><strong>En fin de tournée</strong> : « Exporter tout » regroupe tous les points saisis dans un
         fichier. Sur la plupart des tablettes/téléphones, le menu de partage s'ouvre directement avec
-        ce fichier déjà joint — il suffit de choisir l'appli (mail, WhatsApp, Bluetooth...). Si le
-        partage n'est pas disponible, le fichier est téléchargé pour être transmis manuellement. Une
-        fois l'intégration confirmée par l'administrateur, « Effacer les saisies en cours » (bouton
-        rouge, taper SUP) vide l'appareil.</li>
+        un fichier <code>.txt</code> déjà joint (contenu des points, ne pas renommer ni modifier) — il
+        suffit de choisir l'appli (mail, WhatsApp, Bluetooth...). Si le partage n'est pas disponible,
+        un fichier <code>.geojson</code> est téléchargé pour être transmis manuellement. Une fois
+        l'intégration confirmée par l'administrateur, « Effacer les saisies en cours » (bouton rouge,
+        taper SUP) vide l'appareil.</li>
     </ol>
     <div class="modal-actions">
       <button type="button" data-close>Fermer</button>
@@ -769,39 +771,57 @@ function downloadGeojson(collection, filename) {
    écarté (fiabilité insuffisante en usage répété temps réel), ici un seul
    partage en fin de tournée sur un fichier déjà constitué : risque d'échec
    ponctuel bien moindre, et repli automatique sur le téléchargement classique
-   si l'appareil ne supporte pas le partage de fichiers ou si l'agent annule. */
+   si l'appareil ne supporte pas le partage de fichiers ou si l'agent annule.
+   Le fichier partagé est en .txt (pas .geojson) : constat terrain (04/09/2026,
+   Samsung S20 FE) que canShare() renvoie false pour .geojson, très
+   probablement une extension hors de la liste fermée que Chrome/Android
+   autorise pour le partage de fichiers via cette API (contrairement au
+   partage natif invoqué autrement, ex. depuis le gestionnaire de fichiers,
+   qui n'a pas cette restriction). Le contenu reste du JSON/GeoJSON tel
+   quel, seule l'extension change ; le repli en téléchargement classique
+   garde .geojson, plus pratique en cas d'ouverture directe par un outil
+   SIG. Voir aussi geosd-admin.html : l'import accepte désormais .txt. */
 document.getElementById('btn-export-all').addEventListener('click', async () => {
   const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
   const filename = `geosd_terrain_${stamp}.geojson`;
   const collection = fieldFeatureCollection();
+  const content = JSON.stringify(collection, null, 2);
 
-  if (navigator.share && navigator.canShare) {
-    const file = new File(
-      [JSON.stringify(collection, null, 2)],
-      filename,
-      { type: 'application/geo+json' }
-    );
-    if (navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({
-          files: [file],
-          title: 'Export GeoSD terrain',
-          text: `Export terrain GeoSD — ${collection.features.length} point(s)`
-        });
-        setStatus('Export partagé', 'ok');
-        return;
-      } catch (err) {
-        if (err.name === 'AbortError') {
-          setStatus('Partage annulé — export non envoyé');
-          return;
-        }
-        console.warn('Partage natif indisponible, bascule sur téléchargement :', err);
-      }
-    }
+  if (!window.isSecureContext) {
+    downloadGeojson(collection, filename);
+    setStatus('Export téléchargé (partage natif indisponible hors HTTPS) — à joindre manuellement à un mail', 'ok');
+    return;
+  }
+  if (!navigator.share || !navigator.canShare) {
+    downloadGeojson(collection, filename);
+    setStatus('Export téléchargé (partage natif non supporté par ce navigateur) — à joindre manuellement à un mail', 'ok');
+    return;
   }
 
-  downloadGeojson(collection, filename);
-  setStatus('Export téléchargé — à joindre manuellement à un mail', 'ok');
+  const shareFilename = filename.replace(/\.geojson$/, '.txt');
+  const file = new File([content], shareFilename, { type: 'text/plain' });
+
+  if (!navigator.canShare({ files: [file] })) {
+    downloadGeojson(collection, filename);
+    setStatus('Export téléchargé (fichier non partageable sur cet appareil) — à joindre manuellement à un mail', 'ok');
+    return;
+  }
+
+  try {
+    await navigator.share({
+      files: [file],
+      title: 'Export GeoSD terrain',
+      text: `Export terrain GeoSD — ${collection.features.length} point(s)`
+    });
+    setStatus('Export partagé', 'ok');
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      setStatus('Partage annulé — export non envoyé');
+      return;
+    }
+    downloadGeojson(collection, filename);
+    setStatus(`Export téléchargé (échec du partage : ${err.name}) — à joindre manuellement à un mail`, 'ok');
+  }
 });
 
 document.getElementById('btn-send-dismiss').addEventListener('click', () => sendPanel.classList.remove('show'));
