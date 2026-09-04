@@ -92,9 +92,11 @@
     <p style="font-size:13px; line-height:1.6; color:var(--ink);">
       Chaque point saisi reste sur cette tablette (sauvegarde automatique anti-crash) — <strong>rien
       n'est jamais supprimé automatiquement</strong>. En fin de tournée, utilisez
-      <strong>« Exporter tout »</strong> pour télécharger un fichier à transmettre au bureau (mail,
-      clé USB, dossier partagé), puis <strong>« Effacer les saisies en cours »</strong> une fois
-      l'intégration confirmée par l'administrateur.
+      <strong>« Exporter tout »</strong> : sur la plupart des appareils, cela ouvre directement le
+      menu de partage avec le fichier déjà joint (mail, WhatsApp, Bluetooth...) — sinon le fichier est
+      simplement téléchargé, à transmettre au bureau (mail, clé USB, dossier partagé). Une fois
+      l'intégration confirmée par l'administrateur, utilisez <strong>« Effacer les saisies en
+      cours »</strong>.
     </p>
     <details class="shortcut-tip">
       <summary>On vous recommande d'ajouter cette page à votre écran d'accueil — accès direct en un tap</summary>
@@ -126,10 +128,12 @@
         et de changer d'emprise de carte sans affecter les points déjà saisis.</li>
       <li><strong>Fond hors-ligne</strong> : télécharger un fond de carte régional pour continuer à
         travailler sans réseau.</li>
-      <li><strong>En fin de tournée</strong> : « Exporter tout » télécharge un fichier regroupant tous
-        les points saisis, à transmettre au bureau. Une fois l'intégration confirmée par
-        l'administrateur, « Effacer les saisies en cours » (bouton rouge, taper SUP) vide
-        l'appareil.</li>
+      <li><strong>En fin de tournée</strong> : « Exporter tout » regroupe tous les points saisis dans un
+        fichier. Sur la plupart des tablettes/téléphones, le menu de partage s'ouvre directement avec
+        ce fichier déjà joint — il suffit de choisir l'appli (mail, WhatsApp, Bluetooth...). Si le
+        partage n'est pas disponible, le fichier est téléchargé pour être transmis manuellement. Une
+        fois l'intégration confirmée par l'administrateur, « Effacer les saisies en cours » (bouton
+        rouge, taper SUP) vide l'appareil.</li>
     </ol>
     <div class="modal-actions">
       <button type="button" data-close>Fermer</button>
@@ -758,10 +762,46 @@ function downloadGeojson(collection, filename) {
   document.body.appendChild(a); a.click(); a.remove();
   URL.revokeObjectURL(url);
 }
-document.getElementById('btn-export-all').addEventListener('click', () => {
+/* Partage natif avec fichier déjà joint (Web Share API Level 2), tenté en
+   priorité pour éviter à l'agent de joindre le fichier manuellement dans son
+   appli mail — `mailto` ne le permet pas (limite du protocole, voir
+   JOURNAL_DECISIONS.md). Contrairement au partage point par point déjà
+   écarté (fiabilité insuffisante en usage répété temps réel), ici un seul
+   partage en fin de tournée sur un fichier déjà constitué : risque d'échec
+   ponctuel bien moindre, et repli automatique sur le téléchargement classique
+   si l'appareil ne supporte pas le partage de fichiers ou si l'agent annule. */
+document.getElementById('btn-export-all').addEventListener('click', async () => {
   const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
-  downloadGeojson(fieldFeatureCollection(), `geosd_terrain_${stamp}.geojson`);
-  setStatus('Export téléchargé', 'ok');
+  const filename = `geosd_terrain_${stamp}.geojson`;
+  const collection = fieldFeatureCollection();
+
+  if (navigator.share && navigator.canShare) {
+    const file = new File(
+      [JSON.stringify(collection, null, 2)],
+      filename,
+      { type: 'application/geo+json' }
+    );
+    if (navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: 'Export GeoSD terrain',
+          text: `Export terrain GeoSD — ${collection.features.length} point(s)`
+        });
+        setStatus('Export partagé', 'ok');
+        return;
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          setStatus('Partage annulé — export non envoyé');
+          return;
+        }
+        console.warn('Partage natif indisponible, bascule sur téléchargement :', err);
+      }
+    }
+  }
+
+  downloadGeojson(collection, filename);
+  setStatus('Export téléchargé — à joindre manuellement à un mail', 'ok');
 });
 
 document.getElementById('btn-send-dismiss').addEventListener('click', () => sendPanel.classList.remove('show'));
