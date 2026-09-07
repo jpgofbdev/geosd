@@ -1,47 +1,52 @@
-# GeoSD — SIG minimaliste à 3 versions
+# GeoSD — SIG minimaliste à 4 versions
  
 Application de saisie de points géolocalisés par thématique, sans compte
 utilisateur ni serveur applicatif. Le projet est découpé en
-**3 versions indépendantes**, chacune adaptée à un usage précis, plus une
+**4 versions indépendantes**, chacune adaptée à un usage précis, plus une
 page d'accueil de présentation (`index.html`) pour l'hébergement public
 (GitHub Pages).
  
-## Les 3 versions
+## Les 4 versions
  
 | Fichier | Usage | Où | Écriture |
 |---|---|---|---|
-| `geosd-admin.html` | Intégration du fichier central, fusion des envois terrain, tableau et statistiques | Poste desktop (Chrome/Edge/Opera) | Directe sur disque (File System Access API) |
+| `geosd-admin.html` | Intégration du fichier central, fusion des envois terrain, formulaire de saisie/correction, tableau et statistiques | Poste desktop (Chrome/Edge/Opera) | Directe sur disque (File System Access API) |
+| `geosd-consultation-bureau.html` | Consultation du fichier central depuis un poste de bureau — mêmes filtres, tableau et statistiques que l'administration, lecture seule stricte | Poste desktop (tout navigateur récent) | Aucune — fichier chargé localement (`<input type="file">`) |
 | `geosd-terrain-saisie.html` | Saisie de nouveaux points sur le terrain | Tablette Android (ou tout mobile) | En mémoire locale (localStorage) + export groupé en fin de tournée |
 | `geosd-terrain-consultation.html` | Consultation des points déjà connus, lecture seule | Tablette Android (ou tout mobile) | Aucune — fichier local ou dépôt distant |
  
-Toutes les trois partagent deux fichiers communs à ne jamais dupliquer :
+Toutes les quatre partagent des fichiers communs à ne jamais dupliquer :
 - `geosd-themes.js` — configuration des thématiques et des territoires (généré/édité)
+- `geosd-dataviz.js` — filtres, légende, statistiques et tableau de synthèse, **communs à `geosd-admin.html` et `geosd-consultation-bureau.html`** (voir « Consultation bureau » plus bas)
 - `geosd-common.css` — apparence
 **Tous les fichiers doivent rester dans le même dossier** (ou à la racine
 du même dépôt pour un hébergement web).
  
 **Deux pages de présentation, deux publics.** `index.html` est la page
-publique (GitHub Pages) : elle ne présente que les deux versions terrain
-(saisie, consultation), sans aucune mention ni lien vers l'administration.
-La présentation de l'administration vit dans `index_admin.html`, une page
-séparée, volontairement non liée depuis `index.html` — son URL est à
-transmettre directement aux administrateurs qui intègrent les envois
-terrain, pas à afficher publiquement.
+publique (GitHub Pages) : elle présente les versions destinées aux
+utilisateurs (saisie terrain, consultation terrain, consultation bureau),
+sans aucune mention ni lien vers l'administration. La présentation de
+l'administration vit dans `index_admin.html`, une page séparée,
+volontairement non liée depuis `index.html` — son URL est à transmettre
+directement aux administrateurs qui intègrent les envois terrain, pas à
+afficher publiquement.
  
 ## Fichiers du projet
  
 | Fichier | Rôle | À éditer ? |
 |---|---|---|
-| `index.html` | Page d'accueil / présentation publique (hébergement GitHub Pages) — ne présente que les 2 versions terrain, aucun lien vers l'administration | Occasionnellement (copie/coordonnées) |
+| `index.html` | Page d'accueil / présentation publique (hébergement GitHub Pages) — présente les 3 versions utilisateur (saisie terrain, consultation terrain, consultation bureau), aucun lien vers l'administration | Occasionnellement (copie/coordonnées) |
 | `index_admin.html` | Page de présentation de l'administration — **non liée depuis `index.html`**, à transmettre directement aux administrateurs qui intègrent les envois terrain | Occasionnellement (copie/coordonnées) |
 | `GeoSD_Note_de_presentation.docx` | Note de présentation détaillée (atouts, sécurité, frugalité, limites) — liée depuis le pied de page de `index.html` | Occasionnellement |
 | `GeoSD_Plaquette.pdf` | Version courte une page de la note ci-dessus, format « argumentaire flash » — liée depuis le pied de page de `index.html` | Occasionnellement |
 | `GeoSD_Presentation.pptx` | Support de présentation générale (9 diapositives), incluant une diapositive dédiée au choix d'hébergement des données en local/réseau | Occasionnellement |
 | `geosd-admin.html` | Application desktop administrateur | Non |
+| `geosd-consultation-bureau.html` | Application desktop consultation (lecture seule, dataviz identique à l'admin) | Non |
 | `geosd-terrain-saisie.html` | Application terrain — saisie | Non |
 | `geosd-terrain-consultation.html` | Application terrain — consultation | Éventuellement, pour `DEPOT_URL` (voir plus bas) |
 | `geosd-tokens.css` | Couleurs et polices (charte graphique) — **seul fichier à éditer pour un changement de style** | Oui, si évolution de charte |
-| `geosd-common.css` | Mise en page et composants communs aux 3 versions (importe `geosd-tokens.css`) | Non |
+| `geosd-common.css` | Mise en page et composants communs aux 4 versions (importe `geosd-tokens.css`) | Non |
+| `geosd-dataviz.js` | Filtres, légende, statistiques, tableau de synthèse — **commun à `geosd-admin.html` et `geosd-consultation-bureau.html`, ne jamais dupliquer** | Non (sauf évolution de ces fonctionnalités, qui s'applique alors automatiquement aux deux) |
 | `geosd-themes.js` | Config. des thématiques et des territoires (généré/édité) — **ne pas éditer le bloc THEMES à la main** | Oui, pour `TERRITOIRES` (voir plus bas) |
 | `modele-formulaires.csv` | Modèle de champs par thématique + champs communs (`theme_key=commun`) — **source de vérité** | **Oui**, c'est le fichier à modifier |
 | `generate_themes.py` | Régénère le bloc THEMES de `geosd-themes.js` à partir du CSV | Non |
@@ -63,7 +68,7 @@ alors automatiquement sur le territoire correspondant. Ce choix est
 sera plus redemandé ensuite.
 
 - **Changer de territoire** : bouton **"Territoire : ..."** dans l'en-tête,
-  à tout moment, dans les 3 applications.
+  à tout moment, dans les 4 applications.
 - **"Passer"** : ouvre une vue France entière, sans mémoriser de choix — le
   sélecteur réapparaîtra à la prochaine ouverture.
 **Ajouter un territoire hors métropole (ou modifier une emprise
@@ -73,7 +78,7 @@ une ligne par territoire, format :
 loiret: { label: "Loiret (45)", bounds: [[47.44, 1.47], [48.38, 3.17]] }
 ```
 Le rectangle est `[[lat_sud, lng_ouest], [lat_nord, lng_est]]`. Comme pour
-les thématiques, **un seul fichier à modifier, les 3 applications suivent
+les thématiques, **un seul fichier à modifier, les 4 applications suivent
 automatiquement**.
 
 **Origine des emprises (25/08/2026) :** calculées à partir des contours
@@ -93,7 +98,7 @@ plus simple à faire évoluer.
 
 ## Charte graphique
  
-Toutes les couleurs et polices des 3 applications **et** de `index.html`
+Toutes les couleurs et polices des 4 applications **et** de `index.html`
 viennent d'un seul fichier : **`geosd-tokens.css`**. C'est le seul fichier
 à modifier pour tout changement de style — une variable changée là se
 répercute partout automatiquement (`geosd-common.css` l'importe via
@@ -116,11 +121,17 @@ confusion sur son statut.
 ## Hébergement web (GitHub Pages)
  
 Le projet peut être servi tel quel comme site statique — `index.html`
-présente l'outil et pointe vers les 3 versions et le fichier de démo.
+présente l'outil et pointe vers les 3 versions utilisateur (saisie
+terrain, consultation terrain, consultation bureau) et le fichier de
+démo.
  
 - **Tous les fichiers à la racine du même dépôt/branche publiée**
-  (`index.html`, les 3 `.html`, `geosd-common.css`, `geosd-themes.js`,
-  `points2.geojson`) — les liens entre eux sont en chemin relatif.
+  (`index.html`, les 4 `.html`, `geosd-common.css`, `geosd-themes.js`,
+  `geosd-dataviz.js`, `points2.geojson`) — les liens entre eux sont en
+  chemin relatif. **`geosd-dataviz.js` est indispensable** : sans lui,
+  `geosd-admin.html` et `geosd-consultation-bureau.html` ne peuvent plus
+  afficher ni filtres, ni statistiques, ni tableau (voir tableau de
+  dépannage plus bas, même symptôme que l'oubli de `geosd-themes.js`).
 - **Documents de présentation optionnels** (`GeoSD_Note_de_presentation.docx`,
   `GeoSD_Plaquette.pdf`, `GeoSD_Presentation.pptx`) : à placer dans ce même
   dossier si vous voulez que les liens du pied de page de `index.html`
@@ -164,23 +175,26 @@ l'appui — Samsung Galaxy S8+, 360 px de large) :
 
 ## Navigation — lien retour vers l'accueil
 
-Le titre **« GeoSD »** dans l'en-tête des 3 versions est un lien retour
-(`.brand a`, `geosd-common.css`) — vers `index.html` en saisie et
-consultation, vers `index_admin.html` en administration. Jusqu'ici, rien
-ne le distinguait visuellement d'un simple texte avant le survol de la
-souris — repéré comme problématique sur tablette (saisie, consultation),
-où il n'y a pas de survol au doigt : le lien existait mais personne ne
-pouvait deviner qu'il était cliquable.
+Le titre **« GeoSD »** dans l'en-tête des 4 versions est un lien retour
+(`.brand a`, `geosd-common.css`) — vers `index.html` en saisie,
+consultation terrain et consultation bureau, vers `index_admin.html` en
+administration. Jusqu'ici, rien ne le distinguait visuellement d'un
+simple texte avant le survol de la souris — repéré comme problématique
+sur tablette (saisie, consultation), où il n'y a pas de survol au doigt :
+le lien existait mais personne ne pouvait deviner qu'il était cliquable.
 
 **Correctif (27/08/2026) :** une flèche « ← » précède désormais le mot
 « GeoSD » en permanence (couleur `--accent`, ajoutée en CSS via
 `.brand a::before`, aucune modification de balisage nécessaire) — visible
-sans interaction, à l'identique sur les 3 versions puisque le composant
-est partagé. Un `aria-label` explicite a également été ajouté sur chacun
-des 3 liens (`Retour à l'accueil GeoSD` en saisie/consultation, `Retour à
-la présentation de l'administration` en admin).
+sans interaction, à l'identique sur toutes les versions puisque le
+composant est partagé (bénéfice automatique pour
+`geosd-consultation-bureau.html`, ajoutée après ce correctif, sans rien
+à reprendre). Un `aria-label` explicite a également été ajouté sur
+chacun des liens (`Retour à l'accueil GeoSD` en saisie/consultation
+terrain/consultation bureau, `Retour à la présentation de
+l'administration` en admin).
 
-## Modifier le modèle de champs (thématiques communes aux 3 versions)
+## Modifier le modèle de champs (thématiques communes aux 4 versions)
  
 **Encodage du CSV (accents dans Excel) :** `modele-formulaires.csv` doit
 rester encodé en UTF-8 avec BOM pour qu'Excel affiche les accents
@@ -221,20 +235,41 @@ que la thématique reste enregistrée dans le sélecteur (ex.
    ```
 3. Vérifier les messages `OK — N thématique(s) écrites`, `OK — N champ(s)
    commun(s) écrits` et, si le fichier de communes est présent, `OK — N
-   commune(s) écrites` dans `geosd-themes.js` (partagé par les 3 versions).
+   commune(s) écrites` dans `geosd-themes.js` (partagé par les 4 versions).
 4. Recharger les pages ouvertes dans le navigateur — **un seul lancement du
-   script met à jour les 3 applications**, plus besoin de le faire 3 fois.
-## Filtres de la carte (geosd-admin.html et geosd-terrain-consultation.html)
- 
+   script met à jour les 4 applications**, plus besoin de le faire 4 fois.
+## Filtres, tableau, statistiques : communs à geosd-admin.html et geosd-consultation-bureau.html
+
+**Règle de parité (décision du 07/09/2026, voir JOURNAL_DECISIONS.md) :**
+tout ce qui concerne les filtres, la légende, les statistiques et le
+tableau de synthèse doit exister à l'identique dans `geosd-admin.html`
+**et** `geosd-consultation-bureau.html`. Cette logique est centralisée
+dans **`geosd-dataviz.js`**, chargé par les deux pages — **ne jamais
+dupliquer ce code dans les fichiers `.html`**, une évolution de l'un de
+ces blocs doit se faire dans ce seul fichier pour s'appliquer
+automatiquement aux deux versions. Seule différence assumée entre les
+deux versions : la gestion du fichier central (créer/ouvrir en
+écriture/intégrer un envoi terrain, propre à `geosd-admin.html`) et les
+boutons Modifier/Supprimer du tableau (absents côté
+`geosd-consultation-bureau.html`, strictement lecture seule).
+
+`geosd-terrain-saisie.html` et `geosd-terrain-consultation.html` ont leur
+propre panneau de filtres, plus simple (pas de logique commune avec
+`geosd-dataviz.js` à ce stade), ni de statistiques/tableau — besoin jugé
+limité à l'usage bureau.
+
+### Filtres de la carte
+
 Bouton **"Filtres"** dans l'en-tête, ouvre un panneau latéral : recherche
 libre (commune, commentaire, auteur), thématiques (cases à cocher, tout
 cocher/décocher), période (date de début/fin du signalement), fiabilité
 minimale. Tous les filtres se combinent en ET, et le compteur en bas du
 panneau indique le nombre de points affichés sur le total.
  
-**Filtre "Jour de semaine / Mois" (`geosd-admin.html` uniquement)** —
-permet de sélectionner les points selon des critères calendaires,
-combinables en ET avec les autres filtres du panneau :
+**Filtre "Jour de semaine / Mois" (`geosd-admin.html` et
+`geosd-consultation-bureau.html` uniquement)** — permet de sélectionner
+les points selon des critères calendaires, combinables en ET avec les
+autres filtres du panneau :
 - **Mode Simple** : jours de la semaine et mois multi-sélectionnables
   (puces cliquables), combinés en ET entre les deux catégories, en OU à
   l'intérieur d'une même catégorie. Catégorie non renseignée = ignorée.
@@ -249,9 +284,13 @@ pas de notion d'année propre : s'il est combiné avec le filtre de
 période (date début/fin), le résultat reste borné à cette période ;
 sinon toutes les années présentes dans le fichier sont considérées.
 Volontairement absent de `geosd-terrain-consultation.html` et
-`geosd-terrain-saisie.html` (besoin limité à l'usage bureau).
-## Tableau de données (geosd-admin.html)
- 
+`geosd-terrain-saisie.html` (besoin limité à l'usage bureau) — sa
+présence est détectée automatiquement par `geosd-dataviz.js` via le bloc
+HTML `#filter-daymonth-section` : présent dans une page hôte, le filtre
+s'active ; absent, il est simplement ignoré, sans erreur.
+
+### Tableau de données
+
 Bouton **"Tableau"** dans l'en-tête : liste tous les points avec leurs
 valeurs complètes — thématique, sous-type, les 8 champs communs (commune,
 date, heure, auteur signalement, auteur faits, agent SD créateur du point,
@@ -263,7 +302,9 @@ tout) — utile pour croiser une recherche/filtre avec un export ciblé.
  
 - Tri par date, thématique ou commune.
 - Actions directement depuis chaque ligne : **Localiser** (centre la carte
-  et ouvre le point), **Modifier**, **Supprimer**.
+  et ouvre le point) toujours présent ; **Modifier** et **Supprimer**
+  uniquement dans `geosd-admin.html` (absents dans
+  `geosd-consultation-bureau.html`, lecture seule).
 - **"Exporter en CSV (Excel)"** : fichier ouvrable directement dans Excel
   (accents corrects), sur la sélection actuellement affichée dans le
   tableau. Ce n'est pas un `.xlsx` au format natif — volontairement, pour ne
@@ -271,8 +312,9 @@ tout) — utile pour croiser une recherche/filtre avec un export ciblé.
   `.xlsx` (feuilles multiples, mise en forme) devient nécessaire, il faudra
   ajouter une bibliothèque JS dédiée (SheetJS), avec le même genre de CDN de
   secours déjà en place pour Leaflet.
-## Statistiques (geosd-admin.html)
- 
+
+### Statistiques
+
 Bouton **"Statistiques"** dans l'en-tête : ouvre un histogramme (points par
 thématique et par mois, couleurs identiques à la carte) et un tableau
 détaillé avec totaux par ligne/colonne, plus un bouton **"Exporter en CSV"**
@@ -346,22 +388,27 @@ nécessaire. La mise à jour se fait par **copie manuelle à la demande** :
 1. Le fichier central à jour est disponible sur le dossier réseau de
    l'entreprise (celui géré via `geosd-admin.html`).
 2. À intervalle régulier (ou avant une tournée), copier ce fichier sur la
-   tablette (câble, synchronisation d'un client déjà installé, etc.).
+   tablette (câble, synchronisation d'un client déjà installé, etc.) —
+   ou, pour `geosd-consultation-bureau.html`, accéder directement au
+   dossier réseau depuis le poste de bureau.
 3. Dans `geosd-terrain-consultation.html` (ou `geosd-terrain-saisie.html`
-   pour la couche de référence), bouton **"Charger un fichier"** → sélection
-   du fichier copié.
+   pour la couche de référence) comme dans `geosd-consultation-bureau.html`,
+   bouton **"Charger un fichier"** → sélection du fichier copié.
 **Indicateur de fraîcheur automatique :** chaque sauvegarde par
 `geosd-admin.html` horodate désormais le fichier (`updated_at`). Les
-versions terrain affichent cet âge après chargement, avec une alerte
-visuelle si le fichier a plus de **30 jours** (seuil réglable dans
-`geosd-themes.js`, constante `STALE_AFTER_DAYS`) — rappel simple pour savoir
-quand redemander une copie à jour, sans mécanisme d'expiration forcé.
+versions terrain **et** `geosd-consultation-bureau.html` affichent cet âge
+après chargement, avec une alerte visuelle si le fichier a plus de
+**30 jours** (seuil réglable dans `geosd-themes.js`, constante
+`STALE_AFTER_DAYS`) — rappel simple pour savoir quand redemander une copie
+à jour, sans mécanisme d'expiration forcé.
  
 **Dépôt distant (optionnel, non retenu pour l'instant) :** le code garde la
 possibilité de charger automatiquement depuis une URL (`DEPOT_URL` en haut
 de `geosd-terrain-consultation.html`, vide par défaut, bouton "Recharger le
 dépôt" masqué tant qu'elle n'est pas renseignée) — à réactiver seulement si
-le protocole manuel s'avère trop contraignant à l'usage.
+le protocole manuel s'avère trop contraignant à l'usage. Cette option
+n'existe pas dans `geosd-consultation-bureau.html` (poste de bureau,
+généralement déjà connecté au dossier réseau directement).
  
 ## Installer des raccourcis sur la tablette
  
@@ -379,16 +426,23 @@ rouvrant directement la bonne version.
  
 - **Aucun serveur applicatif.** `geosd-admin.html` écrit directement sur
   disque via la File System Access API (Chrome/Edge/Opera desktop
-  uniquement). Les 2 versions terrain n'écrivent jamais de fichier
-  directement — sauvegarde locale (localStorage) + export/envoi manuel.
+  uniquement). Les 3 autres versions (2 terrain + consultation bureau)
+  n'écrivent jamais de fichier directement — sauvegarde locale
+  (localStorage) + export/envoi manuel pour les versions terrain ;
+  chargement en mémoire via `<input type="file">`, sans écriture possible,
+  pour `geosd-consultation-bureau.html`.
 - **Format des données :** GeoJSON standard, réutilisable dans QGIS.
 - **Fonds de carte :** OpenStreetMap et IGN Géoplateforme (`data.geopf.fr`,
-  WMTS ouvert, sans clé), identiques dans les 3 versions.
+  WMTS ouvert, sans clé), identiques dans les 4 versions.
 ## Limitations connues
  
 - **`geosd-admin.html` : Chrome/Edge/Opera desktop uniquement.** Aucune
   version mobile de l'administration n'est prévue — l'écriture directe de
   fichier n'est pas fiable sur Android (voir plus bas) et absente sur iOS.
+  `geosd-consultation-bureau.html`, à l'inverse, tourne sur **tout
+  navigateur de bureau récent** — elle n'utilise jamais la File System
+  Access API, justement pour ne pas dépendre de Chrome/Edge/Opera (voir
+  JOURNAL_DECISIONS.md, entrée « 4e version : Consultation bureau »).
 - **Android ment parfois sur son support de l'écriture de fichiers.** Sur
   certains Android, `showSaveFilePicker` existe mais échoue à l'usage
   ("permission d'écriture refusée"). Les 2 versions terrain n'utilisent donc
@@ -404,6 +458,7 @@ rouvrant directement la bonne version.
 | `Cross origin sub frames aren't allowed...` | Fichier ouvert dans une iframe/aperçu | Ouvrir en onglet direct |
 | `User activation is required to request permissions` (Android) | Implémentation Android non fiable de la File System Access API | Normal — utiliser les versions terrain, pas `geosd-admin.html`, sur tablette |
 | `Marqueurs THEMES_START/THEMES_END introuvables` | `generate_themes.py` ne trouve pas `geosd-themes.js` dans le dossier courant | Vérifier avec `dir`/`ls` que tous les fichiers sont dans le même dossier |
+| `ReferenceError: initDataviz is not defined` sur `geosd-admin.html` ou `geosd-consultation-bureau.html` | `geosd-dataviz.js` absent du dossier, ou balise `<script src="geosd-dataviz.js">` manquante/mal placée dans le HTML | Vérifier la présence du fichier à côté des autres `.js`, et qu'il est bien chargé après `geosd-themes.js` et avant le script inline de la page |
 | `Not allowed to request permissions in this context` (chemin réseau) | Fichier ouvert via un chemin UNC direct (`file://serveur/...`), traité différemment d'un disque local par Chrome | Mapper le dossier réseau en lettre de lecteur (`Z:`) et ouvrir depuis là (`file:///Z:/...`), ou héberger `geosd-admin.html` en HTTPS |
 | `ReferenceError: initTerritory is not defined` (ou toute fonction manquante) sur GitHub Pages | Un fichier interdépendant (souvent `geosd-themes.js`) est resté en version périmée sur le dépôt alors que d'autres ont été mis à jour | Renvoyer **tous les fichiers en bloc** sur GitHub à chaque mise à jour, pas au cas par cas |
 | GitHub affiche "Your site is published" mais les changements n'apparaissent pas | Badge de publication pas toujours synchrone avec le déploiement réel | Vérifier l'onglet **Actions** du dépôt (horodatage précis du dernier déploiement Pages), puis Ctrl+F5 pour ignorer le cache navigateur |

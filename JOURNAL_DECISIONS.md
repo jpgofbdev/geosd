@@ -683,15 +683,144 @@ fichiers, titres et clés de stockage local ont été alignés en conséquence.
   pas de JS supplémentaire. Style partagé `.shortcut-tip` centralisé dans
   `geosd-common.css` pour éviter la duplication entre les deux pages
   terrain.
-- **Bug révélé à cette occasion : les popups (`.overlay`, z-index 1000)
-  pouvaient passer sous les contrôles Leaflet** (bouton « Ma position »,
-  menu « Fond hors-ligne » une fois ouvert) qui utilisent aussi
-  `z-index:1000` en natif (`.leaflet-top`/`.leaflet-bottom` dans
-  `leaflet.css`). À z-index égal, l'ordre de résolution suit l'ordre DOM
-  — et `#map-wrap` (donc les contrôles Leaflet) est placé après les
-  popups `info-overlay`/`help-overlay` dans le HTML, qui perdaient donc
-  l'arbitrage. **Corrigé en montant `.overlay` à `z-index:1200`**, au-dessus
-  de tout le reste de l'appli (y compris `.send-panel` à 1100) — plus
-  robuste qu'un réordonnancement du DOM, qui aurait pu se refaire défaire
-  au prochain ajout de contrôle carte.
+## Marqueurs distinguables sans dépendre de la couleur seule (07/09/2026)
+
+- **Constat :** retour d'un collègue daltonien — les points sur la carte
+  n'étaient distinguables entre thématiques que par la couleur (rond plein
+  coloré, via `L.circleMarker`). Une palette dite « colorblind-friendly »
+  était déjà en place (`THEME_COLOR_PALETTE`, 8 teintes Dark2/ColorBrewer,
+  cyclique sur `THEME_KEYS`), mais deux problèmes : (1) une palette conçue
+  pour *un* type de daltonisme ne couvre pas forcément tous les cas ; (2) la
+  palette ne comptait que 8 couleurs pour 9 thématiques déjà enregistrées
+  — la 9ᵉ (`engrillagement`) récupérait silencieusement la même couleur que
+  la 1ʳᵉ (`chasse`), un bug indépendant du daltonisme, découvert à cette
+  occasion.
+- **Décision : coder aussi par la forme, en plus de la couleur** (double
+  encodage), plutôt que remplacer la couleur par des icônes seules — la
+  couleur reste utile pour les agents non-daltoniens habitués à repérer par
+  couleur, et la redondance est plus robuste qu'un seul canal quel qu'il
+  soit.
+- **9 formes simples retenues** (rond, carré, triangle, triangle inversé,
+  losange, hexagone, croix, étoile, anneau) — silhouettes basiques choisies
+  pour rester lisibles à la taille d'un marqueur de carte (~18-22px), par
+  opposition à des pictogrammes détaillés qui se seraient brouillés à cette
+  échelle.
+- **Association couleur/forme choisie avec le porteur de projet**, par
+  aperçus successifs (mockups) avant implémentation : marron/triangle
+  (Chasse), vert/carré (Pêche), bleu vif/rond (Eau), rose vif/losange
+  (Phytosanitaires), orange/hexagone (VTM), jaune/triangle inversé (FSC),
+  vert clair vif/anneau (Habitat / espèces protégées), violet/étoile
+  (Cueillette, référence myrtilles), rouge/croix (Engrillagement).
+- **Implémentation technique :** `L.circleMarker` (qui ne sait dessiner
+  qu'un rond) remplacé par `L.marker` + `L.divIcon` contenant un SVG
+  inline généré selon la thématique (`themeMarkerIcon()`,
+  `themeShapeSvg()` dans `geosd-themes.js`). Le point « référence » garde
+  son rendu d'origine (anneau gris fin), non concerné par ce changement.
+  Aucune dépendance externe ajoutée — formes dessinées à la main en SVG,
+  cohérent avec le principe déjà établi d'éviter tout nouveau CDN.
+
+## Couleur/forme déplacées dans le CSV plutôt qu'en dur dans le JS (07/09/2026)
+
+- **Constat :** la première implémentation ci-dessus codait l'association
+  thématique → couleur/forme en dur dans `geosd-themes.js`
+  (`THEME_COLOR`/`THEME_SHAPE`). Repéré aussitôt après coup comme une
+  régression d'architecture : le projet a un principe déjà établi
+  (`modele-formulaires.csv` comme source de vérité du modèle de champs,
+  régénéré via `generate_themes.py`) que ce choix contournait pour
+  l'apparence des marqueurs, cassant l'indépendance des thématiques
+  vis-à-vis du code.
+- **Décision : deux colonnes ajoutées au CSV**, `theme_color` et
+  `theme_shape` — renseignées une seule fois par thématique (première
+  valeur non vide rencontrée sur les lignes de cette thématique, pas
+  besoin de répéter comme `theme_label`). `generate_themes.py` les lit,
+  valide (format hexadécimal pour la couleur ; forme dans une liste
+  blanche `VALID_SHAPES` pour la forme), avertit sans jamais bloquer en
+  cas de valeur manquante/invalide ou de collision entre deux thématiques,
+  puis régénère un bloc `THEME_COLOR`/`THEME_SHAPE` dans `geosd-themes.js`
+  entre marqueurs (`// ==THEME_APPEARANCE_START/END==`) — même mécanisme
+  que les blocs `THEMES`/`COMMON_FIELDS`/`COMMUNES` déjà en place.
+- **Couplage résiduel assumé, documenté plutôt qu'éliminé :** `VALID_SHAPES`
+  côté Python doit rester synchronisée avec les `case` de
+  `themeShapeSvg()` côté JS — ajouter une thématique (fréquent) est
+  désormais entièrement piloté par le CSV, mais ajouter une **nouvelle
+  forme géométrique** (rare, 9 déjà disponibles) demande toujours de
+  toucher les deux fichiers. Jugé comme un coût de maintenance raisonnable
+  au vu de la fréquence très différente des deux opérations — pas de
+  tentative de l'éliminer par une abstraction supplémentaire.
+- **Thématique sans couleur/forme valide dans le CSV :** repli automatique
+  sur un anneau gris (`THEME_FALLBACK_COLOR`/`THEME_FALLBACK_SHAPE`,
+  inchangés depuis la première implémentation) — jamais bloquant, un
+  avertissement suffit à signaler l'oubli au lancement du script.
+
+## Catalogue de formes/couleurs de réserve (07/09/2026)
+
+- **`catalogue-formes-couleurs.csv` ajouté** — fichier de référence, non
+  lu par le code (ni par `generate_themes.py`, ni par l'application) :
+  liste les 9 formes déjà implémentées (marquées « réservée »), 3 formes
+  candidates supplémentaires nécessitant du code avant utilisation
+  (pentagone, flèche, carré tourné à 45°), les 9 couleurs déjà utilisées,
+  et 10 couleurs libres choisies pour rester visuellement écartées des 9
+  premières et entre elles.
+- **But :** éviter de re-choisir à l'aveugle une couleur ou une forme déjà
+  utilisée lors d'un futur ajout de thématique, sans pour autant figer de
+  règle automatique de non-collision dans le code (`generate_themes.py`
+  avertit déjà en cas de doublon involontaire, voir décision ci-dessus —
+  ce catalogue est un aide-mémoire humain, pas un mécanisme de validation
+  supplémentaire).
+- **Couleurs « libres » données à titre indicatif, pas garanties à l'usage**
+  — même démarche que pour l'association initiale : tester par petit
+  groupe avant adoption définitive dans le CSV, l'écart perçu entre deux
+  teintes proches restant difficile à garantir uniquement par calcul de
+  teinte.
+
+## 4e version : Consultation bureau (07/09/2026)
+
+- **Besoin :** une version desktop de consultation reprenant l'outillage
+  dataviz de `geosd-admin.html` (filtres complets y compris « Jour de
+  semaine / Mois », statistiques, tableau de synthèse), sans les
+  fonctions qui écrivent sur le fichier central (« Créer un nouveau
+  fichier », « Intégrer un envoi terrain ») ni, par construction,
+  Modifier/Supprimer un point.
+- **Lecture seule stricte retenue**, pas une lecture-écriture partielle.
+  Motif : ne garder « Modifier »/« Supprimer » aurait supposé un
+  `fileHandle` en écriture (`showOpenFilePicker` + `requestPermission`),
+  réintroduisant le risque qu'un deuxième poste écrive sur le fichier
+  central en parallèle de l'administrateur — précisément ce que le
+  protocole « un seul poste écrit à la fois » (voir plus haut, workflow
+  terrain → bureau) cherche à éviter.
+- **Chargement par `<input type="file">` simple**, comme
+  `geosd-terrain-consultation.html` — pas de File System Access API.
+  Motif : cette version doit pouvoir tourner sur des postes de bureau
+  dont le navigateur n'est pas garanti (contrairement aux postes
+  administrateurs, déjà rodés à Chrome/Edge/Opera et aux chemins réseau
+  UNC documentés dans le Dépannage). Conséquence directe : aucun
+  `fileHandle` en écriture n'existe côté cette page, ce qui confirme et
+  renforce le choix de la lecture seule stricte ci-dessus.
+- **Parité obligatoire filtres/légende/statistiques/tableau avec
+  `geosd-admin.html`, décidée par le porteur du projet** : toute
+  évolution de ces blocs doit s'appliquer aux deux versions. Seule
+  différence assumée entre les deux : la gestion du fichier central
+  (créer/ouvrir en écriture/intégrer un envoi terrain) et les boutons
+  Modifier/Supprimer du tableau de synthèse (colonne « Actions » réduite
+  à « Localiser » côté bureau).
+- **Conséquence architecturale : nouveau fichier partagé
+  `geosd-dataviz.js`**, chargé par `geosd-admin.html` **et**
+  `geosd-consultation-bureau.html`. Regroupe le panneau de filtres (avec
+  détection automatique de la présence du bloc « Jour de semaine / Mois »
+  dans la page hôte, absent des 2 versions terrain mobiles), la légende,
+  les statistiques et le tableau de synthèse (colonnes Modifier/Supprimer
+  pilotées par un paramètre `table.canEdit`/`table.canDelete` fourni par
+  la page hôte — même logique que `canEdit`/`canDelete` déjà utilisée par
+  `popupHtml()` dans `geosd-themes.js`). Ce module ne couvre volontairement
+  pas l'ouverture/sauvegarde du fichier ni le formulaire de saisie, qui
+  restent propres à chaque page hôte. Garantit par construction la parité
+  demandée, plutôt que de la reposer sur la seule discipline humaine à
+  maintenir deux fichiers `.html` synchronisés manuellement.
+- **Lien public depuis `index.html`** (3e lien, à côté de saisie et
+  consultation terrain) — choix assumé du porteur du projet : cette
+  version est présentée comme une des « versions utilisateur », à la
+  différence de `geosd-admin.html` qui reste réservé et non lié
+  publiquement (voir plus haut, « deux pages de présentation, deux
+  publics »). `index_admin.html` n'a pas été modifié.
+
 

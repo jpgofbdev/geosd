@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoSD — Consultation bureau</title>
+<link rel="stylesheet" href="geosd-common.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="mark">BUREAU</span>
+    <h1><a href="index.html" aria-label="Retour à l'accueil GeoSD">GeoSD</a></h1>
+  </div>
+  <div class="toolbar">
+    <span id="status">Aucun fichier chargé</span>
+    <button id="btn-toggle-filters">Filtres</button>
+    <button id="btn-territory">Territoire : —</button>
+    <button id="btn-stats">Statistiques</button>
+    <button id="btn-table">Tableau</button>
+    <button id="btn-load-local" class="primary">Charger un fichier</button>
+    <input type="file" id="input-load-local" accept=".geojson,.json" style="display:none;">
+  </div>
+</header>
+
+<div id="freshness-banner" class="banner"></div>
+<div id="load-error" class="banner" style="background:#f6d6d0;border-color:#c0392b;color:#7b241c;">
+  Impossible de charger la bibliothèque cartographique. Vérifiez votre connexion, puis rechargez.
+  Ouvrez ce fichier directement (double-clic), pas dans un aperçu intégré.
+</div>
+
+<div id="map-wrap">
+  <div id="map"></div>
+
+  <aside id="filters-panel">
+    <div class="filters-header">
+      <h2>Filtres</h2>
+      <button id="btn-close-filters" aria-label="Fermer">✕</button>
+    </div>
+    <div class="filters-body">
+      <div class="filters-section">
+        <span class="filters-label">Recherche libre</span>
+        <input type="text" id="filter-search" class="filters-search" placeholder="Commune, commentaire, auteur…">
+      </div>
+      <div class="filters-section">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span class="filters-label">Thématiques</span>
+          <div class="theme-check-actions">
+            <button type="button" id="btn-check-all">Tout cocher</button>
+            <button type="button" id="btn-check-none">Tout décocher</button>
+          </div>
+        </div>
+        <div class="theme-check-list" id="theme-check-list"></div>
+      </div>
+      <div class="filters-section">
+        <span class="filters-label">Période (date du signalement)</span>
+        <div class="filters-daterange">
+          <input type="date" id="filter-date-from">
+          <span style="color:var(--ink-soft); font-size:12px;">→</span>
+          <input type="date" id="filter-date-to">
+        </div>
+      </div>
+      <div class="filters-section" id="filter-daymonth-section">
+        <span class="filters-label">Jour de semaine / Mois</span>
+        <div class="filters-mode-toggle">
+          <label><input type="radio" name="filter-daymonth-mode" id="filter-mode-simple" value="simple" checked> Simple</label>
+          <label><input type="radio" name="filter-daymonth-mode" id="filter-mode-occurrence" value="occurrence"> Occurrence (ex : 1er lundi)</label>
+        </div>
+        <div id="filter-simple-block">
+          <div class="filters-subgroup">
+            <span class="filters-subgroup-label">Jours de la semaine</span>
+            <div class="filters-chip-list" id="filter-weekday-list"></div>
+          </div>
+          <div class="filters-subgroup">
+            <span class="filters-subgroup-label">Mois</span>
+            <div class="filters-chip-list" id="filter-month-list"></div>
+          </div>
+        </div>
+        <div id="filter-occurrence-block" style="display:none">
+          <div class="filters-subgroup">
+            <span class="filters-subgroup-label">Jours de la semaine</span>
+            <div class="filters-chip-list" id="filter-occ-weekday-list"></div>
+          </div>
+          <div class="filters-subgroup">
+            <span class="filters-subgroup-label">Mois</span>
+            <div class="filters-chip-list" id="filter-occ-month-list"></div>
+          </div>
+          <div class="filters-subgroup">
+            <span class="filters-subgroup-label">Occurrence dans le mois</span>
+            <div class="filters-chip-list" id="filter-occ-rank-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="filters-section">
+        <span class="filters-label">Fiabilité minimale</span>
+        <select id="filter-fiabilite" class="filters-select">
+          <option value="">Toutes</option>
+          <option value="1">≥ 1</option>
+          <option value="2">≥ 2</option>
+          <option value="3">≥ 3</option>
+          <option value="4">≥ 4</option>
+          <option value="5">= 5</option>
+        </select>
+      </div>
+    </div>
+    <div class="filters-footer">
+      <span id="filters-count">0 / 0 points affichés</span>
+      <button id="btn-reset-filters">Réinitialiser</button>
+    </div>
+  </aside>
+</div>
+
+<!-- Modale tableau de données -->
+<div class="overlay" id="table-overlay">
+  <div class="modal modal-wide">
+    <h2>Tableau des points</h2>
+    <p class="coords">Respecte les filtres actuellement actifs (thématique, période, jour/mois, fiabilité, recherche) — ouvrez le panneau Filtres pour affiner avant de consulter ou d'exporter.</p>
+    <div class="table-toolbar">
+      <span id="table-count">0 point(s) affiché(s)</span>
+      <select id="table-sort">
+        <option value="date-desc">Date (récent → ancien)</option>
+        <option value="date-asc">Date (ancien → récent)</option>
+        <option value="theme">Thématique</option>
+        <option value="commune">Commune</option>
+      </select>
+    </div>
+    <div class="stats-table-wrap" style="max-height:50vh;">
+      <table class="stats-table" id="data-table"></table>
+    </div>
+    <div class="modal-actions">
+      <button type="button" id="btn-table-export">Exporter en CSV (Excel)</button>
+      <button type="button" id="btn-table-close">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modale statistiques -->
+<div class="overlay" id="stats-overlay">
+  <div class="modal modal-wide">
+    <h2>Statistiques</h2>
+    <p class="coords">Nombre de points par thématique et par mois — toujours calculé sur l'ensemble du fichier, indépendamment des filtres actifs.</p>
+    <div id="stats-chart"></div>
+    <div class="stats-legend" id="stats-legend"></div>
+    <div class="stats-table-wrap">
+      <table class="stats-table" id="stats-table"></table>
+    </div>
+    <div class="modal-actions">
+      <button type="button" id="btn-stats-export">Exporter en CSV</button>
+      <button type="button" id="btn-stats-close">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<script src="geosd-themes.js"></script>
+<script src="geosd-dataviz.js"></script>
+<script>
+(async function initApp() {
+  const ok = await loadLeaflet();
+  if (!ok) { document.getElementById('load-error').classList.add('show'); return; }
+  runApp();
+})();
+
+function runApp() {
+
+const statusEl = document.getElementById('status');
+const freshnessBanner = document.getElementById('freshness-banner');
+
+function showFreshness(updatedAtIso) {
+  const info = describeFileAge(updatedAtIso);
+  freshnessBanner.textContent = info.text;
+  freshnessBanner.className = 'banner show';
+  if (info.level === 'stale') {
+    freshnessBanner.style.background = '#f6d6d0';
+    freshnessBanner.style.borderColor = '#c0392b';
+    freshnessBanner.style.color = '#7b241c';
+  } else if (info.level === 'ok') {
+    freshnessBanner.style.background = '#e3ede8';
+    freshnessBanner.style.borderColor = 'var(--accent)';
+    freshnessBanner.style.color = 'var(--accent-dark)';
+  } else {
+    freshnessBanner.style.background = '#f3e4c6';
+    freshnessBanner.style.borderColor = '#c9a768';
+    freshnessBanner.style.color = '#6b4a13';
+  }
+}
+
+let geojson = { type: 'FeatureCollection', features: [] };
+let markersById = {};
+
+const map = L.map('map');
+function updateTerritoryButton(key) {
+  document.getElementById('btn-territory').textContent = 'Territoire : ' + territoryLabel(key);
+}
+initTerritory(map, updateTerritoryButton);
+document.getElementById('btn-territory').addEventListener('click', () => {
+  showTerritoryPicker(map, getSavedTerritory(), updateTerritoryButton);
+});
+addBaseLayerSwitcher(map, { collapsed: false }); // poste desktop : écran large, sélecteur déjà ouvert
+const markersLayer = L.layerGroup().addTo(map);
+
+function setStatus(text, kind) { statusEl.textContent = text; statusEl.className = kind || ''; }
+
+/* ---- Marqueurs : toujours en lecture seule ici ---- */
+function addMarker(feature) {
+  const [lng, lat] = feature.geometry.coordinates;
+  const marker = L.marker([lat, lng], { icon: themeMarkerIcon(feature) });
+  marker.featureId = feature.id;
+  marker.bindPopup(popupHtml(feature, { canDelete: false, canEdit: false }));
+  marker.addTo(markersLayer);
+  markersById[feature.id] = marker;
+}
+function renderAllMarkers() {
+  markersLayer.clearLayers();
+  markersById = {};
+  geojson.features.forEach(addMarker);
+  if (geojson.features.length) {
+    const group = L.featureGroup(Object.values(markersById));
+    map.fitBounds(group.getBounds().pad(0.2));
+  }
+  dataviz.refresh();
+  setStatus(geojson.features.length + ' point(s) chargé(s)', 'ok');
+}
+
+/* ---- Filtres, légende, statistiques, tableau de synthèse ----
+   Logique commune avec geosd-admin.html, centralisée dans
+   geosd-dataviz.js — ne pas dupliquer ici (voir README.md et
+   JOURNAL_DECISIONS.md, entrée du 07/09/2026). Lecture seule : ni
+   "Modifier" ni "Supprimer" dans le tableau (pas de fichier ouvert
+   en écriture depuis cette version). */
+const dataviz = initDataviz({
+  map, markersLayer,
+  getGeojson: () => geojson,
+  getMarkersById: () => markersById,
+  table: { canEdit: false, canDelete: false }
+});
+dataviz.buildThemeCheckList();
+
+/* ---- Chargement du fichier central (lecture seule) ---- */
+document.getElementById('btn-load-local').addEventListener('click', () => {
+  document.getElementById('input-load-local').click();
+});
+document.getElementById('input-load-local').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    geojson = data.features ? data : { type: 'FeatureCollection', features: [] };
+    renderAllMarkers();
+    showFreshness(geojson.updated_at);
+  } catch (err) { setStatus('Erreur de lecture : ' + err.message, 'err'); }
+  e.target.value = '';
+});
+
+}
+</script>
+</body>
+</html>

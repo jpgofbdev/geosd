@@ -115,7 +115,7 @@
   .feature p{ font-size:13.5px; color:var(--ink-soft); margin:0; }
 
   /* ---- les 2 versions ---- */
-  .version-grid{ display:grid; grid-template-columns:repeat(2, 1fr); gap:18px; }
+  .version-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:18px; }
   .version-card{
     background:var(--panel); border:1px solid var(--line); border-radius:8px;
     padding:24px 22px; display:flex; flex-direction:column; gap:14px;
@@ -214,7 +214,7 @@
     </div>
     <nav class="site-nav">
       <a href="#fonctionnalites">Fonctionnalités</a>
-      <a href="#versions">Les 2 versions</a>
+      <a href="#versions">Les 3 versions</a>
       <a href="#mode-emploi">Mode d'emploi</a>
       <a href="#demo">Démo</a>
     </nav>
@@ -230,6 +230,7 @@
       <div class="hero-ctas">
         <a class="btn primary" href="geosd-terrain-saisie.html">Saisie terrain</a>
         <a class="btn" href="geosd-terrain-consultation.html">Consultation terrain</a>
+        <a class="btn" href="geosd-consultation-bureau.html">Consultation bureau</a>
       </div>
       <details class="shortcut-tip">
         <summary>📲 Sur mobile ou tablette : on vous recommande vivement d'ajouter ces deux pages à votre écran d'accueil — accès direct en un tap, sans repasser par un navigateur</summary>
@@ -315,7 +316,7 @@
 
 <section id="versions">
   <div class="wrap">
-    <h2>Les 2 versions</h2>
+    <h2>Les 3 versions</h2>
     <h3>Une application par usage, une seule base partagée par SD</h3>
     <div class="version-grid">
 
@@ -339,6 +340,16 @@
         <p>Lecture seule des points déjà connus, pour situer une intervention sans risque de modification accidentelle.</p>
         <p class="req">Tout navigateur récent — mobile ou tablette</p>
         <a class="btn small" href="geosd-terrain-consultation.html">Ouvrir la consultation →</a>
+      </div>
+
+      <div class="version-card">
+        <div class="head">
+          <span class="mark">BUREAU</span>
+        </div>
+        <h4>Consultation bureau</h4>
+        <p>Lecture seule du fichier central depuis un poste de bureau, avec les mêmes filtres, tableau et statistiques que l'administration — sans les fonctions d'écriture du fichier.</p>
+        <p class="req">Tout navigateur récent — ordinateur de bureau</p>
+        <a class="btn small" href="geosd-consultation-bureau.html">Ouvrir la consultation bureau →</a>
       </div>
 
     </div>
