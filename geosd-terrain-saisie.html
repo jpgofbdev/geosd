@@ -555,7 +555,7 @@ pointForm.addEventListener('submit', e => {
     savedFeature = editingFeature;
     const marker = markersById[editingFeature.id];
     if (marker) {
-      marker.setStyle(markerStyle(editingFeature));
+      marker.setIcon(themeMarkerIcon(editingFeature));
       marker.setPopupContent(popupHtml(editingFeature, { canDelete: true, canEdit: true }));
     }
   } else {
@@ -579,7 +579,7 @@ pointForm.addEventListener('submit', e => {
    sauf ceux importés comme référence) ---- */
 function addMarker(feature) {
   const [lng, lat] = feature.geometry.coordinates;
-  const marker = L.circleMarker([lat, lng], markerStyle(feature));
+  const marker = L.marker([lat, lng], { icon: themeMarkerIcon(feature) });
   marker.featureId = feature.id;
   marker.bindPopup(popupHtml(feature, { canDelete: true, canEdit: true }));
   marker.addTo(markersLayer);

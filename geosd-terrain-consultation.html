@@ -208,7 +208,7 @@ function setStatus(text, kind) { statusEl.textContent = text; statusEl.className
 /* ---- Marqueurs : toujours en lecture seule ici ---- */
 function addMarker(feature) {
   const [lng, lat] = feature.geometry.coordinates;
-  const marker = L.circleMarker([lat, lng], markerStyle(feature));
+  const marker = L.marker([lat, lng], { icon: themeMarkerIcon(feature) });
   marker.featureId = feature.id;
   marker.bindPopup(popupHtml(feature, { canDelete: false }));
   marker.addTo(markersLayer);

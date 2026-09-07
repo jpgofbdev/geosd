@@ -31,6 +31,21 @@ ordre, field_type, required, options
 - Thématique sans aucun champ spécifique (que des champs communs) : ajouter
   une seule ligne avec theme_key/theme_label renseignés et field_name vide,
   pour que la thématique reste enregistrée (ex. "vtm,VTM,,,,,,,").
+- theme_color / theme_shape : couleur et forme du marqueur sur la carte
+  pour cette thématique (voir JOURNAL_DECISIONS.md, entrée du 07/09/2026 —
+  association choisie pour rester distinguable sans dépendre de la couleur
+  seule, retour d'un agent daltonien). À renseigner une seule fois par
+  thématique, sur n'importe laquelle de ses lignes (la première valeur non
+  vide rencontrée est utilisée, les autres lignes peuvent rester vides —
+  pas besoin de répéter comme theme_label).
+  - theme_color : code hexadécimal, ex. "#1f77ff".
+  - theme_shape : une valeur parmi VALID_SHAPES ci-dessous — cette liste
+    doit rester synchronisée avec les formes que sait dessiner
+    themeShapeSvg() dans geosd-themes.js ; ajouter une forme y est rare,
+    contrairement à ajouter une thématique.
+  - Thématique sans couleur/forme valide renseignée : repli automatique sur
+    un anneau gris (voir THEME_FALLBACK_COLOR / THEME_FALLBACK_SHAPE dans
+    geosd-themes.js) — averti au lancement du script, non bloquant.
 """
 import csv
 import json
@@ -57,6 +72,17 @@ COMMON_FIELDS_END = "// ==COMMON_FIELDS_END=="
 COMMUNES_CSV_PATH = Path("commune_majusucle_CVL.csv")
 COMMUNES_START_MARKER = "// ==COMMUNES_START=="
 COMMUNES_END_MARKER = "// ==COMMUNES_END=="
+
+# Couleur + forme des marqueurs par thématique (colonnes theme_color /
+# theme_shape du CSV). VALID_SHAPES doit rester synchronisée avec les
+# `case` de themeShapeSvg() dans geosd-themes.js.
+APPEARANCE_START_MARKER = "// ==THEME_APPEARANCE_START=="
+APPEARANCE_END_MARKER = "// ==THEME_APPEARANCE_END=="
+VALID_SHAPES = {
+    "circle", "square", "triangle", "triangle-down",
+    "diamond", "hexagon", "cross", "star", "ring",
+}
+HEX_COLOR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 
 
 def bool_fr(value):
@@ -129,11 +155,21 @@ def load_themes(csv_path):
             tlabel = row["theme_label"].strip()
             skey = row["subtype_key"].strip()
             slabel = row["subtype_label"].strip()
+            tcolor = (row.get("theme_color") or "").strip()
+            tshape = (row.get("theme_shape") or "").strip()
 
             # setdefault avant le "continue" ci-dessous : une thématique sans
             # aucun champ spécifique (ligne field_name vide) doit quand même
             # apparaître dans THEMES.
-            theme = themes.setdefault(tkey, {"label": tlabel, "subtypes": None, "fields": []})
+            theme = themes.setdefault(
+                tkey, {"label": tlabel, "subtypes": None, "fields": [], "color": "", "shape": ""}
+            )
+            # Première valeur non vide rencontrée gagne (pas besoin de
+            # répéter theme_color/theme_shape sur chaque ligne du CSV).
+            if tcolor and not theme["color"]:
+                theme["color"] = tcolor
+            if tshape and not theme["shape"]:
+                theme["shape"] = tshape
 
             if not fname:
                 continue
@@ -210,6 +246,49 @@ def to_js_object(themes):
     return "\n".join(lines)
 
 
+def validate_appearance(themes):
+    """Valide theme_color/theme_shape pour chaque thématique. N'arrête
+    jamais le script (une thématique sans couleur/forme valide retombe sur
+    le gris/anneau par défaut côté JS) — affiche des avertissements pour
+    que l'anomalie soit visible et corrigée dans le CSV."""
+    colors, shapes = {}, {}
+    for tkey, theme in themes.items():
+        color, shape = theme["color"], theme["shape"]
+        if not color:
+            print(f"  ATTENTION — {tkey} : theme_color absente, repli sur le gris par défaut.")
+        elif not HEX_COLOR_RE.match(color):
+            print(f"  ATTENTION — {tkey} : theme_color \"{color}\" n'est pas un code hexadécimal valide (#rrggbb), ignorée.")
+            theme["color"] = ""
+        if not shape:
+            print(f"  ATTENTION — {tkey} : theme_shape absente, repli sur l'anneau par défaut.")
+        elif shape not in VALID_SHAPES:
+            print(f"  ATTENTION — {tkey} : theme_shape \"{shape}\" inconnue (formes valides : {', '.join(sorted(VALID_SHAPES))}), ignorée.")
+            theme["shape"] = ""
+
+        if theme["shape"]:
+            shapes.setdefault(theme["shape"], []).append(tkey)
+        if theme["color"]:
+            colors.setdefault(theme["color"], []).append(tkey)
+
+    for shape, tkeys in shapes.items():
+        if len(tkeys) > 1:
+            print(f"  ATTENTION — forme \"{shape}\" utilisée par plusieurs thématiques : {', '.join(tkeys)} (distinguables seulement par la couleur).")
+    for color, tkeys in colors.items():
+        if len(tkeys) > 1:
+            print(f"  ATTENTION — couleur \"{color}\" utilisée par plusieurs thématiques : {', '.join(tkeys)} (distinguables seulement par la forme).")
+
+
+def to_js_appearance(themes):
+    color_lines = [f'  {tkey}: "{t["color"]}",' for tkey, t in themes.items() if t["color"]]
+    shape_lines = [f'  {tkey}: "{t["shape"]}",' for tkey, t in themes.items() if t["shape"]]
+    if color_lines:
+        color_lines[-1] = color_lines[-1].rstrip(",")
+    if shape_lines:
+        shape_lines[-1] = shape_lines[-1].rstrip(",")
+    lines = ["const THEME_COLOR = {"] + color_lines + ["};", "const THEME_SHAPE = {"] + shape_lines + ["};"]
+    return "\n".join(lines)
+
+
 def load_communes(csv_path):
     with csv_path.open(encoding="utf-8-sig", newline="") as f:
         sample = f.read(4096)
@@ -260,6 +339,11 @@ def main():
     common_block = to_js_common_fields(common_fields)
     js = replace_block(js, COMMON_FIELDS_START, COMMON_FIELDS_END, common_block)
     print(f"OK — {len(common_fields)} champ(s) commun(s) écrits dans {JS_PATH} (ajoutés à chaque thématique)")
+
+    validate_appearance(themes)
+    appearance_block = to_js_appearance(themes)
+    js = replace_block(js, APPEARANCE_START_MARKER, APPEARANCE_END_MARKER, appearance_block)
+    print(f"OK — couleurs/formes écrites dans {JS_PATH} pour {len(themes)} thématique(s)")
 
     if COMMUNES_CSV_PATH.exists():
         communes = load_communes(COMMUNES_CSV_PATH)

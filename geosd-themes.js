@@ -2080,15 +2080,49 @@ function initTerritory(map, onReady) {
   }
 }
 
-/* ---- Couleurs par thématique (palette colorblind-friendly, cyclique) ---- */
-const THEME_COLOR_PALETTE = [
-  '#1b9e77', '#d95f02', '#7570b3', '#e7298a',
-  '#66a61e', '#e6ab02', '#a6761d', '#666666'
-];
+/* ---- Couleurs ET formes par thématique ----
+   Générées depuis modele-formulaires.csv (colonnes theme_color /
+   theme_shape) par generate_themes.py — NE PAS ÉDITER le bloc ci-dessous
+   à la main, il est écrasé à chaque régénération. Pour changer la couleur
+   ou la forme d'une thématique, modifier le CSV puis relancer le script
+   (voir son en-tête pour le détail des colonnes).
+   Choix fait pour rester distinguable sans dépendre de la couleur seule
+   (retour d'un agent daltonien, voir JOURNAL_DECISIONS.md, entrée du
+   07/09/2026). Thématique sans couleur/forme valide dans le CSV : repli
+   automatique sur un anneau gris (THEME_FALLBACK_COLOR/SHAPE ci-dessous),
+   averti au lancement du script, jamais bloquant. */
 const THEME_KEYS = Object.keys(THEMES);
+// ==THEME_APPEARANCE_START==
+const THEME_COLOR = {
+  chasse: "#8b5e34",
+  peche: "#1b9e77",
+  eau: "#1f77ff",
+  phytosanitaires: "#e7298a",
+  vtm: "#e67e22",
+  fsc: "#e6ab02",
+  habitat_especes: "#7ac943",
+  cueillette: "#6a3d9a",
+  engrillagement: "#e31a1c"
+};
+const THEME_SHAPE = {
+  chasse: "triangle",
+  peche: "square",
+  eau: "circle",
+  phytosanitaires: "diamond",
+  vtm: "hexagon",
+  fsc: "triangle-down",
+  habitat_especes: "ring",
+  cueillette: "star",
+  engrillagement: "cross"
+};
+// ==THEME_APPEARANCE_END==
+const THEME_FALLBACK_COLOR = '#666666';
+const THEME_FALLBACK_SHAPE = 'ring';
 function themeColor(themeKey) {
-  const i = THEME_KEYS.indexOf(themeKey);
-  return THEME_COLOR_PALETTE[i >= 0 ? i % THEME_COLOR_PALETTE.length : 0];
+  return THEME_COLOR[themeKey] || THEME_FALLBACK_COLOR;
+}
+function themeShape(themeKey) {
+  return THEME_SHAPE[themeKey] || THEME_FALLBACK_SHAPE;
 }
 
 /* ---- Résolution des champs à afficher selon thématique / sous-type ----
@@ -2151,14 +2185,53 @@ function popupHtml(feature, opts) {
   return html;
 }
 
-/* ---- Style d'un marqueur circulaire selon la thématique (ou référence) ---- */
-function markerStyle(feature) {
+/* ---- Icône d'un marqueur selon la thématique (forme + couleur) ou
+   référence (anneau gris fin, inchangé). Remplace l'ancien markerStyle()
+   qui ne dessinait qu'un rond coloré (via L.circleMarker) — désormais
+   chaque thématique a sa propre silhouette, dessinée en SVG inline dans
+   un L.divIcon, pour rester distinguable sans dépendre de la couleur
+   seule (voir JOURNAL_DECISIONS.md, entrée du 07/09/2026). Taille de
+   dessin : 22x22, ancrée au centre (comme l'ancien point exact). */
+function themeShapeSvg(shape, color) {
+  const s = 'fill="' + color + '" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"';
+  switch (shape) {
+    case 'square':
+      return '<rect x="3" y="3" width="16" height="16" rx="2.5" ' + s + '/>';
+    case 'triangle':
+      return '<polygon points="11,2 20,19.5 2,19.5" ' + s + '/>';
+    case 'triangle-down':
+      return '<polygon points="11,19.5 2,2 20,2" ' + s + '/>';
+    case 'diamond':
+      return '<polygon points="11,2 20,11 11,20 2,11" ' + s + '/>';
+    case 'hexagon':
+      return '<path d="M11 2 19.5 7 19.5 15 11 20 2.5 15 2.5 7Z" ' + s + '/>';
+    case 'cross':
+      return '<rect x="8.5" y="2" width="5" height="18" rx="1.5" ' + s + '/>' +
+             '<rect x="2" y="8.5" width="18" height="5" rx="1.5" ' + s + '/>';
+    case 'star':
+      return '<polygon points="11,2 13.4,8.2 20,8.2 14.7,12.3 16.6,19 11,15.2 5.4,19 7.3,12.3 2,8.2 8.6,8.2" ' +
+             'fill="' + color + '" stroke="#fff" stroke-width="1" stroke-linejoin="round"/>';
+    case 'ring':
+      return '<circle cx="11" cy="11" r="8" fill="none" stroke="' + color + '" stroke-width="3.5"/>';
+    case 'circle':
+    default:
+      return '<circle cx="11" cy="11" r="9" fill="' + color + '" stroke="#fff" stroke-width="1.5"/>';
+  }
+}
+function themeMarkerIcon(feature) {
   const isRef = !!feature.properties.__ref;
-  return isRef ? {
-    radius: 6, weight: 1, color: '#8a8a8a', fillColor: '#cfcac0', fillOpacity: 0.6
-  } : {
-    radius: 8, weight: 2, color: '#fff', fillColor: themeColor(feature.properties.theme), fillOpacity: 0.9
-  };
+  const html = isRef
+    ? '<svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="#cfcac0" fill-opacity="0.6" stroke="#8a8a8a" stroke-width="1"/></svg>'
+    : '<svg width="22" height="22" viewBox="0 0 22 22">' +
+      themeShapeSvg(themeShape(feature.properties.theme), themeColor(feature.properties.theme)) +
+      '</svg>';
+  const size = isRef ? 16 : 22;
+  return L.divIcon({
+    className: 'geosd-theme-marker',
+    html,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2]
+  });
 }
 
 /* ---- Chargement robuste de Leaflet (CSS + JS) avec CDN de secours ---- */
