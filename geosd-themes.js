@@ -22,7 +22,7 @@ const THEMES = {
       { name: "nb_coups_de_feu", label: "Nombre de coups de feu entendus", type: "number", required: false },
       { name: "type_arme", label: "Type d'arme perçu", type: "select", required: false, options: ["Carabine", "Fusil", "Indéterminé"] },
       { name: "gibier_recherche", label: "Gibier supposé recherché", type: "select", required: false, options: ["Gros", "Petit", "Indéterminé"] },
-      { name: "gibier_retrouve", label: "Gibier retrouvé / emmené", type: "select", required: false, options: ["Sanglier", "CHI", "CEM", "CEF", "CSI", "DAI", "PMA", "Lièvre", "Phaisan", "Perdrix", "Autres", "multiple GG", "multiple PG"] },
+      { name: "gibier_retrouve", label: "Gibier retrouvé / emmené", type: "select", required: false, options: ["Sanglier", "CHI", "CEM", "CEF", "CSI", "DAI", "PMA", "Lièvre", "Faisan", "Perdrix", "Autres", "multiple GG", "multiple PG"] },
       { name: "type_moyen_prohibe", label: "Type moyen prohibé", type: "select", required: false, options: ["Véhicule", "Piegeage", "Autourmachine", "Arme", "Autres"] },
       { name: "vehicule_utilise", label: "Véhicule utilisé", type: "text", required: false },
       { name: "plaque_immatriculation", label: "Plaque d'immatriculation", type: "text", required: false }

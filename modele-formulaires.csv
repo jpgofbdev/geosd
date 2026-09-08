@@ -12,7 +12,7 @@ chasse;Chasse;;;;;journuit;Jour ou nuit;20;select;non;Jour,Nuit
 chasse;Chasse;;;;;nb_coups_de_feu;Nombre de coups de feu entendus;30;number;non;
 chasse;Chasse;;;;;type_arme;Type d'arme perçu;40;select;non;Carabine,Fusil,Indéterminé
 chasse;Chasse;;;;;gibier_recherche;Gibier supposé recherché;50;select;non;Gros,Petit,Indéterminé
-chasse;Chasse;;;;;gibier_retrouve;Gibier retrouvé / emmené;60;select;non;Sanglier,CHI,CEM,CEF,CSI,DAI,PMA,Lièvre,Phaisan,Perdrix,Autres, multiple GG, multiple PG
+chasse;Chasse;;;;;gibier_retrouve;Gibier retrouvé / emmené;60;select;non;Sanglier,CHI,CEM,CEF,CSI,DAI,PMA,Lièvre,Faisan,Perdrix,Autres, multiple GG, multiple PG
 chasse;Chasse;;;;;type_moyen_prohibe;Type moyen prohibé;70;select;non;Véhicule,Piegeage,Autourmachine,Arme,Autres
 chasse;Chasse;;;;;vehicule_utilise;Véhicule utilisé;80;text;non;
 chasse;Chasse;;;;;plaque_immatriculation;Plaque d'immatriculation;90;text;non;
