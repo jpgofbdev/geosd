@@ -5,7 +5,7 @@ commun;Tous thèmes;;;;;heure;Heure;30;time;oui;
 commun;Tous thèmes;;;;;auteur_signalement;Auteur signalement;40;text;non;
 commun;Tous thèmes;;;;;auteur_faits;Suspect;50;text;non;
 commun;Tous thèmes;;;;;agent_sd;Agent SD créateur du point GeoSD;60;text;oui;
-commun;Tous thèmes;;;;;fiabilite;Fiabilité;70;select;non;1,2,3,4,5
+commun;Tous thèmes;;;;;fiabilite;Fiabilité (1 = faible, 5 = forte);70;select;non;1,2,3,4,5
 commun;Tous thèmes;;;;;commentaire;Commentaire;80;text;non;
 chasse;Chasse;#8b5e34;triangle;;;braconnage;Braconnage;10;select;non;oui,non
 chasse;Chasse;;;;;journuit;Jour ou nuit;20;select;non;Jour,Nuit
