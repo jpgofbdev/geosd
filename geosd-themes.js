@@ -104,10 +104,10 @@ const COMMON_FIELDS = [
   { name: "date", label: "Date", type: "date", required: true },
   { name: "heure", label: "Heure", type: "time", required: true },
   { name: "auteur_signalement", label: "Auteur signalement", type: "text", required: false },
-  { name: "auteur_faits", label: "Auteur faits", type: "text", required: false },
+  { name: "auteur_faits", label: "Suspect", type: "text", required: false },
   { name: "agent_sd", label: "Agent SD créateur du point GeoSD", type: "text", required: true },
-  { name: "commentaire", label: "Commentaire", type: "text", required: false },
-  { name: "fiabilite", label: "Fiabilité", type: "select", required: false, options: ["1", "2", "3", "4", "5"] }
+  { name: "fiabilite", label: "Fiabilité", type: "select", required: false, options: ["1", "2", "3", "4", "5"] },
+  { name: "commentaire", label: "Commentaire", type: "text", required: false }
 ];
 // ==COMMON_FIELDS_END==
 
