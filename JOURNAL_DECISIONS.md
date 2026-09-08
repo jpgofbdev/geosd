@@ -824,3 +824,32 @@ fichiers, titres et clés de stockage local ont été alignés en conséquence.
   publics »). `index_admin.html` n'a pas été modifié.
 
 
+## Filtres Commune / Agent explicites (08/09/2026)
+
+- **Besoin exprimé par le terrain :** la recherche libre (un seul champ,
+  cherche dans toutes les propriétés concaténées) ne donnait pas de
+  réponse assez explicite pour retrouver les points d'une commune ou d'un
+  agent donné — pas de liste de résultats, juste un filtrage silencieux
+  des marqueurs sur la carte, et un champ texte sujet aux fautes de
+  frappe / variantes d'orthographe.
+- **Deux menus déroulants ajoutés** (« Commune », « Agent SD créateur »),
+  en plus de la recherche libre conservée pour le reste (commentaire,
+  auteur des faits, plaque…) — placeholder mis à jour en conséquence.
+- **Listes construites dynamiquement à partir du fichier chargé** (valeurs
+  distinctes de `commune`/`agent_sd` réellement présentes), pas depuis
+  `COMMUNES_CVL` (`geosd-themes.js`) qui liste les 1754 communes du
+  département et serait inexploitable en filtre — cette liste reste
+  réservée aux suggestions de saisie sur `geosd-terrain-saisie.html`.
+  Comme il n'existe pas de liste fermée d'agents, ce filtre est
+  nécessairement dynamique lui aussi.
+- **Sur les 3 versions** (`geosd-admin.html`, `geosd-consultation-bureau.html`,
+  `geosd-terrain-consultation.html`), à la différence du filtre « Jour de
+  semaine / Mois » réservé à l'admin — choix assumé du porteur du projet,
+  la demande venant explicitement du terrain.
+- **Implémentation :** logique ajoutée dans le module partagé
+  `geosd-dataviz.js` (admin + consultation-bureau) et dupliquée dans
+  `geosd-terrain-consultation.html`, qui gère son panneau de filtres en
+  autonomie (voir plus haut, pas de dépendance à `geosd-dataviz.js` côté
+  terrain). Listes reconstruites à chaque chargement/rafraîchissement du
+  fichier (`buildFilterSelectLists()`, même point d'ancrage que
+  `buildThemeCheckList()`).

@@ -90,7 +90,19 @@
     <div class="filters-body">
       <div class="filters-section">
         <span class="filters-label">Recherche libre</span>
-        <input type="text" id="filter-search" class="filters-search" placeholder="Commune, commentaire, auteur…">
+        <input type="text" id="filter-search" class="filters-search" placeholder="Commentaire, plaque, auteur des faits…">
+      </div>
+      <div class="filters-section">
+        <span class="filters-label">Commune</span>
+        <select id="filter-commune" class="filters-select">
+          <option value="">Toutes les communes</option>
+        </select>
+      </div>
+      <div class="filters-section">
+        <span class="filters-label">Agent SD créateur</span>
+        <select id="filter-agent" class="filters-select">
+          <option value="">Tous les agents</option>
+        </select>
       </div>
       <div class="filters-section">
         <div style="display:flex; align-items:center; justify-content:space-between;">
@@ -223,6 +235,7 @@ function renderAllMarkers() {
     map.fitBounds(group.getBounds().pad(0.2));
   }
   buildThemeCheckList();
+  buildFilterSelectLists();
   applyFilters();
   setStatus(geojson.features.length + ' point(s) chargé(s)', 'ok');
 }
@@ -234,7 +247,36 @@ const filterSearch = document.getElementById('filter-search');
 const filterDateFrom = document.getElementById('filter-date-from');
 const filterDateTo = document.getElementById('filter-date-to');
 const filterFiabilite = document.getElementById('filter-fiabilite');
+const filterCommune = document.getElementById('filter-commune');
+const filterAgent = document.getElementById('filter-agent');
 const filtersCountEl = document.getElementById('filters-count');
+
+/* ---- Listes déroulantes Commune / Agent (filtres explicites, valeurs
+   réellement présentes dans le fichier chargé — pas la liste officielle
+   COMMUNES_CVL, qui contient les 1754 communes du département et serait
+   inexploitable ici) ---- */
+function populateFilterSelect(select, values) {
+  const previous = select.value;
+  const sorted = Array.from(values).sort((a, b) => a.localeCompare(b, 'fr'));
+  while (select.options.length > 1) select.remove(1);
+  sorted.forEach(v => {
+    const opt = document.createElement('option'); opt.value = v; opt.textContent = v;
+    select.appendChild(opt);
+  });
+  select.value = sorted.includes(previous) ? previous : '';
+}
+function buildFilterSelectLists() {
+  const communes = new Set();
+  const agents = new Set();
+  geojson.features.forEach(f => {
+    const commune = (f.properties.commune || '').trim();
+    const agent = (f.properties.agent_sd || '').trim();
+    if (commune) communes.add(commune);
+    if (agent) agents.add(agent);
+  });
+  populateFilterSelect(filterCommune, communes);
+  populateFilterSelect(filterAgent, agents);
+}
 
 document.getElementById('btn-toggle-filters').addEventListener('click', () => filtersPanel.classList.toggle('show'));
 document.getElementById('btn-close-filters').addEventListener('click', () => filtersPanel.classList.remove('show'));
@@ -265,16 +307,19 @@ document.getElementById('btn-check-none').addEventListener('click', () => {
 });
 document.getElementById('btn-reset-filters').addEventListener('click', () => {
   filterSearch.value = ''; filterDateFrom.value = ''; filterDateTo.value = ''; filterFiabilite.value = '';
+  filterCommune.value = ''; filterAgent.value = '';
   themeCheckList.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = true);
   applyFilters();
 });
 [filterSearch].forEach(el => el.addEventListener('input', applyFilters));
-[filterDateFrom, filterDateTo, filterFiabilite].forEach(el => el.addEventListener('change', applyFilters));
+[filterDateFrom, filterDateTo, filterFiabilite, filterCommune, filterAgent].forEach(el => el.addEventListener('change', applyFilters));
 
 function featureMatchesFilters(feature) {
   const props = feature.properties;
   const cb = document.getElementById('filter-theme-' + props.theme);
   if (cb && !cb.checked) return false;
+  if (filterCommune.value && (props.commune || '') !== filterCommune.value) return false;
+  if (filterAgent.value && (props.agent_sd || '') !== filterAgent.value) return false;
   const query = normalizeText(filterSearch.value.trim());
   if (query && !normalizeText(Object.values(props).join(' ')).includes(query)) return false;
   if (props.date) {

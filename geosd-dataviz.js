@@ -65,6 +65,8 @@ function initDataviz(ctx) {
   const filterDateFrom = document.getElementById('filter-date-from');
   const filterDateTo = document.getElementById('filter-date-to');
   const filterFiabilite = document.getElementById('filter-fiabilite');
+  const filterCommune = document.getElementById('filter-commune');
+  const filterAgent = document.getElementById('filter-agent');
   const filtersCountEl = document.getElementById('filters-count');
   const hasDaymonth = !!document.getElementById('filter-daymonth-section');
 
@@ -137,6 +139,34 @@ function initDataviz(ctx) {
     };
   }
 
+  /* ---- Listes déroulantes Commune / Agent (filtres explicites, valeurs
+     réellement présentes dans le fichier chargé — pas la liste officielle
+     COMMUNES_CVL, qui contient les 1754 communes du département et serait
+     inexploitable ici) ---- */
+  function populateFilterSelect(select, values) {
+    const previous = select.value;
+    const sorted = Array.from(values).sort((a, b) => a.localeCompare(b, 'fr'));
+    while (select.options.length > 1) select.remove(1);
+    sorted.forEach(v => {
+      const opt = document.createElement('option'); opt.value = v; opt.textContent = v;
+      select.appendChild(opt);
+    });
+    select.value = sorted.includes(previous) ? previous : '';
+  }
+  function buildFilterSelectLists() {
+    const geojson = getGeojson();
+    const communes = new Set();
+    const agents = new Set();
+    geojson.features.forEach(f => {
+      const commune = (f.properties.commune || '').trim();
+      const agent = (f.properties.agent_sd || '').trim();
+      if (commune) communes.add(commune);
+      if (agent) agents.add(agent);
+    });
+    populateFilterSelect(filterCommune, communes);
+    populateFilterSelect(filterAgent, agents);
+  }
+
   function buildThemeCheckList() {
     const geojson = getGeojson();
     const counts = {}; THEME_KEYS.forEach(k => counts[k] = 0);
@@ -164,6 +194,7 @@ function initDataviz(ctx) {
   });
   document.getElementById('btn-reset-filters').addEventListener('click', () => {
     filterSearch.value = ''; filterDateFrom.value = ''; filterDateTo.value = ''; filterFiabilite.value = '';
+    filterCommune.value = ''; filterAgent.value = '';
     themeCheckList.querySelectorAll('input[type=checkbox]').forEach(cb => cb.checked = true);
     if (hasDaymonth) {
       document.getElementById('filter-mode-simple').checked = true;
@@ -175,12 +206,14 @@ function initDataviz(ctx) {
     applyFilters();
   });
   [filterSearch].forEach(el => el.addEventListener('input', applyFilters));
-  [filterDateFrom, filterDateTo, filterFiabilite].forEach(el => el.addEventListener('change', applyFilters));
+  [filterDateFrom, filterDateTo, filterFiabilite, filterCommune, filterAgent].forEach(el => el.addEventListener('change', applyFilters));
 
   function featureMatchesFilters(feature) {
     const props = feature.properties;
     const cb = document.getElementById('filter-theme-' + props.theme);
     if (cb && !cb.checked) return false;
+    if (filterCommune.value && (props.commune || '') !== filterCommune.value) return false;
+    if (filterAgent.value && (props.agent_sd || '') !== filterAgent.value) return false;
     const query = normalizeText(filterSearch.value.trim());
     if (query && !normalizeText(Object.values(props).join(' ')).includes(query)) return false;
     if (props.date) {
@@ -507,6 +540,7 @@ function initDataviz(ctx) {
   /* ---- API publique ---- */
   function refresh() {
     buildThemeCheckList();
+    buildFilterSelectLists();
     applyFilters();
   }
 

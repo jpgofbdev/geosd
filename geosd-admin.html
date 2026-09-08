@@ -49,7 +49,19 @@
     <div class="filters-body">
       <div class="filters-section">
         <span class="filters-label">Recherche libre</span>
-        <input type="text" id="filter-search" class="filters-search" placeholder="Commune, commentaire, auteur…">
+        <input type="text" id="filter-search" class="filters-search" placeholder="Commentaire, plaque, auteur des faits…">
+      </div>
+      <div class="filters-section">
+        <span class="filters-label">Commune</span>
+        <select id="filter-commune" class="filters-select">
+          <option value="">Toutes les communes</option>
+        </select>
+      </div>
+      <div class="filters-section">
+        <span class="filters-label">Agent SD créateur</span>
+        <select id="filter-agent" class="filters-select">
+          <option value="">Tous les agents</option>
+        </select>
       </div>
       <div class="filters-section">
         <div style="display:flex; align-items:center; justify-content:space-between;">
@@ -123,7 +135,7 @@
 <div class="overlay" id="table-overlay">
   <div class="modal modal-wide">
     <h2>Tableau des points</h2>
-    <p class="coords">Respecte les filtres actuellement actifs (thématique, période, jour/mois, fiabilité, recherche) — ouvrez le panneau Filtres pour affiner avant de consulter ou d'exporter.</p>
+    <p class="coords">Respecte les filtres actuellement actifs (thématique, période, jour/mois, fiabilité, commune, agent, recherche) — ouvrez le panneau Filtres pour affiner avant de consulter ou d'exporter.</p>
     <div class="table-toolbar">
       <span id="table-count">0 point(s) affiché(s)</span>
       <select id="table-sort">
