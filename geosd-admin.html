@@ -244,6 +244,26 @@ const markersLayer = L.layerGroup().addTo(map);
 
 function setStatus(text, kind) { statusEl.textContent = text; statusEl.className = kind || ''; }
 
+/* ---- Normalisation du nom d'agent (agent_sd) ----
+   Objectif : éviter que des variantes d'écriture d'un même agent (casse,
+   espaces multiples, apostrophes typographiques) créent des entrées
+   distinctes dans le filtre "Agent SD créateur" (voir geosd-dataviz.js).
+   Volontairement limité à des opérations mécaniques et sans perte
+   d'information : pas de suppression d'accents, pas de remplacement des
+   espaces par des tirets (risque de fusionner à tort des noms différents
+   ou de scinder un nom composé). Appliqué à la fois à l'intégration des
+   envois terrain et à la saisie/correction directe dans le fichier
+   central, pour que les deux points d'entrée restent cohérents. */
+function normalizeAgentName(raw) {
+  if (!raw) return raw;
+  return raw
+    .trim()
+    .replace(/[''`´]/g, "'")       // apostrophes typographiques -> apostrophe simple
+    .replace(/\s+/g, ' ')          // espaces multiples -> un seul
+    .replace(/\s*-\s*/g, '-')      // espaces autour d'un tiret déjà présent
+    .toLocaleUpperCase('fr-FR');   // cohérent avec l'affichage des communes
+}
+
 /* ---- Formulaire thématique / sous-type ---- */
 function populateThemeSelect() {
   themeSelect.innerHTML = '';
@@ -346,7 +366,9 @@ pointForm.addEventListener('submit', async e => {
   const properties = { theme: themeKey };
   if (theme.subtypes) properties.subtype = subtypeSelect.value;
   getFieldsFor(themeKey, subtypeSelect.value).forEach(f => {
-    properties[f.name] = document.getElementById('f-' + f.name).value;
+    let value = document.getElementById('f-' + f.name).value;
+    if (f.name === 'agent_sd') value = normalizeAgentName(value);
+    properties[f.name] = value;
   });
 
   if (editingFeature) {
@@ -491,7 +513,10 @@ document.getElementById('input-merge-field').addEventListener('change', async (e
       incoming.forEach(f => {
         if (!f.id) f.id = crypto.randomUUID();
         if (!existingIds.has(f.id)) {
-          if (f.properties) delete f.properties.__ref;
+          if (f.properties) {
+            delete f.properties.__ref;
+            if (f.properties.agent_sd) f.properties.agent_sd = normalizeAgentName(f.properties.agent_sd);
+          }
           geojson.features.push(f);
           existingIds.add(f.id);
           totalAdded++;
